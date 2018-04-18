@@ -47,71 +47,7 @@ extends Core {
         return simplexml_load_string($leaderboards_xml);
     }
     
-    public static function getXml($file_path) {    
-        return file_get_contents($file_path);
-    }
-    
-    public static function getXmlFiles(DateTime $date, $temp_directory = false) {  
-        $snapshot_path = NULL;
-        $search_extension = NULL;
-        $full_extension = 'xml';
-        
-        if(empty($temp_directory)) {
-            $snapshot_path = static::getXmlPath($date);
-            
-            $search_extension = 'gz';
-            $full_extension .= '.gz';
-        }
-        else {
-            $snapshot_path = static::getXmlTempPath($date);
-            
-            $search_extension = 'xml';
-        }
-        
-        $xml_file_groups = array();
-        
-        if(is_dir($snapshot_path)) {
-            $directory_iterator = new RecursiveDirectoryIterator($snapshot_path);
-            $file_iterator = new RecursiveIteratorIterator($directory_iterator);
-            $matched_files = new RegexIterator($file_iterator, "/^.+\.{$search_extension}$/i", RecursiveRegexIterator::GET_MATCH);
-            
-            foreach($matched_files as $matched_file) {
-                if(strpos($matched_file[0], "leaderboards.{$full_extension}") !== false) {
-                    $xml_file_groups['leaderboards_xml'] = $matched_file[0];
-                }
-                else {
-                    $file_name = $matched_file[0];
-                    $file_name_split = explode('/', $matched_file[0]);
-                    
-                    $xml_file_name = array_pop($file_name_split);
-                    $xml_file_name_split = explode('_', $xml_file_name);
-                    
-                    $page_number = array_pop($xml_file_name_split);
-                    $page_number = (int)str_replace(".{$full_extension}", '', $page_number);
-                    
-                    $lbid = array_pop($file_name_split);
-                    
-                    if(empty($xml_file_groups[$lbid])) {
-                        $xml_file_groups[$lbid] = array();
-                    }
-                        
-                    $xml_file_groups[$lbid][$page_number] = $matched_file[0];
-                }
-            }
-            
-            if(!empty($xml_file_groups)) {
-                foreach($xml_file_groups as $lbid => &$xml_files) {
-                    if($lbid != 'leaderboards_xml') {
-                        ksort($xml_files);
-                    }
-                }
-            }
-        }
-        
-        return $xml_file_groups;
-    }
-    
-    public static function getXmlUrls() {
+    public static function getUrls() {
         $start_date = new DateTime('2017-01-01');
         $end_date = new DateTime(date('Y-m-d'));
         
