@@ -72,7 +72,7 @@ class Core {
                 
                 $lbid = NULL;
                 
-                if($file_name == 'leaderboards.txt') {
+                if($file_name_split[0] == 'leaderboards') {
                     $lbid = 'leaderboards';
                 }
                 else {
@@ -93,15 +93,18 @@ class Core {
         $temp_files = $this->getTempFiles();
         
         if(!empty($temp_files)) {
-        
             $saved_zip_archive = new ZipArchive();
 
             $saved_zip_archive->open("{$this->getFullSavedBasePath()}.zip", ZipArchive::CREATE | ZipArchive::OVERWRITE);
         
-            foreach($temp_files as $temp_file) {
+            foreach($temp_files as $lbid => $temp_file) {
                 $full_path = $temp_file['full_path'];
             
                 $relative_path = basename($full_path);
+                
+                if(strpos($full_path, "{$lbid}/") !== false) {
+                    $relative_path = "{$lbid}/{$relative_path}";
+                }
                 
                 $saved_zip_archive->addFile($full_path, $relative_path);
             }
@@ -126,6 +129,7 @@ class Core {
         $local_storage = Storage::disk('local');
         
         if($local_storage->exists($saved_file_path)) {
+            //TODO: REMOVE before production
             Storage::disk('s3')->put("temp/{$saved_file_path}", $local_storage->get($saved_file_path));
         }
     }

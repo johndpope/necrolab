@@ -11,6 +11,15 @@ extends Core {
     
     protected $temp_leaderboards_path;
     
+    public static function getParsedXml($unparsed_xml) {
+        //Strip any non UTF-8 character from the document that causes the XML to break.
+        $leaderboards_xml = preg_replace('/[^[:print:]]/', '', $unparsed_xml);
+        
+        unset($unparsed_xml);
+        
+        return simplexml_load_string($leaderboards_xml);
+    }
+    
     public function __construct(DateTime $date) {
         $this->file_extension = 'xml';
         $this->base_path = 'leaderboard_xml';
@@ -38,16 +47,36 @@ extends Core {
         Storage::disk('local')->put("{$this->temp_base_path}/{$lbid}/page_{$page_number}.xml", $xml);
     }
     
-    public static function getParsedXml($unparsed_xml) {
-        //Strip any non UTF-8 character from the document that causes the XML to break.
-        $leaderboards_xml = preg_replace('/[^[:print:]]/', '', $unparsed_xml);
+    public function getTempFiles() {
+        $all_temp_files = Storage::disk('local')->allFiles($this->temp_base_path);
         
-        unset($unparsed_xml);
+        $temp_files = [];
         
-        return simplexml_load_string($leaderboards_xml);
+        if(!empty($all_temp_files)) {
+            foreach($all_temp_files as $temp_file) {
+                $file_name = basename($temp_file);
+                $file_name_split = explode('.', $file_name);
+                
+                $lbid = NULL;
+                
+                if($file_name_split[0] == 'leaderboards') {
+                    $lbid = 'leaderboards';
+                }
+                else {
+                    $lbid = (int)basename(dirname($temp_file));
+                }
+                    
+                $temp_files[$lbid] = [
+                    'path' => $temp_file,
+                    'full_path' => "{$this->storage_path}/{$temp_file}"
+                ];
+            }
+        }
+
+        return $temp_files;
     }
     
-    public static function getUrls() {
+    public function getUrls() {
         $start_date = new DateTime('2017-01-01');
         $end_date = new DateTime(date('Y-m-d'));
         
