@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class Mode extends Model {
+class Modes extends Model {
     /**
      * The table associated with the model.
      *
