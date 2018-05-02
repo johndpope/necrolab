@@ -3,6 +3,8 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use App\Components\InsertQueue;
 
 class SteamReplays extends Model {
     /**
@@ -25,4 +27,46 @@ class SteamReplays extends Model {
      * @var bool
      */
     public $timestamps = false;
+    
+    public static function createTemporaryTable() {
+        DB::statement("
+            CREATE TEMPORARY TABLE steam_replays_temp (
+                steam_user_pb_id integer,
+                steam_user_id integer,
+                ugcid numeric,
+                downloaded smallint,
+                invalid smallint,
+                seed bigint,
+                run_result_id smallint,
+                steam_replay_version_id smallint,
+                uploaded_to_s3 smallint
+            )
+            ON COMMIT DROP;
+        ");
+    }
+    
+    public static function getTempInsertQueue(int $commit_count) {
+        return new InsertQueue("steam_replays_temp", $commit_count);
+    }
+    
+    public static function saveNewTemp() {
+        DB::statement("
+            INSERT INTO steam_replays (
+                steam_user_pb_id,
+                ugcid,
+                steam_user_id,
+                downloaded,
+                invalid,
+                uploaded_to_s3
+            )
+            SELECT 
+                steam_user_pb_id,
+                ugcid,
+                steam_user_id,
+                downloaded,
+                invalid,
+                uploaded_to_s3
+            FROM steam_replays_temp
+        ");
+    }
 }

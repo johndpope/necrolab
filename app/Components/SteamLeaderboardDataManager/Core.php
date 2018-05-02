@@ -59,59 +59,9 @@ class Core {
         Storage::disk('local')->deleteDirectory($this->temp_base_path);
     }
     
-    public function getTempFiles() {
-        $all_temp_files = Storage::disk('local')->allFiles($this->temp_base_path);
-        
-        $temp_files = [];
-        
-        if(!empty($all_temp_files)) {
-            foreach($all_temp_files as $temp_file) {
-                
-                $file_name = basename($temp_file);
-                $file_name_split = explode('.', $file_name);
-                
-                $lbid = NULL;
-                
-                if($file_name_split[0] == 'leaderboards') {
-                    $lbid = 'leaderboards';
-                }
-                else {
-                    $lbid = (int)$file_name_split[0];
-                }
-                    
-                $temp_files[$lbid] = [
-                    'path' => $temp_file,
-                    'full_path' => "{$this->storage_path}/{$temp_file}"
-                ];
-            }
-        }
-
-        return $temp_files;
-    }
+    public function getTempFiles() {}
     
-    public function compressTempToSaved() {
-        $temp_files = $this->getTempFiles();
-        
-        if(!empty($temp_files)) {
-            $saved_zip_archive = new ZipArchive();
-
-            $saved_zip_archive->open("{$this->getFullSavedBasePath()}.zip", ZipArchive::CREATE | ZipArchive::OVERWRITE);
-        
-            foreach($temp_files as $lbid => $temp_file) {
-                $full_path = $temp_file['full_path'];
-            
-                $relative_path = basename($full_path);
-                
-                if(strpos($full_path, "{$lbid}/") !== false) {
-                    $relative_path = "{$lbid}/{$relative_path}";
-                }
-                
-                $saved_zip_archive->addFile($full_path, $relative_path);
-            }
-            
-            $saved_zip_archive->close();
-        }
-    }
+    public function compressTempToSaved() {}
     
     public function decompressToTemp() {
         $saved_zip_archive = new ZipArchive();

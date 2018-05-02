@@ -29,23 +29,13 @@ class UploadToS3 extends Command {
     public function __construct() {
         parent::__construct();
     }
-    
-    /**
-     * Imports leaderboard entries XML data for the specified date.
-     *
-     * @param DateTime $date
-     * @return mixed
-     */
-    protected function importXml(DateTime $date) {
-        UploadToS3Job::dispatch($date)->onConnection('sync');
-    }
 
     /**
      * Execute the console command.
      *
      * @return mixed
      */
-    public function handle() {
-        $this->importXml(new DateTime($this->argument('date')));
+    public function handle() {        
+        UploadToS3Job::dispatch(new DateTime($this->argument('date')))->onConnection('sync');
     }
 }

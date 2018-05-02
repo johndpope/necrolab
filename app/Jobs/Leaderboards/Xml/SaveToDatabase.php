@@ -37,6 +37,20 @@ class SaveToDatabase implements ShouldQueue {
      * @return void
      */
     public function handle() {
+        $data_manager = new XmlManager($this->date);
         
+        $data_manager->deleteTemp();
+        
+        $data_manager->decompressToTemp();
+        
+        $files = $data_manager->getTempFiles();
+        
+        if(!empty($files)) {
+            foreach($files as $lbid => $file) {
+                if($lbid != 'leaderboards') {
+                    
+                }
+            }
+        }
     }
 }

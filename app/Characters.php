@@ -3,8 +3,11 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\GetByName;
 
 class Characters extends Model {
+    use GetByName;
+
     /**
      * The table associated with the model.
      *
@@ -151,5 +154,28 @@ class Characters extends Model {
         );
         
         return in_array($character_name, $dlc_characters, true);
+    }
+    
+    public static function getRecordFromMatch($string, array $characters) {
+        $matched_character = NULL;
+        $default_character = NULL;
+    
+        if(!empty($characters)) {
+            foreach($characters as $character) {
+                if($character->name == 'cadence') {
+                    $default_character = $character;
+                }
+            
+                if(stripos($string, $character->steam_match) !== false) {
+                    $matched_character = $character;
+                }
+            }
+        }
+        
+        if(empty($matched_character)) {
+            $matched_character = $default_character;
+        }
+        
+        return $matched_character;
     }
 }

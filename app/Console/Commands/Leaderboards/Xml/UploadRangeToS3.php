@@ -32,16 +32,6 @@ class UploadRangeToS3 extends Command {
     public function __construct() {
         parent::__construct();
     }
-    
-    /**
-     * Uploads XML data to S3 for the specified date.
-     *
-     * @param DateTime $date
-     * @return mixed
-     */
-    public function uploadToS3(DateTime $date) {
-        UploadToS3Job::dispatch($date)->onConnection('sync');
-    }
 
     /**
      * Execute the console command.
@@ -51,12 +41,15 @@ class UploadRangeToS3 extends Command {
     public function handle() {        
         $callback_handler = new CallbackHandler();
         
-        $callback_handler->setCallback([
-            $this,
-            'uploadToS3'
-        ]);
+        $callback_handler->setCallback(function(DateTime $date) {
+            UploadToS3Job::dispatch($date)->onConnection('sync');
+        });
     
-        $date_incrementor = new DateIncrementor(new DateTime($this->argument('start_date')), new DateTime($this->argument('end_date')), new DateInterval('P1D'));
+        $date_incrementor = new DateIncrementor(
+            new DateTime($this->argument('start_date')), 
+            new DateTime($this->argument('end_date')), 
+            new DateInterval('P1D')
+        );
         
         $date_incrementor->run($callback_handler);
     }

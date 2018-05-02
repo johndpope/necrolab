@@ -3,8 +3,11 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\GetByName;
 
 class Modes extends Model {
+    use GetByName;
+
     /**
      * The table associated with the model.
      *
@@ -25,4 +28,33 @@ class Modes extends Model {
      * @var bool
      */
     public $timestamps = false;
+    
+    public static function getModeFromString($string) {
+        $mode = Modes::getByName('normal');
+        
+        if(substr_count($string, 'hard') > 1) {
+            $mode = static::getByName('hard');
+        }
+        elseif(stripos($string, 'hard') !== false && stripos($string, 'hardcore') === false) { 
+            $mode = static::getByName('hard');
+        }
+        
+        if(stripos($string, 'no return') !== false) {            
+            $mode = static::getByName('no_return');
+        }
+        
+        if(stripos($string, 'phasing') !== false) {            
+            $mode = static::getByName('phasing');
+        }
+        
+        if(stripos($string, 'randomizer') !== false) {            
+            $mode = static::getByName('randomizer');
+        }
+        
+        if(stripos($string, 'mystery') !== false) {            
+            $mode = static::getByName('mystery');
+        }
+        
+        return $mode;
+    }
 }

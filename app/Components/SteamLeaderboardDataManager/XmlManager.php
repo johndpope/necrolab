@@ -3,6 +3,7 @@
 namespace App\Components\SteamLeaderboardDataManager;
 
 use DateTime;
+use ZipArchive;
 use Illuminate\Support\Facades\Storage;
 
 class XmlManager
@@ -51,29 +52,64 @@ extends Core {
         $all_temp_files = Storage::disk('local')->allFiles($this->temp_base_path);
         
         $temp_files = [];
-        
+
         if(!empty($all_temp_files)) {
             foreach($all_temp_files as $temp_file) {
                 $file_name = basename($temp_file);
                 $file_name_split = explode('.', $file_name);
                 
                 $lbid = NULL;
+                $page_number = 0;
                 
-                if($file_name_split[0] == 'leaderboards') {
-                    $lbid = 'leaderboards';
-                }
-                else {
-                    $lbid = (int)basename(dirname($temp_file));
-                }
-                    
-                $temp_files[$lbid] = [
+                $temp_file_entry = [
                     'path' => $temp_file,
                     'full_path' => "{$this->storage_path}/{$temp_file}"
                 ];
+                
+                if($file_name_split[0] == 'leaderboards') {
+                    $temp_files['leaderboards'] = $temp_file_entry;
+                }
+                else {
+                    $lbid = (int)basename(dirname($temp_file));
+                    $page_number = str_replace('page_', '', $file_name_split[0]);
+                    
+                    $temp_files[$lbid][$page_number] = $temp_file_entry;
+                }
             }
         }
 
         return $temp_files;
+    }
+    
+    public function compressTempToSaved() {
+        $temp_files = $this->getTempFiles();
+        
+        if(!empty($temp_files)) {
+            $saved_zip_archive = new ZipArchive();
+
+            $saved_zip_archive->open("{$this->getFullSavedBasePath()}.zip", ZipArchive::CREATE | ZipArchive::OVERWRITE);
+        
+            foreach($temp_files as $lbid => $temp_file_group) {
+                if($lbid == 'leaderboards') {
+                    $temp_file = $temp_file_group;
+                
+                    $full_path = $temp_file['full_path'];
+                
+                    $saved_zip_archive->addFile($full_path, basename($full_path));
+                }
+                else {
+                    foreach($temp_file_group as $temp_file) {
+                        $full_path = $temp_file['full_path'];
+                        
+                        $relative_path = "{$lbid}/" . basename($full_path);
+                        
+                        $saved_zip_archive->addFile($full_path, $relative_path);
+                    }
+                }
+            }
+            
+            $saved_zip_archive->close();
+        }
     }
     
     public function getUrls() {

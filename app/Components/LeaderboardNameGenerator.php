@@ -2,6 +2,7 @@
 
 namespace App\Components;
 
+use Exception;
 use DateTime;
 use App\Characters;
 use App\Releases;

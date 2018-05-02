@@ -4,8 +4,11 @@ namespace App;
 
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\GetByName;
 
 class Releases extends Model {
+    use GetByName;
+
     /**
      * The table associated with the model.
      *
@@ -44,5 +47,23 @@ class Releases extends Model {
         }
         
         return $release_records;
+    }
+    
+    public static function getReleaseFromString($string) {
+        $release = NULL;
+    
+        if(stripos($string, 'dev') !== false) {
+            $release = static::getByName('early_access');
+        }
+        elseif(stripos($string, 'prod') !== false) {
+            if(stripos($string, 'dlc') !== false) {
+                $release = static::getByName('amplified_dlc');
+            }
+            else {
+                $release = static::getByName('original');
+            }
+        }
+        
+        return $release;
     }
 }
