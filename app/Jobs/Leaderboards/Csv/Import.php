@@ -62,7 +62,7 @@ class Import implements ShouldQueue {
         
         $steam_leaderboard_data_manager->deleteTemp();
         
-        UploadToS3::dispatch($this->date);
+        UploadToS3::dispatch($steam_leaderboard_data_manager);
         SaveToDatabase::dispatch($steam_leaderboard_data_manager);
     }
 }
