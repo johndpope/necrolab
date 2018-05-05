@@ -13,8 +13,8 @@ use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client as GuzzleClient;
 use App\Components\SteamLeaderboardDataManager\XmlManager;
 use App\Components\CallbackHandler;
-use App\Jobs\Leaderboards\Xml\UploadToS3;
-use App\Jobs\Leaderboards\Xml\SaveToDatabase;
+use App\Jobs\Leaderboards\UploadToS3;
+use App\Jobs\Leaderboards\SaveToDatabase;
 
 class Import implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -122,6 +122,6 @@ class Import implements ShouldQueue {
         }
         
         UploadToS3::dispatch($this->date);
-        SaveToDatabase::dispatch($this->date);
+        SaveToDatabase::dispatch($steam_leaderboard_data_manager);
     }
 }

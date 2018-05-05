@@ -4,6 +4,7 @@ namespace App\Components\SteamLeaderboardDataManager;
 
 use DateTime;
 use ZipArchive;
+use stdClass;
 use Illuminate\Support\Facades\Storage;
 
 class CsvManager
@@ -36,33 +37,86 @@ extends Core {
     }
     
     public function getTempFiles() {
-        $all_temp_files = Storage::disk('local')->allFiles($this->temp_base_path);
+        if(empty($this->temp_files)) {
+            $all_temp_files = Storage::disk('local')->allFiles($this->temp_base_path);
         
-        $temp_files = [];
-        
-        if(!empty($all_temp_files)) {
-            foreach($all_temp_files as $temp_file) {
-                
-                $file_name = basename($temp_file);
-                $file_name_split = explode('.', $file_name);
-                
-                $lbid = NULL;
-                
-                if($file_name_split[0] == 'leaderboards') {
-                    $lbid = 'leaderboards';
-                }
-                else {
-                    $lbid = (int)$file_name_split[0];
-                }
+            if(!empty($all_temp_files)) {
+                foreach($all_temp_files as $temp_file) {
                     
-                $temp_files[$lbid] = [
-                    'path' => $temp_file,
-                    'full_path' => "{$this->storage_path}/{$temp_file}"
-                ];
+                    $file_name = basename($temp_file);
+                    $file_name_split = explode('.', $file_name);
+                    
+                    $lbid = NULL;
+                    
+                    if($file_name_split[0] == 'leaderboards') {
+                        $lbid = 'leaderboards';
+                    }
+                    else {
+                        $lbid = (int)$file_name_split[0];
+                    }
+                        
+                    $this->temp_files[$lbid] = [
+                        'path' => $temp_file,
+                        'full_path' => "{$this->storage_path}/{$temp_file}"
+                    ];
+                }
             }
         }
 
-        return $temp_files;
+        return $this->temp_files;
+    }
+    
+    public function getTempLeaderboard() {    
+        $temp_files = $this->getTempFiles();
+        
+        if(!empty($temp_files)) {
+            foreach($temp_files as $lbid => $temp_file) {    
+                if($lbid != 'leaderboards') {
+                    $file_handle = fopen($temp_file['full_path'], 'r');
+                    
+                    $leaderboard_name_row = fgetcsv($file_handle);
+
+                    $leaderboard_name = $leaderboard_name_row[0];
+                    
+                    fclose($file_handle);
+                    
+                    $leaderboard = new stdClass();
+                    
+                    $leaderboard->lbid = $lbid;
+                    $leaderboard->name = $leaderboard_name;
+                    $leaderboard->display_name = NULL;
+                    $leaderboard->url = NULL;
+                    
+                    yield $leaderboard;
+                }
+            }
+        }
+    }
+    
+    public function getTempEntry($lbid) {
+        $temp_files = $this->getTempFiles();
+        
+        if(!empty($temp_files[$lbid])) {
+            $file_handle = fopen($temp_files[$lbid]['full_path'], 'r');
+            
+            //Discard the first row since it only contains the leaderboard name
+            fgetcsv($file_handle);
+            
+            while($entry_row = fgetcsv($file_handle)) {
+                $entry = new stdClass();
+                        
+                $entry->steamid = $entry_row[0];
+                $entry->score = (int)$entry_row[2];
+                $entry->ugcid = $entry_row[3];
+                $entry->zone = (int)$entry_row[4];
+                $entry->level = (int)$entry_row[5];
+                $entry->details = '';
+                
+                yield $entry;
+            }
+            
+            fclose($file_handle);
+        }
     }
     
     public function compressTempToSaved() {

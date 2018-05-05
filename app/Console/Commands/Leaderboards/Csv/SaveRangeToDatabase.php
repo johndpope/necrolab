@@ -7,7 +7,8 @@ use DateInterval;
 use Illuminate\Console\Command;
 use App\Components\CallbackHandler;
 use App\Components\DateIncrementor;
-use App\Jobs\Leaderboards\Csv\SaveToDatabase as SaveToDatabaseJob;
+use App\Components\SteamLeaderboardDataManager\CsvManager;
+use App\Jobs\Leaderboards\SaveToDatabase as SaveToDatabaseJob;
 
 class SaveRangeToDatabase extends Command {
     /**
@@ -42,7 +43,9 @@ class SaveRangeToDatabase extends Command {
         $callback_handler = new CallbackHandler();
         
         $callback_handler->setCallback(function(DateTime $date) {
-            SaveToDatabaseJob::dispatch($date)->onConnection('sync');
+            $data_manager = new CsvManager($date);
+            
+            SaveToDatabaseJob::dispatch($data_manager)->onConnection('sync');
         });
     
         $date_incrementor = new DateIncrementor(

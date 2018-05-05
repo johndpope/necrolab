@@ -80,6 +80,16 @@ class SteamUserPbs extends Model {
             $entry->time = (float)static::getTime($entry->score);
         }
         
+        //This logic path is for importing XML.
+        if(!empty($entry->details)) {
+            $highest_zone_level = static::getHighestZoneLevel($entry->details);
+        
+            if(!empty($highest_zone_level)) {
+                $entry->zone = (int)$highest_zone_level->highest_zone;
+                $entry->level = (int)$highest_zone_level->highest_level;
+            }
+        }
+        
         $entry->is_win = 0;
 
         if(empty($leaderboard->leaderboard_type->name == 'score')) {
@@ -93,16 +103,6 @@ class SteamUserPbs extends Model {
         
         if($leaderboard->leaderboard_type->name == 'deathless') {
             $entry->win_count = static::getWinCount($entry->score);
-        }
-        
-        //This logic path is for importing XML.
-        if(!empty($entry->details)) {
-            $highest_zone_level = static::getHighestZoneLevel($entry->details);
-        
-            if(!empty($highest_zone_level)) {
-                $entry->zone = (int)$highest_zone_level['highest_zone'];
-                $entry->level = (int)$highest_zone_level['highest_level'];
-            }
         }
     }
     

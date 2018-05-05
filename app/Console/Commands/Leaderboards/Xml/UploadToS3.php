@@ -4,7 +4,8 @@ namespace App\Console\Commands\Leaderboards\Xml;
 
 use DateTime;
 use Illuminate\Console\Command;
-use App\Jobs\Leaderboards\Xml\UploadToS3 as UploadToS3Job;
+use App\Components\SteamLeaderboardDataManager\XmlManager;
+use App\Jobs\Leaderboards\UploadToS3 as UploadToS3Job;
 
 class UploadToS3 extends Command {
     /**
@@ -35,7 +36,9 @@ class UploadToS3 extends Command {
      *
      * @return mixed
      */
-    public function handle() {        
-        UploadToS3Job::dispatch(new DateTime($this->argument('date')))->onConnection('sync');
+    public function handle() {
+        $data_manager = new XmlManager(new DateTime($this->argument('date')));
+    
+        UploadToS3Job::dispatch($data_manager)->onConnection('sync');
     }
 }

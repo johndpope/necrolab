@@ -4,7 +4,8 @@ namespace App\Console\Commands\Leaderboards\Csv;
 
 use DateTime;
 use Illuminate\Console\Command;
-use App\Jobs\Leaderboards\Csv\SaveToDatabase as SaveToDatabaseJob;
+use App\Components\SteamLeaderboardDataManager\CsvManager;
+use App\Jobs\Leaderboards\SaveToDatabase as SaveToDatabaseJob;
 
 class SaveToDatabase extends Command {
     /**
@@ -36,6 +37,8 @@ class SaveToDatabase extends Command {
      * @return mixed
      */
     public function handle() {
-        SaveToDatabaseJob::dispatch(new DateTime($this->argument('date')))->onConnection('sync');
+        $data_manager = new CsvManager(new DateTime($this->argument('date')));
+        
+        SaveToDatabaseJob::dispatch($data_manager)->onConnection('sync');
     }
 }

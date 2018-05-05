@@ -42,7 +42,7 @@ class InsertQueue {
      */
     protected static function getMultiInsertQuery($table_name, array $fields, $number_of_records) {
         $insert_field_names = implode(", ", $fields);
-        
+
         $values = static::getValuesSegment(count($fields), $number_of_records);
 
         $insert_query = "INSERT INTO {$table_name} ({$insert_field_names})\n {$values};";

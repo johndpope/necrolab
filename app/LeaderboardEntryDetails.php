@@ -42,7 +42,7 @@ class LeaderboardEntryDetails extends Model {
     }
     
     public static function getNewRecordId() {
-        $new_record_id = DB::statement("
+        $new_record_id = DB::selectOne("
             SELECT nextval('leaderboard_entry_details_seq'::regclass) AS id
         ");
         

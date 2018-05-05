@@ -20,6 +20,8 @@ class Core {
     protected $temp_base_path;
     
     protected $s3_base_path;
+    
+    protected $temp_files = [];
 
     public function __construct(DateTime $date) {
         $this->date = $date;
@@ -33,6 +35,10 @@ class Core {
         $this->temp_base_path = "{$this->base_path}/temp/{$date_formatted}";
         
         $this->s3_base_path = "{$this->base_path}/s3_queue/{$date_formatted}";
+    }
+    
+    public function getDate() {
+        return $this->date;
     }
     
     public function getSavedBasePath() {
@@ -79,8 +85,7 @@ class Core {
         $local_storage = Storage::disk('local');
         
         if($local_storage->exists($saved_file_path)) {
-            //TODO: REMOVE before production
-            Storage::disk('s3')->put("temp/{$saved_file_path}", $local_storage->get($saved_file_path));
+            Storage::disk('s3')->put("{$saved_file_path}", $local_storage->get($saved_file_path));
         }
     }
     
@@ -100,4 +105,6 @@ class Core {
         
         return $csv_urls;
     }
+    
+    public function getTempFile() {}
 }

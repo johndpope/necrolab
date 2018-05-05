@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs\Leaderboards\Xml;
+namespace App\Jobs\Leaderboards;
 
 use DateTime;
 use Illuminate\Bus\Queueable;
@@ -9,7 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Storage;
-use App\Components\SteamLeaderboardDataManager\XmlManager;
+use App\Components\SteamLeaderboardDataManager\Core as DataManager;
 
 class UploadToS3 implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -21,15 +21,15 @@ class UploadToS3 implements ShouldQueue {
      */
     public $tries = 1;
     
-    protected $date;
+    protected $data_manager;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct(DateTime $date) {
-        $this->date = $date;
+    public function __construct(DataManager $data_manager) {
+        $this->data_manager = $data_manager;
     }
 
     /**
@@ -38,8 +38,6 @@ class UploadToS3 implements ShouldQueue {
      * @return void
      */
     public function handle() {
-        $steam_leaderboard_data_manager = new XmlManager($this->date);
-
-        $steam_leaderboard_data_manager->copySavedToS3();
+        $this->data_manager->copySavedToS3();
     }
 }
