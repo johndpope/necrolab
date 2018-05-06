@@ -106,7 +106,7 @@ return [
 
     'redis' => [
 
-        'client' => 'predis',
+        'client' => 'phpredis',
 
         'default' => [
             'host' => env('REDIS_HOST', '127.0.0.1'),
@@ -114,7 +114,24 @@ return [
             'port' => env('REDIS_PORT', 6379),
             'database' => 0,
         ],
-
+        'power_rankings' => [
+            'host' => env('REDIS_POWER_RANKING_HOST', '127.0.0.1'),
+            'password' => env('REDIS_POWER_RANKING_PASSWORD', null),
+            'port' => env('REDIS_POWER_RANKING_PORT', 6380),
+            'database' => 0,
+        ],
+        'daily_rankings' => [
+            'host' => env('REDIS_DAILY_RANKING_HOST', '127.0.0.1'),
+            'password' => env('REDIS_DAILY_RANKING_PASSWORD', null),
+            'port' => env('REDIS_DAILY_RANKING_PORT', 6381),
+            'database' => 0,
+        ],
+        'read' => [
+            'host' => env('REDIS_READ_HOST', '127.0.0.1'),
+            'password' => env('REDIS_READ_PASSWORD', null),
+            'port' => env('REDIS_READ_PORT', 6382),
+            'database' => 0,
+        ],
     ],
 
 ];
