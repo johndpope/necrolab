@@ -26,7 +26,7 @@ class DateIncrementor {
         $current_date = clone $this->start_date;
         
         while($current_date <= $this->end_date) {
-            $callback_handler->setCallbackArguments([
+            $callback_handler->setArguments([
                 $current_date
             ]);
             
