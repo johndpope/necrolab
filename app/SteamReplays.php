@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\Components\RecordQueue;
 use App\Components\InsertQueue;
 
 class SteamReplays extends Model {
@@ -45,8 +46,14 @@ class SteamReplays extends Model {
         ");
     }
     
-    public static function getTempInsertQueue(int $commit_count) {
-        return new InsertQueue("steam_replays_temp", $commit_count);
+    public static function getTempInsertQueue(int $commit_count) {        
+        $record_queue = new RecordQueue($commit_count);
+        
+        $insert_queue = new InsertQueue("steam_replays_temp");
+        
+        $insert_queue->addToRecordQueue($record_queue);
+    
+        return $record_queue;
     }
     
     public static function saveNewTemp() {

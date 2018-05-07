@@ -6,17 +6,17 @@ use Exception;
 class CallbackHandler {    
     protected $callback;
     
-    protected $callback_arguments = array();
+    protected $arguments = [];
     
-    protected $callback_reattempts = 1;
+    protected $reattempts = 1;
     
-    protected $callback_reattempt_interval = 1;
+    protected $reattempt_interval = 1;
     
     protected $success_callback;
     
-    protected $success_callback_arguments = array();
+    protected $success_arguments = [];
     
-    public function setCallback($callback) {
+    public function setCallback(callable $callback) {
         if(!is_callable($callback)) {
             throw new Exception("Specified callback is not valid.");
         }
@@ -24,29 +24,45 @@ class CallbackHandler {
         $this->callback = $callback;
     }
     
-    public function setCallbackArguments(array $callback_arguments = array()) {
-        $this->callback_arguments = $callback_arguments;
+    public function setArguments(array $arguments = []) {
+        $this->arguments = $arguments;
     }
     
-    public function getCallbackArguments() {
-        return $this->callback_arguments;
+    public function addArgument($argument) {
+        $this->arguments[] = $argument;
     }
     
-    public function setCallbackReattempts($callback_reattempts) {
-        $this->callback_reattempts = $callback_reattempts;
+    public function prependArgument($argument) {
+        array_unshift($this->arguments, $argument);
     }
     
-    public function setCallbackReattemptInterval($callback_reattempt_interval) {
-        $this->callback_reattempt_interval = $callback_reattempt_interval;
+    public function removeFirstArgument() {
+        array_shift($this->arguments);
     }
     
-    public function setSuccessCallback($callback, array $callback_arguments = array()) {
+    public function removeLastArgument() {
+        array_pop($this->arguments);
+    }
+    
+    public function getArguments() {
+        return $this->arguments;
+    }
+    
+    public function setReattempts(int $reattempts) {
+        $this->reattempts = $reattempts;
+    }
+    
+    public function setReattemptInterval(int $reattempt_interval) {
+        $this->reattempt_interval = $reattempt_interval;
+    }
+    
+    public function setSuccessCallback(callable $callback, array $arguments = []) {
         if(!is_callable($callback)) {
             throw new Exception("Specified success callback is not valid.");
         }
         
         $this->success_callback = $callback;
-        $this->success_callback_arguments = $callback_arguments;
+        $this->success_arguments = $arguments;
     }
     
     public function execute() {
@@ -59,9 +75,9 @@ class CallbackHandler {
         
         $response = NULL;
         
-        while($callback_successful == false && $callback_attempts <= $this->callback_reattempts) {
+        while($callback_successful == false && $callback_attempts <= $this->reattempts) {
             try {            
-                $response = call_user_func_array($this->callback, $this->callback_arguments);
+                $response = call_user_func_array($this->callback, $this->arguments);
 
                 $callback_successful = true;
             }
@@ -69,10 +85,10 @@ class CallbackHandler {
                 $callback_successful = false;
                 $callback_attempts += 1;
             
-                if($callback_attempts <= $this->callback_reattempts) {                    
-                    echo "Callback has failed. Making attempt {$callback_attempts} of {$this->callback_reattempts} after waiting {$this->callback_reattempt_interval} seconds.\n";
+                if($callback_attempts <= $this->reattempts) {                    
+                    echo "Callback has failed. Making attempt {$callback_attempts} of {$this->reattempts} after waiting {$this->reattempt_interval} seconds.\n";
                 
-                    sleep($this->callback_reattempt_interval);
+                    sleep($this->reattempt_interval);
                 }
                 else {
                     throw $exception;
@@ -81,11 +97,11 @@ class CallbackHandler {
         }
         
         if($callback_successful && !empty($this->success_callback)) {
-            $success_callback_arguments = $this->success_callback_arguments;
+            $success_arguments = $this->success_arguments;
             
-            array_unshift($success_callback_arguments, $response);
+            array_unshift($success_arguments, $response);
             
-            call_user_func_array($this->success_callback, $success_callback_arguments);
+            call_user_func_array($this->success_callback, $success_arguments);
         }
         
         return $response;

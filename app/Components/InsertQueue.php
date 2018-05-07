@@ -2,15 +2,15 @@
 namespace App\Components;
 
 use Illuminate\Support\Facades\DB;
+use App\Components\RecordQueue;
+use App\Components\CallbackHandler;
 
 class InsertQueue {
     protected $pdo;
 
     protected $table_name;
-
-    protected $records = [];
     
-    protected $commit_count;
+    protected $record_queues = [];
     
     /**
      * Constructs a VALUES segment with placeholders for each field grouped by each record wrapped in a parenthesis and separated by a comma.
@@ -22,7 +22,7 @@ class InsertQueue {
      * @param string $placeholder The placeholder character for all values in this segment.
      * @return string The completed update query.
      */
-    protected static function getValuesSegment($number_of_fields, $number_of_records, $placeholder = '?') {
+    protected static function getValuesSegment(int $number_of_fields, int $number_of_records, string $placeholder) {
         $record_placeholders = implode(', ', array_fill(0, $number_of_fields, $placeholder));
     
         $multi_record_placeholders = array_fill(0, $number_of_records, $record_placeholders);
@@ -40,61 +40,50 @@ class InsertQueue {
      * @param integer $number_of_records The number of records being inserted.
      * @return string The completed insert query.
      */
-    protected static function getMultiInsertQuery($table_name, array $fields, $number_of_records) {
+    protected static function getMultiInsertQuery(string $table_name, array $fields, int $number_of_records) {
         $insert_field_names = implode(", ", $fields);
 
-        $values = static::getValuesSegment(count($fields), $number_of_records);
+        $values = static::getValuesSegment(count($fields), $number_of_records, '?');
 
         $insert_query = "INSERT INTO {$table_name} ({$insert_field_names})\n {$values};";
 
         return $insert_query;
     }
     
-    public function __construct(string $table_name, int $commit_count) {
+    public function __construct(string $table_name) {    
         $this->pdo = DB::connection()->getPdo();
     
         $this->table_name = $table_name;
+    }
+    
+    public function addToRecordQueue(RecordQueue $record_queue) {
+        $insert_callback = new CallbackHandler();
         
-        $this->setCommitCount($commit_count);
-    }
-    
-    public function setCommitCount(int $commit_count) {
-        $this->commit_count = $commit_count;
-    }
-    
-    public function addRecord(array $record) {
-        if(count($this->records) >= $this->commit_count) {
-            $this->commit();
-        }
+        $insert_callback->setCallback([
+            $this,
+            'commit'
+        ]);
         
-        $this->records[] = $record;
+        $record_queue->addCommitCallback($insert_callback);
+        
+        $this->record_queues[] = $record_queue;
     }
     
-    public function addRecords(array &$records) {
-        if(!empty($records)) {
-            foreach($records as &$record) {
-                $this->addRecord($record);
-            }
-        }
-    }
-    
-    public function commit() {   
-        if(!empty($this->records)) {                       
-            $first_record = current($this->records);
+    public function commit(array $records) {   
+        if(!empty($records)) {                       
+            $first_record = current($records);
             
-            $query = static::getMultiInsertQuery($this->table_name, array_keys($first_record), count($this->records));
+            $query = static::getMultiInsertQuery($this->table_name, array_keys($first_record), count($records));
             
             $placeholder_values = [];
             
-            array_walk_recursive($this->records, function($value, $key) use(&$placeholder_values) {
+            array_walk_recursive($records, function($value, $key) use(&$placeholder_values) {
                 $placeholder_values[] = $value;
             });
 
             $statement = $this->pdo->prepare($query);
             
             $statement->execute($placeholder_values);
-            
-            $this->records = [];
         }
     }
 }

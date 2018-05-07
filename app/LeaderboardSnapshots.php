@@ -5,6 +5,7 @@ namespace App;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\Components\RecordQueue;
 use App\Components\InsertQueue;
 
 class LeaderboardSnapshots extends Model
@@ -51,8 +52,14 @@ class LeaderboardSnapshots extends Model
         return $new_record_id->id;
     }
     
-    public static function getTempInsertQueue(int $commit_count) {
-        return new InsertQueue('leaderboard_snapshots_temp', $commit_count);
+    public static function getTempInsertQueue(int $commit_count) {        
+        $record_queue = new RecordQueue($commit_count);
+        
+        $insert_queue = new InsertQueue("leaderboard_snapshots_temp");
+        
+        $insert_queue->addToRecordQueue($record_queue);
+    
+        return $record_queue;
     }
     
     public static function saveTemp() {
