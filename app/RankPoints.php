@@ -25,4 +25,8 @@ class RankPoints extends Model {
      * @var bool
      */
     public $timestamps = false;
+    
+    public static function calculateFromRank($rank) {
+        return 1.7 / (log($rank / 100 + 1.03) / log(10));
+    }
 }

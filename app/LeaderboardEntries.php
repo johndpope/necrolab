@@ -84,7 +84,7 @@ class LeaderboardEntries extends Model {
     } 
     
     public static function getPowerRankingsQuery(DateTime $date) {
-        return DB::table('leaderboard_snapshots ls')
+        return DB::table('leaderboard_snapshots AS ls')
             ->select([
                 'lt.name AS leaderboard_type',
                 'l.release_id',
@@ -98,13 +98,13 @@ class LeaderboardEntries extends Model {
                 'sup.steam_user_id',
                 'le.rank',
             ])
-            ->join('leaderboards l', 'l.leaderboard_id', '=', 'ls.leaderboard_id')
-            ->join('leaderboard_types lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
-            ->join('characters c', 'c.character_id', '=', 'l.character_id')
-            ->join('leaderboard_ranking_types lrt', 'lrt.leaderboard_id', '=', 'l.leaderboard_id')
-            ->join('ranking_types rt', 'rt.id', '=', 'lrt.ranking_type_id')
-            ->join("leaderboard_entries_{$date->format('Y_m')} le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
-            ->join("steam_user_pbs sup", 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id')
+            ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'ls.leaderboard_id')
+            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->join('characters AS c', 'c.character_id', '=', 'l.character_id')
+            ->join('leaderboard_ranking_types AS lrt', 'lrt.leaderboard_id', '=', 'l.leaderboard_id')
+            ->join('ranking_types AS rt', 'rt.id', '=', 'lrt.ranking_type_id')
+            ->join("leaderboard_entries_{$date->format('Y_m')} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
+            ->join("steam_user_pbs AS sup", 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id')
             ->where('ls.date', $date->format('Y-m-d'))
             ->where('rt.name', 'power');
     }

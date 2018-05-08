@@ -34,6 +34,13 @@ class Leaderboards extends Model {
      */
     public $timestamps = false;
     
+    public static function getSeededFlags() {
+        return [
+            0, 
+            1
+        ];
+    }
+    
     public static function getSeededFlagFromName($seeded_name) {
         $is_seeded = NULL;
         

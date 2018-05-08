@@ -76,7 +76,7 @@ class Core {
         $this->intializeTransaction();
     }
     
-    protected function intializeTransaction() {
+    public function intializeTransaction() {
         $this->current_transaction = $this->client->multi($this->transaction_type);
     }
     

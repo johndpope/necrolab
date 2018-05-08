@@ -5,9 +5,10 @@ namespace App;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\GetByName;
+use App\Traits\GetById;
 
 class Releases extends Model {
-    use GetByName;
+    use GetByName, GetById;
 
     /**
      * The table associated with the model.

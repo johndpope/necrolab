@@ -4,9 +4,10 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use App\Traits\GetByName;
+use App\Traits\GetById;
 
 class Modes extends Model {
-    use GetByName;
+    use GetByName, GetById;
 
     /**
      * The table associated with the model.

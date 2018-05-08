@@ -2,7 +2,11 @@
 
 namespace App;
 
+use DateTime;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use App\Components\RecordQueue;
+use App\Components\InsertQueue;
 
 class PowerRankings extends Model {
     /**
@@ -25,4 +29,79 @@ class PowerRankings extends Model {
      * @var bool
      */
     public $timestamps = false;
+    
+    public static function createTemporaryTable() {    
+        DB::statement("
+            CREATE TEMPORARY TABLE power_rankings_temp (
+                power_ranking_id integer,
+                created timestamp without time zone,
+                date date,
+                updated timestamp without time zone,
+                release_id smallint,
+                latest_steam_replay_version_id smallint,
+                mode_id smallint,
+                seeded smallint
+            )
+            ON COMMIT DROP;
+        ");
+    }
+    
+    public static function getNewRecordId() {
+        $new_record_id = DB::selectOne("
+            SELECT nextval('power_rankings_seq'::regclass) AS id
+        ");
+        
+        return $new_record_id->id;
+    }
+    
+    public static function getTempInsertQueue(int $commit_count) {        
+        $record_queue = new RecordQueue($commit_count);
+        
+        $insert_queue = new InsertQueue("power_rankings_temp");
+        
+        $insert_queue->addToRecordQueue($record_queue);
+    
+        return $record_queue;
+    }
+    
+    public static function saveTemp() {
+        DB::statement("
+            INSERT INTO power_rankings (
+                power_ranking_id,
+                created,
+                date,
+                updated,
+                release_id,
+                latest_steam_replay_version_id,
+                mode_id,
+                seeded
+            )
+            SELECT 
+                power_ranking_id,
+                created,
+                date,
+                updated,
+                release_id,
+                latest_steam_replay_version_id,
+                mode_id,
+                seeded
+            FROM power_rankings_temp
+            ON CONFLICT (power_ranking_id) DO 
+            UPDATE 
+            SET 
+                updated = excluded.updated
+        ");
+    }
+    
+    public static function getAllIdsByGroupedForDate(DateTime $date) {
+        $query = DB::table('power_rankings')->where('date', $date->format('Y-m-d'));
+        
+        $rankings_by_id = [];
+        
+        foreach($query->cursor() as $ranking) {
+            $rankings_by_id[$ranking->release_id][$ranking->mode_id][$ranking->seeded] = $ranking->power_ranking_id;
+        }
+        
+        return $rankings_by_id;
+    }
 }

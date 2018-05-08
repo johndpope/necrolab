@@ -11,7 +11,6 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
-use App\Characters;
 
 class CreatePartition implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -46,9 +45,9 @@ class CreatePartition implements ShouldQueue {
             $table->integer('power_ranking_id');
             $table->integer('steam_user_id');
             $table->jsonb('characters');
-            $table->integer('score_rank');
-            $table->integer('deathless_rank');
-            $table->integer('speed_rank');
+            $table->integer('score_rank')->nullable();
+            $table->integer('deathless_rank')->nullable();
+            $table->integer('speed_rank')->nullable();
             $table->integer('rank');
 
             $table->foreign('power_ranking_id')

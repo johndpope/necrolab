@@ -178,4 +178,18 @@ class Characters extends Model {
         
         return $matched_character;
     }
+    
+    public static function getAllActive() {
+        $characters = static::all();
+        
+        $active_characters = [];
+        
+        foreach($characters as $character) {
+            if(!empty($character->is_active)) {
+                $active_characters[$character->name] = $character;
+            }
+        }
+        
+        return $active_characters;
+    }
 }
