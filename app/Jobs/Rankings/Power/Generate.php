@@ -13,7 +13,7 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
 use App\Components\RecordQueue;
 use App\Components\CallbackHandler;
-use App\Components\Redis\Transaction\Multi as MultiTransaction;
+use App\Components\Redis\DatabaseSelector;
 use App\Components\Redis\Transaction\Pipeline as PipelineTransaction;
 use App\Components\CacheNames\Rankings\Power as CacheNames;
 use App\PowerRankings;
@@ -49,91 +49,13 @@ class Generate implements ShouldQueue {
         $this->date = $date;
     }
     
-    protected function generateRankPoints($points_hash_name, $release_id, $mode_id, $seeded, $rank_name) {
-        $points_entries = $this->redis->zRevRange($points_hash_name, 0, -1);
-
-        if(!empty($points_entries)) {
-            $redis_transaction = new PipelineTransaction($this->redis, 1000);
-        
-            foreach($points_entries as $rank => $steam_user_id) {        
-                $real_rank = $rank + 1;
-
-                $redis_transaction->hSet(
-                    CacheNames::getEntry(
-                        $release_id, 
-                        $mode_id, 
-                        $seeded, 
-                        $steam_user_id
-                    ), 
-                    $rank_name, 
-                    $real_rank
-                );
-            }
-            
-            $redis_transaction->commit();
-        }        
-    }
-
-    /**
-     * Execute the job.
-     *
-     * @return void
-     */
-    public function handle() {
-        $this->redis = Redis::connection('power_rankings');
-
-        /* ---------- Select the first unused database ---------- */
-        
-        $database = 0;
-        
-        $database_selected = false;
-        
-        do {
-            if($database > 15) {
-                throw new Exception("All 16 power ranking redis databases are taken so one cannot be selected for processing '{$this->date->format('Y-m-d')}'.");
-            }
-            
-            $this->redis->select($database);
-            
-            $processing_for = $this->redis->get('processing_for');
-            
-            if(empty($processing_for)) {
-                $database_selected = true;
-            }
-            else {
-                $began_processing = $this->redis->get('began_processing');
-                
-                if(!empty($began_processing)) {
-                    $began_processing_timestamp = new DateTime($began_processing);
-                    
-                    $time_since_beginning = $began_processing_timestamp->diff(new DateTime());
-                    
-                    if($time_since_beginning->format('%a') >= 1) {
-                        $database_selected = true;
-                    }
-                }
-            }
-            
-            if(!$database_selected) {            
-                $database += 1;
-            }
-        }
-        while(!$database_selected);
-        
-        $this->redis->flushDb();
-        
-        $this->redis->set('processing_for', $this->date->format('Y-m-d'));
-        $this->redis->set('began_processing', date('Y-m-d H:i:s'));
-        
-        
-        /* ---------- Load leaderboard rankings into redis to flatten the data for each player ---------- */
-        
+    protected function flattenLeaderboardEntries() {
         $leaderboard_entries_query = LeaderboardEntries::getPowerRankingsQuery($this->date);
         
         $redis_transaction = new PipelineTransaction($this->redis, 1000);
         
         foreach($leaderboard_entries_query->cursor() as $leaderboard_entry) {
-            // Add this mode the list of ones that are being used in this release
+            // Add this mode to the list of ones that are being used in this release
             $redis_transaction->hSetNx(
                 CacheNames::getModes(
                     $leaderboard_entry->release_id, 
@@ -230,9 +152,54 @@ class Generate implements ShouldQueue {
         }
         
         $redis_transaction->commit();
+    }
+    
+    protected function generateRankPoints($points_hash_name, $release_id, $mode_id, $seeded, $rank_name) {
+        $points_entries = $this->redis->zRevRange($points_hash_name, 0, -1);
+
+        if(!empty($points_entries)) {
+            $redis_transaction = new PipelineTransaction($this->redis, 1000);
+        
+            foreach($points_entries as $rank => $steam_user_id) {        
+                $real_rank = $rank + 1;
+
+                $redis_transaction->hSet(
+                    CacheNames::getEntry(
+                        $release_id, 
+                        $mode_id, 
+                        $seeded, 
+                        $steam_user_id
+                    ), 
+                    $rank_name, 
+                    $real_rank
+                );
+            }
+            
+            $redis_transaction->commit();
+        }        
+    }
+
+    /**
+     * Execute the job.
+     *
+     * @return void
+     */
+    public function handle() {
+        $this->redis = Redis::connection('power_rankings');
+
+        /* ---------- Select the first unused database ---------- */
+        
+        $database_selector = new DatabaseSelector($this->redis, $this->date);
+        
+        $database_selector->run();
         
         
-        /* ---------- Retrieve and flattened records and save them to the database ---------- */
+        /* ---------- Load leaderboard rankings into redis to flatten the data for each player ---------- */
+        
+        $this->flattenLeaderboardEntries();
+        
+        
+        /* ---------- Retrieve flattened records from redis and save to the database ---------- */
         
         $releases = Releases::getAllByDate($this->date);
         
@@ -368,7 +335,7 @@ class Generate implements ShouldQueue {
                                 $rankings_insert_queue->addRecord($ranking_record);
                                 
                                 
-                                /* ---------- Save cache entries into the database ---------- */
+                                /* ---------- Save flattened cache entries into the database ---------- */
                                 
                                 $total_points_entries = $this->redis->zRevRange(
                                     CacheNames::getTotalPoints(
@@ -388,32 +355,14 @@ class Generate implements ShouldQueue {
                                     $callback->setCallback(function($entries, int $power_ranking_id, RecordQueue $entries_insert_queue, array $characters) {
                                         if(!empty($entries)) {
                                             foreach($entries as $entry) {
-                                                if(!empty($entry)) {  
-                                                    $score_rank = NULL;
-                                                    
-                                                    if(isset($entry['score_rank'])) {
-                                                        $score_rank = $entry['score_rank'];
-                                                    }
-                                                    
-                                                    $speed_rank = NULL;
-                                                    
-                                                    if(isset($entry['speed_rank'])) {
-                                                        $speed_rank = $entry['speed_rank'];
-                                                    }
-                                                    
-                                                    $deathless_rank = NULL;
-                                                    
-                                                    if(isset($entry['deathless_rank'])) {
-                                                        $deathless_rank = $entry['deathless_rank'];
-                                                    }
-                                                    
+                                                if(!empty($entry)) {                                                                                                          
                                                     $entries_insert_queue->addRecord([
                                                         'power_ranking_id' => $power_ranking_id,
                                                         'steam_user_id' => $entry['steam_user_id'],
                                                         'characters' => PowerRankingEntries::serializeCharacters($entry, $characters),
-                                                        'score_rank' => $score_rank,
-                                                        'speed_rank' => $speed_rank,
-                                                        'deathless_rank' => $deathless_rank,
+                                                        'score_rank' => $entry['score_rank'] ?? NULL,
+                                                        'speed_rank' => $entry['speed_rank'] ?? NULL,
+                                                        'deathless_rank' => $entry['deathless_rank'] ?? NULL,
                                                         'rank' => $entry['rank']
                                                     ]);
                                                 }

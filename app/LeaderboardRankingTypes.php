@@ -4,10 +4,11 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use App\Components\RecordQueue;
-use App\Components\InsertQueue;
+use App\Traits\HasTempTable;
 
 class LeaderboardRankingTypes extends Model {
+    use HasTempTable;
+
     /**
      * The table associated with the model.
      *
@@ -40,16 +41,6 @@ class LeaderboardRankingTypes extends Model {
             )
             ON COMMIT DROP;
         ");
-    }
-    
-    public static function getTempInsertQueue(int $commit_count) {        
-        $record_queue = new RecordQueue($commit_count);
-        
-        $insert_queue = new InsertQueue("leaderboard_ranking_types_temp");
-        
-        $insert_queue->addToRecordQueue($record_queue);
-    
-        return $record_queue;
     }
     
     public static function saveTemp() {

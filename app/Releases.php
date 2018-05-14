@@ -31,6 +31,22 @@ class Releases extends Model {
      */
     public $timestamps = false;
     
+    public static function getEarliestStartDate(array $releases) {
+        $earliest_start_date = NULL;
+        
+        if(!empty($releases)) {
+            foreach($releases as $release) {
+                $start_date = new DateTime($release['start_date']);
+                
+                if(empty($earliest_start_date) || $start_date < $earliest_start_date) {
+                    $earliest_start_date = $start_date;
+                }
+            }
+        }
+        
+        return $earliest_start_date;
+    }
+    
     public static function getAllByDate(DateTime $date) {
         $releases = static::all();
         

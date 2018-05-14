@@ -5,10 +5,11 @@ namespace App;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use App\Components\RecordQueue;
-use App\Components\InsertQueue;
+use App\Traits\HasTempTable;
 
 class SteamUsers extends Model {
+    use HasTempTable;
+
     /**
      * The table associated with the model.
      *
@@ -64,16 +65,6 @@ class SteamUsers extends Model {
         ");
         
         return $new_record_id->id;
-    }
-    
-    public static function getTempInsertQueue(int $commit_count) {
-        $record_queue = new RecordQueue($commit_count);
-        
-        $insert_queue = new InsertQueue("steam_users_temp");
-        
-        $insert_queue->addToRecordQueue($record_queue);
-    
-        return $record_queue;
     }
     
     public static function saveNewTemp() {

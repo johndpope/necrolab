@@ -6,11 +6,12 @@ use DateTime;
 use stdClass;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use App\Components\RecordQueue;
-use App\Components\InsertQueue;
+use App\Traits\HasTempTable;
 use App\Releases;
 
 class SteamUserPbs extends Model {
+    use HasTempTable;
+
     /**
      * The table associated with the model.
      *
@@ -152,16 +153,6 @@ class SteamUserPbs extends Model {
         ");
         
         return $new_record_id->id;
-    }
-    
-    public static function getTempInsertQueue(int $commit_count) {        
-        $record_queue = new RecordQueue($commit_count);
-        
-        $insert_queue = new InsertQueue("steam_user_pbs_temp");
-        
-        $insert_queue->addToRecordQueue($record_queue);
-    
-        return $record_queue;
     }
     
     public static function saveNewTemp() {    

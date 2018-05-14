@@ -5,16 +5,18 @@ namespace App;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use App\Components\RecordQueue;
-use App\Components\InsertQueue;
+use App\Traits\HasPartitions;
+use App\Traits\HasTempTable;
 
 class PowerRankingEntries extends Model {
+    use HasPartitions, HasTempTable;
+    
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'modes';
+    protected $table = 'power_ranking_entries';
     
     /**
      * The primary key associated with the model.
@@ -72,7 +74,7 @@ class PowerRankingEntries extends Model {
     
     public static function createTemporaryTable() {
         DB::statement("
-            CREATE TEMPORARY TABLE power_ranking_entries_temp (
+            CREATE TEMPORARY TABLE " . static::getTempTableName() . " (
                 power_ranking_id integer,
                 steam_user_id integer,
                 characters jsonb,
@@ -85,19 +87,9 @@ class PowerRankingEntries extends Model {
         ");
     }
     
-    public static function getTempInsertQueue(int $commit_count) {        
-        $record_queue = new RecordQueue($commit_count);
-        
-        $insert_queue = new InsertQueue("power_ranking_entries_temp");
-        
-        $insert_queue->addToRecordQueue($record_queue);
-    
-        return $record_queue;
-    }
-    
     public static function clear(DateTime $date) {    
         DB::delete("
-            DELETE FROM power_ranking_entries_{$date->format('Y_m')} pre
+            DELETE FROM " . static::getTableName($date) . " pre
             USING  power_rankings pr
             WHERE  pre.power_ranking_id = pr.power_ranking_id
             AND    pr.date = :date
@@ -108,7 +100,7 @@ class PowerRankingEntries extends Model {
     
     public static function saveTemp(DateTime $date) {
         DB::statement("
-            INSERT INTO power_ranking_entries_{$date->format('Y_m')} (
+            INSERT INTO " . static::getTableName($date) . " (
                 power_ranking_id,
                 steam_user_id,
                 characters,
@@ -125,7 +117,7 @@ class PowerRankingEntries extends Model {
                 deathless_rank,
                 speed_rank,
                 rank
-            FROM power_ranking_entries_temp
+            FROM " . static::getTempTableName() . "
         ");
     }  
 }
