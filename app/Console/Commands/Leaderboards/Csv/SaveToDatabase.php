@@ -4,7 +4,7 @@ namespace App\Console\Commands\Leaderboards\Csv;
 
 use DateTime;
 use Illuminate\Console\Command;
-use App\Components\SteamLeaderboardDataManager\CsvManager;
+use App\Components\SteamDataManager\Leaderboards\Csv as CsvManager;
 use App\Jobs\Leaderboards\SaveToDatabase as SaveToDatabaseJob;
 
 class SaveToDatabase extends Command {

@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Components\SteamLeaderboardDataManager;
+namespace App\Components\SteamDataManager\Leaderboards;
 
 use DateTime;
 use ZipArchive;
 use stdClass;
 use Illuminate\Support\Facades\Storage;
+use App\Components\SteamDataManager\Core;
 
-class XmlManager
+class Xml
 extends Core {    
     protected $leaderboards_path;
     

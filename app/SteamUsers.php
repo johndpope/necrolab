@@ -6,9 +6,10 @@ use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\Traits\HasTempTable;
+use App\Traits\HasManualSequence;
 
 class SteamUsers extends Model {
-    use HasTempTable;
+    use HasTempTable, HasManualSequence;
 
     /**
      * The table associated with the model.
@@ -33,38 +34,21 @@ class SteamUsers extends Model {
     
     public static function createTemporaryTable() {    
         DB::statement("
-            CREATE TEMPORARY TABLE steam_users_temp
+            CREATE TEMPORARY TABLE " . static::getTempTableName() . "
             (
                 steam_user_id integer,
                 steamid bigint,
                 communityvisibilitystate smallint,
                 profilestate smallint,
                 personaname character varying(255),
-                lastlogoff integer,
                 profileurl text,
                 avatar text,
                 avatarmedium text,
                 avatarfull text,
-                personastate smallint,
-                realname character varying(255),
-                primaryclanid bigint,
-                timecreated integer,
-                personastateflags smallint,
-                loccountrycode character varying(3),
-                locstatecode character varying(3),
-                loccityid integer,
                 updated timestamp without time zone
             )
             ON COMMIT DROP;
         ");
-    }
-    
-    public static function getNewRecordId() {
-        $new_record_id = DB::selectOne("
-            SELECT nextval('steam_users_seq'::regclass) AS id
-        ");
-        
-        return $new_record_id->id;
     }
     
     public static function saveNewTemp() {
@@ -78,7 +62,24 @@ class SteamUsers extends Model {
                 steam_user_id,
                 steamid,
                 updated
-            FROM steam_users_temp
+            FROM " . static::getTempTableName() . "
+        ");
+    }
+    
+    public static function updateFromTemp() {    
+        DB::update("
+            UPDATE steam_users su
+            SET 
+                communityvisibilitystate = sut.communityvisibilitystate,
+                profilestate = sut.profilestate,
+                personaname = sut.personaname,
+                profileurl = sut.profileurl,
+                avatar = sut.avatar,
+                avatarmedium = sut.avatarmedium,
+                avatarfull = sut.avatarfull,
+                updated = sut.updated
+            FROM " . static::getTempTableName() . " sut
+            WHERE su.steam_user_id = sut.steam_user_id
         ");
     }
     
@@ -95,5 +96,14 @@ class SteamUsers extends Model {
         }
         
         return $ids_by_steamid;
+    }
+    
+    public static function getOutdatedIdsQuery() {        
+        $thirty_days_ago = new DateTime('-30 day');
+        
+        return static::select([
+            'steam_user_id',
+            'steamid'
+        ])->where('updated', '<', $thirty_days_ago->format('Y-m-d H:i:s'));
     }
 }

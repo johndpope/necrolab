@@ -7,7 +7,7 @@ use DateInterval;
 use Illuminate\Console\Command;
 use App\Components\CallbackHandler;
 use App\Components\DateIncrementor;
-use App\Components\SteamLeaderboardDataManager\CsvManager;
+use App\Components\SteamDataManager\Leaderboards\Csv as CsvManager;
 use App\Jobs\Leaderboards\UploadToS3 as UploadToS3Job;
 
 class UploadRangeToS3 extends Command {

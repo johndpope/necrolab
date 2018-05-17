@@ -4,8 +4,8 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "38ca3296e18cc6c48ff46ce4ea1f8584",
-    "content-hash": "a7d21889723a48ffc2aca451315e8ca6",
+    "hash": "b10e64c695f80d8414144806201c9c89",
+    "content-hash": "2ea73aa05f40b562f589e60b5909ecde",
     "packages": [
         {
             "name": "TrafficCophp/ByteBuffer",
@@ -413,6 +413,61 @@
                 "tag"
             ],
             "time": "2016-08-08 17:20:09"
+        },
+        {
+            "name": "da-mitchell/steam-api",
+            "version": "2.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/DaMitchell/steam-api-php.git",
+                "reference": "c004d4eecfeaf85d48a262b820934deebce82678"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/DaMitchell/steam-api-php/zipball/c004d4eecfeaf85d48a262b820934deebce82678",
+                "reference": "c004d4eecfeaf85d48a262b820934deebce82678",
+                "shasum": ""
+            },
+            "require": {
+                "guzzlehttp/guzzle": "~6.1",
+                "php": ">=5.5.0"
+            },
+            "require-dev": {
+                "mockery/mockery": "~0.9",
+                "phpunit/phpunit": "~4.6"
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-master": "2.0.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Steam\\": "src/Steam"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "BSD-2-Clause"
+            ],
+            "authors": [
+                {
+                    "name": "Dan Mitchell",
+                    "email": "danmitchellster@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "PHP wrapper for the steam web API",
+            "homepage": "https://github.com/DaMitchell/steam-api-php",
+            "keywords": [
+                "api",
+                "counter strike",
+                "csgo",
+                "dota",
+                "steam"
+            ],
+            "time": "2015-12-28 17:42:46"
         },
         {
             "name": "defuse/php-encryption",

@@ -7,7 +7,7 @@ use DateInterval;
 use Illuminate\Console\Command;
 use App\Components\CallbackHandler;
 use App\Components\DateIncrementor;
-use App\Components\SteamLeaderboardDataManager\XmlManager;
+use App\Components\SteamDataManager\Leaderboards\Xml as XmlManager;
 use App\Jobs\Leaderboards\SaveToDatabase as SaveToDatabaseJob;
 
 class SaveRangeToDatabase extends Command {

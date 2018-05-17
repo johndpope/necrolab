@@ -6,9 +6,10 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\Traits\GetByName;
 use App\Traits\HasTempTable;
+use App\Traits\HasManualSequence;
 
 class LeaderboardEntryDetails extends Model {
-    use GetByName, HasTempTable;
+    use GetByName, HasTempTable, HasManualSequence;
     
     /**
      * The table associated with the model.
@@ -39,14 +40,6 @@ class LeaderboardEntryDetails extends Model {
             )
             ON COMMIT DROP;
         ");
-    }
-    
-    public static function getNewRecordId() {
-        $new_record_id = DB::selectOne("
-            SELECT nextval('leaderboard_entry_details_seq'::regclass) AS id
-        ");
-        
-        return $new_record_id->id;
     }
     
     public static function saveTemp() {

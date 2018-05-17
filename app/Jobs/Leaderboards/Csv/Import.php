@@ -10,7 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Storage;
 use App\Components\LeaderboardNameGenerator;
-use App\Components\SteamLeaderboardDataManager\CsvManager;
+use App\Components\SteamDataManager\Leaderboards\Csv as CsvManager;
 use App\Jobs\Leaderboards\UploadToS3;
 use App\Jobs\Leaderboards\SaveToDatabase;
 

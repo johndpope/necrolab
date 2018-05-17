@@ -11,7 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Storage;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Client as GuzzleClient;
-use App\Components\SteamLeaderboardDataManager\XmlManager;
+use App\Components\SteamDataManager\Leaderboards\Xml as XmlManager;
 use App\Components\CallbackHandler;
 use App\Jobs\Leaderboards\UploadToS3;
 use App\Jobs\Leaderboards\SaveToDatabase;

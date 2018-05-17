@@ -3,22 +3,22 @@
 namespace App\Console\Commands\SteamUsers;
 
 use Illuminate\Console\Command;
-use App\Jobs\SteamUsers\Cache as CacheJob;
+use App\Jobs\SteamUsers\Import as ImportJob;
 
-class Cache extends Command {
+class Import extends Command {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'steam_users:cache';
+    protected $signature = 'steam_users:import';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Loads steam users into cache.";
+    protected $description = "Imports Steam users from Steam.";
 
     /**
      * Create a new command instance.
@@ -35,6 +35,6 @@ class Cache extends Command {
      * @return mixed
      */
     public function handle() {
-        CacheJob::dispatch()->onConnection('sync');
+        ImportJob::dispatch()->onConnection('sync');
     }
 }

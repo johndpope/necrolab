@@ -4,7 +4,7 @@ namespace App\Console\Commands\Leaderboards\Xml;
 
 use DateTime;
 use Illuminate\Console\Command;
-use App\Components\SteamLeaderboardDataManager\XmlManager;
+use App\Components\SteamDataManager\Leaderboards\Xml as XmlManager;
 use App\Jobs\Leaderboards\SaveToDatabase as SaveToDatabaseJob;
 
 class SaveToDatabase extends Command {

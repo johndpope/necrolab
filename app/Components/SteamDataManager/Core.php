@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Components\SteamLeaderboardDataManager;
+namespace App\Components\SteamDataManager;
 
 use DateTime;
 use ZipArchive;

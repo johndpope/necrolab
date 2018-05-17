@@ -6,13 +6,14 @@ use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\Traits\HasTempTable;
+use App\Traits\HasManualSequence;
 use App\Characters;
 use App\Releases;
 use App\Modes;
 use App\LeaderboardTypes;
 
 class Leaderboards extends Model {
-    use HasTempTable;
+    use HasTempTable, HasManualSequence;
 
     /**
      * The table associated with the model.
@@ -222,14 +223,6 @@ class Leaderboards extends Model {
             )
             ON COMMIT DROP;
         ");
-    }
-    
-    public static function getNewRecordId() {
-        $new_record_id = DB::selectOne("
-            SELECT nextval('leaderboards_seq'::regclass) AS id
-        ");
-        
-        return $new_record_id->id;
     }
     
     public static function saveTemp() {

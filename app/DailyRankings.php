@@ -6,9 +6,10 @@ use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\Traits\HasTempTable;
+use App\Traits\HasManualSequence;
 
 class DailyRankings extends Model {
-    use HasTempTable;
+    use HasTempTable, HasManualSequence;
     
     /**
      * The table associated with the model.
@@ -56,14 +57,6 @@ class DailyRankings extends Model {
             )
             ON COMMIT DROP;
         ");
-    }
-    
-    public static function getNewRecordId() {
-        $new_record_id = DB::selectOne("
-            SELECT nextval('daily_rankings_seq'::regclass) AS id
-        ");
-        
-        return $new_record_id->id;
     }
     
     public static function saveTemp() {

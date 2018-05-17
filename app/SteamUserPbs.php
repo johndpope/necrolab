@@ -7,10 +7,11 @@ use stdClass;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\Traits\HasTempTable;
+use App\Traits\HasManualSequence;
 use App\Releases;
 
 class SteamUserPbs extends Model {
-    use HasTempTable;
+    use HasTempTable, HasManualSequence;
 
     /**
      * The table associated with the model.
@@ -145,14 +146,6 @@ class SteamUserPbs extends Model {
             )
             ON COMMIT DROP;
         ");
-    }
-    
-    public static function getNewRecordId() {
-        $new_record_id = DB::selectOne("
-            SELECT nextval('steam_user_pbs_seq'::regclass) AS id
-        ");
-        
-        return $new_record_id->id;
     }
     
     public static function saveNewTemp() {    

@@ -1,13 +1,14 @@
 <?php
 
-namespace App\Components\SteamLeaderboardDataManager;
+namespace App\Components\SteamDataManager\Leaderboards;
 
 use DateTime;
 use ZipArchive;
 use stdClass;
 use Illuminate\Support\Facades\Storage;
+use App\Components\SteamDataManager\Core;
 
-class CsvManager
+class Csv
 extends Core {        
     protected $names_path;
     
