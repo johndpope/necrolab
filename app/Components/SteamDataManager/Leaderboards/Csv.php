@@ -34,12 +34,12 @@ extends Core {
     }
     
     public function saveTempNames(array $names) {        
-        Storage::disk('local')->put($this->temp_names_path, implode("\n", $names));
+        $this->file_storage_engine->put($this->temp_names_path, implode("\n", $names));
     }
     
     public function getTempFiles() {
         if(empty($this->temp_files)) {
-            $all_temp_files = Storage::disk('local')->allFiles($this->temp_base_path);
+            $all_temp_files = $this->file_storage_engine->allFiles($this->temp_base_path);
         
             if(!empty($all_temp_files)) {
                 foreach($all_temp_files as $temp_file) {

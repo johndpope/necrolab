@@ -43,16 +43,16 @@ extends Core {
     }
     
     public function saveTempLeaderboards($xml) {        
-        Storage::disk('local')->put($this->temp_leaderboards_path, $xml);
+        $this->file_storage_engine->put($this->temp_leaderboards_path, $xml);
     }
     
     public function saveTempEntries($lbid, $page_number, $xml) {        
-        Storage::disk('local')->put("{$this->temp_base_path}/{$lbid}/page_{$page_number}.xml", $xml);
+        $this->file_storage_engine->put("{$this->temp_base_path}/{$lbid}/page_{$page_number}.xml", $xml);
     }
     
     public function getTempFiles() {
         if(empty($this->temp_files)) {
-            $all_temp_files = Storage::disk('local')->allFiles($this->temp_base_path);
+            $all_temp_files = $this->file_storage_engine->allFiles($this->temp_base_path);
 
             if(!empty($all_temp_files)) {
                 foreach($all_temp_files as $temp_file) {

@@ -3,8 +3,15 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\DB;
+use App\Traits\GetByName;
+use App\Traits\GetById;
+use App\Traits\HasManualSequence;
+use App\Traits\HasTempTable;
 
 class SteamReplayVersions extends Model {
+    use GetByName, GetById, HasManualSequence, HasTempTable;
+
     /**
      * The table associated with the model.
      *
@@ -25,4 +32,27 @@ class SteamReplayVersions extends Model {
      * @var bool
      */
     public $timestamps = false;
+    
+    public static function createTemporaryTable() {
+        DB::statement("
+            CREATE TEMPORARY TABLE " . static::getTempTableName() . " (
+                steam_replay_version_id smallint,
+                name character varying(255)
+            )
+            ON COMMIT DROP;
+        ");
+    }
+    
+    public static function saveNewFromTemp() {
+        DB::statement("
+            INSERT INTO steam_replay_versions (
+                steam_replay_version_id,
+                name
+            )
+            SELECT 
+                steam_replay_version_id,
+                name
+            FROM " . static::getTempTableName() . "
+        ");
+    }
 }

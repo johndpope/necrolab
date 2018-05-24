@@ -10,7 +10,7 @@ use App\Components\SteamDataManager\Core;
 
 class SteamUsers
 extends Core {  
-    protected $files = [];
+    protected $temp_files = [];
 
     public function __construct(DateTime $date) {
         $this->file_extension = 'json';
@@ -20,12 +20,12 @@ extends Core {
     }
     
     public function saveTempFile(string $file_name, string $contents) {
-        Storage::disk('local')->put("{$this->temp_base_path}/{$file_name}.json", $contents);
+        $this->file_storage_engine->put("{$this->temp_base_path}/{$file_name}.{$this->file_extension}", $contents);
     }
     
     public function getTempFiles() {
         if(empty($this->temp_files)) {
-            $all_temp_files = Storage::disk('local')->allFiles($this->temp_base_path);
+            $all_temp_files = $this->file_storage_engine->allFiles($this->temp_base_path);
         
             if(!empty($all_temp_files)) {
                 foreach($all_temp_files as $temp_file) {
@@ -44,7 +44,7 @@ extends Core {
         $temp_files = $this->getTempFiles();
         
         if(!empty($temp_files)) {
-            $local_storage = Storage::disk('local');
+            $local_storage = $this->file_storage_engine;
         
             foreach($temp_files as $temp_file) {
                 $file_contents = $local_storage->get($temp_file['path']);

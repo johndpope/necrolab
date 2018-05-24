@@ -31,6 +31,14 @@ class DropSequenceDefaultValues extends Migration
         Schema::table('daily_rankings', function (Blueprint $table) {
             $table->integer('daily_ranking_id')->default(NULL)->change();
         });
+        
+        Schema::table('run_results', function (Blueprint $table) {
+            $table->integer('run_result_id')->default(NULL)->change();
+        });
+        
+        Schema::table('steam_replay_versions', function (Blueprint $table) {
+            $table->integer('steam_replay_version_id')->default(NULL)->change();
+        });
     }
 
     /**

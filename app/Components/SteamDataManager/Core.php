@@ -9,6 +9,8 @@ use Illuminate\Support\Facades\Storage;
 class Core {
     protected $date;
     
+    protected $file_storage_engine;
+    
     protected $file_extension;
     
     protected $storage_path;
@@ -26,9 +28,11 @@ class Core {
     public function __construct(DateTime $date) {
         $this->date = $date;
         
+        $this->file_storage_engine = Storage::disk('local');
+        
         $date_formatted = $date->format('Y-m-d');
         
-        $this->storage_path = rtrim(Storage::disk('local')->getAdapter()->getPathPrefix(), '/\\');
+        $this->storage_path = rtrim($this->file_storage_engine->getAdapter()->getPathPrefix(), '/\\');
         
         $this->saved_base_path = "{$this->base_path}/{$date_formatted}";
         
@@ -50,7 +54,7 @@ class Core {
     }
     
     public function getSavedContents() {
-        return Storage::disk('local')->get($this->saved_base_path);
+        return $this->file_storage_engine->get($this->saved_base_path);
     }
     
     public function getTempBasePath() {        
@@ -62,7 +66,7 @@ class Core {
     }
     
     public function deleteTemp() {
-        Storage::disk('local')->deleteDirectory($this->temp_base_path);
+        $this->file_storage_engine->deleteDirectory($this->temp_base_path);
     }
     
     public function getTempFiles() {}
@@ -82,10 +86,8 @@ class Core {
     public function copySavedToS3() {        
         $saved_file_path = "{$this->saved_base_path}.zip";
         
-        $local_storage = Storage::disk('local');
-        
-        if($local_storage->exists($saved_file_path)) {
-            Storage::disk('s3')->put("{$saved_file_path}", $local_storage->get($saved_file_path));
+        if($this->file_storage_engine->exists($saved_file_path)) {
+            Storage::disk('s3')->put("{$saved_file_path}", $this->file_storage_engine->get($saved_file_path));
         }
     }
     

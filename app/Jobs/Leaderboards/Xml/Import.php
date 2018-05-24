@@ -51,22 +51,22 @@ class Import implements ShouldQueue {
         
         $callback_hander = new CallbackHandler();
         
-        $callback_hander->setCallbackReattempts(5);
-        $callback_hander->setCallbackReattemptInterval(5);
+        $callback_hander->setReattempts(5);
+        $callback_hander->setReattemptInterval(5);
         
         $callback_hander->setCallback([
             $guzzle_client,
             'request'
         ]);
         
-        $callback_hander->setCallbackArguments([
+        $callback_hander->setArguments([
             'GET',
             env('STEAM_LEADERBOARD_XML_URL')
         ]);
         
         $leaderboards_xml_result = $callback_hander->execute();
         
-        $leaderboards_xml = $leaderboards_xml_result->getBody();
+        $leaderboards_xml = $leaderboards_xml_result->getBody()->getContents();
         
         unset($leaderboards_xml_result);
         
