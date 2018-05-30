@@ -10,7 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
-use App\Components\SteamDataManager\SteamReplays as SteamReplaysManager;
+use App\Components\SteamDataManager\Replays as SteamReplaysManager;
 use App\SteamReplays;
 use App\RunResults;
 use App\SteamReplayVersions;

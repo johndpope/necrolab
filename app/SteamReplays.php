@@ -129,7 +129,21 @@ class SteamReplays extends Model {
         ");
     }
     
-    public static function getUnsavedReplaysQuery() {
+    public static function updateS3UploadedFromTemp() {
+        DB::update("
+            UPDATE steam_replays sr
+            SET 
+                uploaded_to_s3 = srt.uploaded_to_s3
+            FROM " . static::getTempTableName() . " srt
+            WHERE sr.steam_user_pb_id = srt.steam_user_pb_id
+        ");
+    }
+    
+    public static function getUnsavedQuery() {
         return static::where('downloaded', 0)->where('invalid', 0);
+    }
+    
+    public static function getNotS3UploadedQuery() {
+        return static::where('uploaded_to_s3', 0)->where('invalid', 0);
     }
 }

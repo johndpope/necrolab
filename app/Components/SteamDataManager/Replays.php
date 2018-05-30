@@ -8,7 +8,7 @@ use stdClass;
 use Illuminate\Support\Facades\Storage;
 use App\Components\SteamDataManager\Core;
 
-class SteamReplays
+class Replays
 extends Core {  
     protected $temp_files = [];
     
@@ -124,5 +124,13 @@ extends Core {
     
     public function deleteInvalidFile(object $invalid_file) {
         $this->file_storage_engine->delete($invalid_file->path);
+    }
+    
+    public function copySavedFileToS3($ugcid) {        
+        $saved_file_path = "{$this->saved_base_path}/{$ugcid}.zip";
+        
+        if($this->file_storage_engine->exists($saved_file_path)) {
+            Storage::disk('s3')->put("replays/{$ugcid}.zip", $this->file_storage_engine->get($saved_file_path));
+        }
     }
 }
