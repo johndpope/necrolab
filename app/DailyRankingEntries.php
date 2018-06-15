@@ -104,4 +104,24 @@ class DailyRankingEntries extends Model {
             FROM " . static::getTempTableName() . "
         ");
     }
+    
+    public static function getCacheQuery(DateTime $date) {
+        $entries_table_name = static::getTableName($date);
+
+        $query = DB::table('daily_rankings AS dr')
+            ->select([
+                'dr.release_id',
+                'dr.mode_id',
+                'dr.daily_ranking_day_type_id',
+                'dre.steam_user_id',
+                'dre.rank'
+            ])
+            ->join("{$entries_table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.daily_ranking_id')
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'dre.steam_user_id')
+            ->where('dr.date', $date->format('Y-m-d'));
+            
+        ExternalSites::addSiteIdSelectFields($query);
+        
+        return $query;
+    }
 }

@@ -12,6 +12,8 @@ class InsertQueue {
     
     protected $record_queues = [];
     
+    protected $parameter_bindings = [];
+    
     /**
      * Constructs a VALUES segment with placeholders for each field grouped by each record wrapped in a parenthesis and separated by a comma.
      *
@@ -69,21 +71,44 @@ class InsertQueue {
         $this->record_queues[] = $record_queue;
     }
     
+    public function setParameterBindings(array $parameter_bindings) {
+        $this->parameter_bindings = $parameter_bindings;
+    }
+    
     public function commit(array $records) {   
         if(!empty($records)) {                       
             $first_record = current($records);
             
-            $query = static::getMultiInsertQuery($this->table_name, array_keys($first_record), count($records));
+            $first_record_keys = array_keys($first_record);
             
-            $placeholder_values = [];
-            
-            array_walk_recursive($records, function($value, $key) use(&$placeholder_values) {
-                $placeholder_values[] = $value;
-            });
+            $query = static::getMultiInsertQuery($this->table_name, $first_record_keys, count($records));
 
             $statement = $this->pdo->prepare($query);
             
-            $statement->execute($placeholder_values);
+            if(empty($this->parameter_bindings)) {
+                $placeholder_values = [];
+            
+                array_walk_recursive($records, function($value, $key) use(&$placeholder_values) {
+                    $placeholder_values[] = $value;
+                });
+            
+                $statement->execute($placeholder_values);
+            }
+            else {                            
+                $placeholder_index = 1;
+            
+                foreach($records as $record) {
+                    $record = (array)$record;
+                
+                    foreach($this->parameter_bindings as $index => $parameter_binding) {
+                        $statement->bindValue($placeholder_index, $record[$first_record_keys[$index]], $parameter_binding);
+                        
+                        $placeholder_index += 1;
+                    }
+                }
+                
+                $statement->execute();
+            }
         }
     }
 }

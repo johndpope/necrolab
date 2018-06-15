@@ -4,6 +4,7 @@ namespace App\Jobs\Rankings\Power;
 
 use DateTime;
 use Exception;
+use PDO;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -13,6 +14,7 @@ use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
 use App\Components\RecordQueue;
 use App\Components\CallbackHandler;
+use App\Components\PostgresCursor;
 use App\Components\Redis\DatabaseSelector;
 use App\Components\Redis\Transaction\Pipeline as PipelineTransaction;
 use App\Components\CacheNames\Rankings\Power as CacheNames;
@@ -52,9 +54,15 @@ class Generate implements ShouldQueue {
     protected function flattenLeaderboardEntries() {
         $leaderboard_entries_query = LeaderboardEntries::getPowerRankingsQuery($this->date);
         
+        $cursor = new PostgresCursor(
+            'power_rankings_generate', 
+            LeaderboardEntries::getPowerRankingsQuery($this->date),
+            10000
+        );
+        
         $redis_transaction = new PipelineTransaction($this->redis, 1000);
         
-        foreach($leaderboard_entries_query->cursor() as $leaderboard_entry) {
+        foreach($cursor->getRecord() as $leaderboard_entry) {
             // Add this mode to the list of ones that are being used in this release
             $redis_transaction->hSetNx(
                 CacheNames::getModes(
@@ -196,6 +204,8 @@ class Generate implements ShouldQueue {
         
         /* ---------- Load leaderboard rankings into redis to flatten the data for each player ---------- */
         
+        DB::beginTransaction();
+        
         $this->flattenLeaderboardEntries();
         
         
@@ -203,9 +213,7 @@ class Generate implements ShouldQueue {
         
         $releases = Releases::getAllByDate($this->date);
         
-        if(!empty($releases)) {
-            DB::beginTransaction();
-            
+        if(!empty($releases)) {            
             $power_ranking_id_by_grouped = PowerRankings::getAllIdsByGroupedForDate($this->date);
             $modes = Modes::getAllById();
             $characters = Characters::getAllActive();
@@ -397,11 +405,11 @@ class Generate implements ShouldQueue {
             
             PowerRankings::saveTemp();
             PowerRankingEntries::saveTemp($this->date);
-        
-            DB::commit();
-            
+
             CacheJob::dispatch($this->date);
         }
+        
+        DB::commit();
 
         $this->redis->flushDb();
     }

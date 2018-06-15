@@ -5,6 +5,7 @@ namespace App;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\ExternalSites;
 use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
 
@@ -136,6 +137,58 @@ class LeaderboardEntries extends Model {
             }
         }
             
+        return $query;
+    }
+    
+    public static function getNonDailyCacheQuery(DateTime $date) {        
+        $entries_table_name = static::getTableName($date);
+    
+        $query = DB::table('leaderboard_snapshots AS ls')
+            ->select([
+                'ls.leaderboard_id',
+                'su.steam_user_id',
+                'le.rank'
+            ])
+            ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'ls.leaderboard_id')
+            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->leftJoin('leaderboards_blacklist AS lb', 'lb.leaderboard_id', '=', 'l.leaderboard_id')
+            ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
+            ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id')
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
+            ->where('ls.date', $date->format('Y-m-d'))
+            ->where('lt.name', '!=', 'daily')
+            ->whereNull('lb.leaderboards_blacklist_id');
+            
+        ExternalSites::addSiteIdSelectFields($query);
+        
+        return $query;
+    }
+    
+    public static function getDailyCacheQuery(DateTime $date) {        
+        $entries_table_name = static::getTableName($date);
+
+        $query = DB::table('leaderboard_snapshots AS ls')
+            ->select([
+                'ls.leaderboard_id',
+                'l.release_id',
+                'l.daily_date',
+                'l.mode_id',
+                'su.steam_user_id',
+                'le.rank'
+            ])
+            ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'ls.leaderboard_id')
+            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->leftJoin('leaderboards_blacklist AS lb', 'lb.leaderboard_id', '=', 'l.leaderboard_id')
+            ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
+            ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id')
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
+            ->where('ls.date', $date->format('Y-m-d'))
+            ->where('lt.name', '=', 'daily')
+            ->where('l.is_co_op', '=', 0)
+            ->whereNull('lb.leaderboards_blacklist_id');
+            
+        ExternalSites::addSiteIdSelectFields($query);
+        
         return $query;
     }
 }

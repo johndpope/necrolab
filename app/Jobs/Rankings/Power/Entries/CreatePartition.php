@@ -44,11 +44,11 @@ class CreatePartition implements ShouldQueue {
         Schema::create("power_ranking_entries_{$date_formatted}", function (Blueprint $table) {
             $table->integer('power_ranking_id');
             $table->integer('steam_user_id');
-            $table->jsonb('characters');
+            $table->integer('rank');
+            $table->binary('characters');
             $table->integer('score_rank')->nullable();
             $table->integer('deathless_rank')->nullable();
             $table->integer('speed_rank')->nullable();
-            $table->integer('rank');
 
             $table->foreign('power_ranking_id')
                 ->references('power_ranking_id')

@@ -3,8 +3,11 @@
 namespace App;
 
 use DateTime;
+use PDO;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\Components\Encoder;
+use App\ExternalSites;
 use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
 
@@ -34,6 +37,18 @@ class PowerRankingEntries extends Model {
      * @var bool
      */
     public $timestamps = false;
+    
+    public static function getTempInsertQueueBindFlags() {
+        return [
+            PDO::PARAM_INT,
+            PDO::PARAM_INT,
+            PDO::PARAM_LOB,
+            PDO::PARAM_INT,
+            PDO::PARAM_INT,
+            PDO::PARAM_INT,
+            PDO::PARAM_INT
+        ];
+    }
     
     public static function serializeCharacters(array $entry, array $characters) {
         $character_data = [];
@@ -69,7 +84,7 @@ class PowerRankingEntries extends Model {
             }
         }
         
-        return json_encode($character_data);
+        return Encoder::encode($character_data);
     }
     
     public static function createTemporaryTable() {
@@ -77,11 +92,11 @@ class PowerRankingEntries extends Model {
             CREATE TEMPORARY TABLE " . static::getTempTableName() . " (
                 power_ranking_id integer,
                 steam_user_id integer,
-                characters jsonb,
                 score_rank integer,
                 deathless_rank integer,
                 speed_rank integer,
-                rank integer
+                rank integer,
+                characters bytea
             )
             ON COMMIT DROP;
         ");
@@ -103,21 +118,45 @@ class PowerRankingEntries extends Model {
             INSERT INTO " . static::getTableName($date) . " (
                 power_ranking_id,
                 steam_user_id,
-                characters,
                 score_rank,
                 deathless_rank,
                 speed_rank,
-                rank
+                rank,
+                characters
             )
             SELECT 
                 power_ranking_id,
                 steam_user_id,
-                characters,
                 score_rank,
                 deathless_rank,
                 speed_rank,
-                rank
+                rank,
+                characters
             FROM " . static::getTempTableName() . "
         ");
-    }  
+    }
+    
+    public static function getCacheQuery(DateTime $date) {
+        $entries_table_name = static::getTableName($date);
+
+        $query = DB::table('power_rankings AS pr')
+            ->select([
+                'pr.release_id',
+                'pr.mode_id',
+                'pr.seeded',
+                'pre.steam_user_id',
+                'pre.rank',
+                'pre.score_rank',
+                'pre.deathless_rank',
+                'pre.speed_rank',
+                'pre.characters'
+            ])
+            ->join("{$entries_table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.power_ranking_id')
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'pre.steam_user_id')
+            ->where('pr.date', $date->format('Y-m-d'));
+            
+        ExternalSites::addSiteIdSelectFields($query);
+        
+        return $query;
+    }
 }

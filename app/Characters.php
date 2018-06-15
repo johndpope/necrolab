@@ -3,10 +3,11 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\GetById;
 use App\Traits\GetByName;
 
 class Characters extends Model {
-    use GetByName;
+    use GetById, GetByName;
 
     /**
      * The table associated with the model.

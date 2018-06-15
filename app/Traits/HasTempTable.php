@@ -2,6 +2,7 @@
 
 namespace App\Traits;
 
+use PDO;
 use App\Components\RecordQueue;
 use App\Components\InsertQueue;
 
@@ -20,10 +21,16 @@ trait HasTempTable {
         return static::$temp_table_name;
     }
     
+    public static function getTempInsertQueueBindFlags() {
+        return [];
+    }
+    
     public static function getTempInsertQueue(int $commit_count) {        
         $record_queue = new RecordQueue($commit_count);
         
         $insert_queue = new InsertQueue(static::getTempTableName());
+        
+        $insert_queue->setParameterBindings(static::getTempInsertQueueBindFlags());
         
         $insert_queue->addToRecordQueue($record_queue);
     

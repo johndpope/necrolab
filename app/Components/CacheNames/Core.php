@@ -38,4 +38,8 @@ class Core {
     public static function getCharacters() {
         return static::CHARACTER;
     }
+    
+    public static function getNoId() {
+        return static::NO_ID;
+    }
 }
