@@ -2,6 +2,8 @@
 
 namespace App\Traits;
 
+use App\Components\PostgresCursor;
+
 trait GetByName {
     protected static $all_by_name = [];
     
@@ -36,6 +38,7 @@ trait GetByName {
     }
     
     public static function getAllIdsByName() {
+        $table_name = (new static())->getTable();
         $primary_key = (new static())->getKeyName();
     
         $query = static::select([
@@ -43,9 +46,15 @@ trait GetByName {
             $primary_key
         ]);
         
+        $cursor = new PostgresCursor(
+            "{$table_name}_ids_by_name", 
+            $query,
+            1000
+        );
+        
         $ids_by_name = [];
         
-        foreach($query->cursor() as $record) {
+        foreach($cursor->getRecord() as $record) {
             $ids_by_name[$record->name] = $record->$primary_key;
         }
         

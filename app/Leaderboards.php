@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
+use App\Components\PostgresCursor;
 use App\Characters;
 use App\Releases;
 use App\Modes;
@@ -266,9 +267,15 @@ class Leaderboards extends Model {
             'leaderboard_id'
         ]);
         
+        $cursor = new PostgresCursor(
+            'leaderboards_by_lbid', 
+            $query,
+            5000
+        );
+        
         $ids_by_lbid = [];
         
-        foreach($query->cursor() as $leaderboard) {
+        foreach($cursor->getRecord() as $leaderboard) {
             $ids_by_lbid[$leaderboard->lbid] = $leaderboard->leaderboard_id;
         }
         

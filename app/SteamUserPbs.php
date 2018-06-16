@@ -6,6 +6,7 @@ use DateTime;
 use stdClass;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\Components\PostgresCursor;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
 use App\Releases;
@@ -189,9 +190,15 @@ class SteamUserPbs extends Model {
             'score'
         ]);
         
+        $cursor = new PostgresCursor(
+            'steam_user_pbs_by_unique', 
+            $query,
+            20000
+        );
+        
         $all_ids_by_unique = [];
         
-        foreach($query->cursor() as $steam_user_pb) {
+        foreach($cursor->getRecord() as $steam_user_pb) {
             $all_ids_by_unique[$steam_user_pb->leaderboard_id][$steam_user_pb->steam_user_id][$steam_user_pb->score] = $steam_user_pb->steam_user_pb_id;
         }
         

@@ -17,6 +17,7 @@ use Steam\Steam as SteamApi;
 use Steam\Utility\GuzzleUrlBuilder;
 use Steam\Command\RemoteStorage\GetUGCFileDetails;
 use App\Components\CallbackHandler;
+use App\Components\PostgresCursor;
 use App\Components\SteamDataManager\Replays as SteamReplaysManager;
 use App\SteamReplays;
 use App\Jobs\SteamReplays\SaveImported as SaveImportedJob;
@@ -104,9 +105,13 @@ class Import implements ShouldQueue {
         
         /* ---------- Retrieve outdated record ids and add to record queue ---------- */ 
         
-        $query = SteamReplays::getUnsavedQuery();
+        $cursor = new PostgresCursor(
+            'get_unsaved_replays', 
+            SteamReplays::getUnsavedQuery(),
+            3000
+        );
         
-        foreach($query->cursor() as $unsaved_record) {
+        foreach($cursor->getRecord() as $unsaved_record) {
             $file_data = NULL;
         
             if($unsaved_record->ugcid != '-1') {

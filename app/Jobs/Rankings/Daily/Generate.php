@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\DB;
 use App\Components\RecordQueue;
 use App\Components\CallbackHandler;
 use App\Components\Redis\DatabaseSelector;
+use App\Components\PostgresCursor;
 use App\Components\Redis\Transaction\Pipeline as PipelineTransaction;
 use App\Components\CacheNames\Rankings\Daily as CacheNames;
 use App\DailyRankings;
@@ -46,12 +47,16 @@ class Generate implements ShouldQueue {
         $this->date = $date;
     }
     
-    protected function flattenLeaderboardEntries(DateTime $earliest_start_date, array $day_types) {
-        $leaderboard_entries_query = LeaderboardEntries::getDailyRankingsQuery($earliest_start_date, $this->date);
+    protected function flattenLeaderboardEntries(DateTime $earliest_start_date, array $day_types) {        
+        $cursor = new PostgresCursor(
+            'daily_ranking_leaderboard_entries', 
+            LeaderboardEntries::getDailyRankingsQuery($earliest_start_date, $this->date),
+            10000
+        );
         
         $redis_transaction = new PipelineTransaction($this->redis, 1000);
         
-        foreach($leaderboard_entries_query->cursor() as $leaderboard_entry) { 
+        foreach($cursor->getRecord() as $leaderboard_entry) {
             foreach($day_types as $day_type) {
                 $daily_ranking_entry_hash_name = CacheNames::getEntry(
                     $leaderboard_entry->release_id, 

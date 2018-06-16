@@ -9,6 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
+use App\Components\PostgresCursor;
 use App\Components\SteamDataManager\Replays as SteamReplaysManager;
 use App\SteamReplays;
 
@@ -53,9 +54,15 @@ class UploadToS3 implements ShouldQueue {
         
         /* ---------- Retrieve unuploaded records and add to record queue ---------- */ 
         
-        $query = SteamReplays::getNotS3UploadedQuery();
+        $query = ;
         
-        foreach($query->cursor() as $not_uploaded_record) {
+        $cursor = new PostgresCursor(
+            'get_not_uploaded_replays', 
+            SteamReplays::getNotS3UploadedQuery(),
+            3000
+        );
+        
+        foreach($cursor->getRecord() as $not_uploaded_record) {
             $data_manager->copySavedFileToS3($not_uploaded_record->ugcid);
 
             $insert_queue->addRecord([

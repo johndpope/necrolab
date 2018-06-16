@@ -5,6 +5,7 @@ namespace App;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\Components\PostgresCursor;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
 
@@ -71,9 +72,15 @@ class LeaderboardSnapshots extends Model {
     public static function getAllByLeaderboardIdForDate(DateTime $date) {
         $query = DB::table('leaderboard_snapshots')->where('date', $date->format('Y-m-d'));
         
+        $cursor = new PostgresCursor(
+            'leaderboard_snapshots_by_leaderboard', 
+            $query,
+            1000
+        );
+        
         $snapshots_by_leaderboard_id = [];
         
-        foreach($query->cursor() as $snapshot) {
+        foreach($cursor->getRecord() as $snapshot) {
             $snapshots_by_leaderboard_id[$snapshot->leaderboard_id] = $snapshot->leaderboard_snapshot_id;
         }
         

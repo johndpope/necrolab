@@ -5,6 +5,7 @@ namespace App;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\Components\PostgresCursor;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
 
@@ -89,9 +90,15 @@ class SteamUsers extends Model {
             'steamid'
         ]);
         
+        $cursor = new PostgresCursor(
+            'steam_user_ids', 
+            $query,
+            20000
+        );
+        
         $ids_by_steamid = [];
         
-        foreach($query->cursor() as $steam_user) {
+        foreach($cursor->getRecord() as $steam_user) {
             $ids_by_steamid[$steam_user->steamid] = $steam_user->steam_user_id;
         }
         

@@ -17,6 +17,7 @@ use Steam\Command\User\GetPlayerSummaries;
 use App\Components\RecordQueue;
 use App\Components\CallbackHandler;
 use App\Components\SteamDataManager\SteamUsers as SteamUsersManager;
+use App\Components\PostgresCursor;
 use App\SteamUsers;
 use App\Jobs\SteamUsers\SaveImported as SaveImportedJob;
 
@@ -106,9 +107,13 @@ class Import implements ShouldQueue {
         
         /* ---------- Retrieve outdated record ids and add to record queue ---------- */ 
         
-        $query = SteamUsers::getOutdatedIdsQuery();
+        $cursor = new PostgresCursor(
+            'get_outdated_steam_users', 
+            SteamUsers::getOutdatedIdsQuery(),
+            20000
+        );
         
-        foreach($query->cursor() as $outdated_record) {
+        foreach($cursor->getRecord() as $outdated_record) {
             $record_queue->addRecord([$outdated_record->steamid]);
         }
         
