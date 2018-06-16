@@ -44,7 +44,7 @@ class EntryIndexes extends Model {
             CREATE TEMPORARY TABLE " . static::getTempTableName() . " (
                 data bytea NOT NULL,
                 name character varying(255) NOT NULL,
-                date date NOT NULL
+                sub_name character varying(255) NOT NULL
             )
             ON COMMIT DROP;
         ");
@@ -55,14 +55,14 @@ class EntryIndexes extends Model {
             INSERT INTO entry_indexes (
                 data,
                 name,
-                date
+                sub_name
             )
             SELECT 
                 data,
                 name,
-                date
+                sub_name
             FROM " . static::getTempTableName() . "
-            ON CONFLICT (name, date) DO 
+            ON CONFLICT (name, sub_name) DO 
             UPDATE 
             SET 
                 data = excluded.data

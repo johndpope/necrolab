@@ -88,7 +88,7 @@ class Cache implements ShouldQueue {
                 $entry_indexes_insert_queue->addRecord([
                     'data' => Encoder::encode($index_data),
                     'name' => $key,
-                    'date' => $date_formatted
+                    'sub_name' => $date_formatted
                 ]);
             }
         }

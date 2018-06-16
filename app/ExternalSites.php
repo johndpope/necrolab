@@ -45,7 +45,7 @@ class ExternalSites extends Model {
         }
     }
     
-    public static function addToSiteIdIndexes(array &$indexes, object $entry, string $base_index_name, int $index_value, int $index_key) {
+    public static function addToSiteIdIndexes(array &$indexes, object $entry, string $base_index_name, int $index_value, int $index_key = NULL) {
         $sites = static::getAllByid();
         
         if(!empty($sites)) {

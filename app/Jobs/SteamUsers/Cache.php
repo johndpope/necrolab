@@ -2,12 +2,18 @@
 
 namespace App\Jobs\SteamUsers;
 
-use DateTime;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Support\Facades\DB;
+use App\Components\PostgresCursor;
+use App\Components\Encoder;
+use App\Components\CacheNames\Users\Steam as CacheNames;
+use App\SteamUsers;
+use App\ExternalSites;
+use App\EntryIndexes;
 
 class Cache implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -18,23 +24,76 @@ class Cache implements ShouldQueue {
      * @var int
      */
     public $tries = 1;
-    
-    protected $date;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct() {
-        
-    }
+    public function __construct() {}
 
     /**
      * Execute the job.
      *
      * @return void
      */
-    public function handle() {
+    public function handle() {    
+        DB::beginTransaction();
+    
+        $cursor = new PostgresCursor(
+            'steam_users_cache', 
+            SteamUsers::getCacheQuery(),
+            20000
+        );
+
+        $users_index_base_name = CacheNames::getUsersIndex();
+        
+        $indexes = [];
+        $steam_user_names = [];
+        
+        foreach($cursor->getRecord() as $steam_user) {
+            $steam_user_id = (int)$steam_user->steam_user_id;
+            
+            $steam_user_names[$steam_user_id] = $steam_user->personaname;
+            
+            ExternalSites::addToSiteIdIndexes($indexes, $steam_user, $users_index_base_name, $steam_user_id);
+        }
+        
+        
+        /* ---------- Setup for inserting into the entry_indexes table ----------*/
+        
+        EntryIndexes::createTemporaryTable();
+        
+        $entry_indexes_insert_queue = EntryIndexes::getTempInsertQueue(2000);
+        
+        
+        /* ---------- Store the personaname index ----------*/
+        
+        $entry_indexes_insert_queue->addRecord([
+            'data' => Encoder::encode($steam_user_names),
+            'name' => CacheNames::getUsersByName(),
+            'sub_name' => ''
+        ]);
+        
+        unset($steam_user_names);
+        
+        
+        /* ---------- Store the steam_user_id indexes for all sites ----------*/
+        
+        if(!empty($indexes)) {
+            foreach($indexes as $key => $index_data) {                
+                $entry_indexes_insert_queue->addRecord([
+                    'data' => Encoder::encode($index_data),
+                    'name' => $key,
+                    'sub_name' => ''
+                ]);
+            }
+        }
+        
+        $entry_indexes_insert_queue->commit();
+        
+        EntryIndexes::saveTemp();
+        
+        DB::commit();
     }
 }

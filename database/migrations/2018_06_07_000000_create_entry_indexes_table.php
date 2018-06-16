@@ -15,12 +15,12 @@ class CreateEntryIndexesTable extends Migration
     {
         Schema::create('entry_indexes', function (Blueprint $table) {
             $table->string('name');
-            $table->date('date');
+            $table->string('sub_name');
             $table->binary('data');
             
             $table->primary([
                 'name', 
-                'date'
+                'sub_name'
             ]);
         });
     }

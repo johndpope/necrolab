@@ -88,7 +88,7 @@ class CacheDaily implements ShouldQueue {
                     $entry_indexes_insert_queue->addRecord([
                         'data' => Encoder::encode($index_data),
                         'name' => $key,
-                        'date' => $daily_date
+                        'sub_name' => $daily_date
                     ]);
                 }
             }

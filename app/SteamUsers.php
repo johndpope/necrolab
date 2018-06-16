@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Components\PostgresCursor;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
+use App\ExternalSites;
 
 class SteamUsers extends Model {
     use HasTempTable, HasManualSequence;
@@ -112,5 +113,18 @@ class SteamUsers extends Model {
             'steam_user_id',
             'steamid'
         ])->where('updated', '<', $thirty_days_ago->format('Y-m-d H:i:s'));
+    }
+    
+    public static function getCacheQuery() {        
+        $query = DB::table('steam_users AS su')
+            ->select([
+                'su.steam_user_id',
+                'su.personaname'
+            ])
+            ->orderBy('su.personaname', 'asc');
+        
+        ExternalSites::addSiteIdSelectFields($query);
+        
+        return $query;
     }
 }
