@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Console\Commands\Leaderboards\Csv;
+namespace App\Console\Commands\SteamReplays;
 
 use DateTime;
 use Illuminate\Console\Command;
