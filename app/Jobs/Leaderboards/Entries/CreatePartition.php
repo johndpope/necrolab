@@ -57,8 +57,6 @@ class CreatePartition implements ShouldQueue {
                 ->onDelete('cascade');
 
             $table->primary(['leaderboard_snapshot_id', 'steam_user_pb_id', 'rank']);
-            
-            $table->index('steam_user_pb_id');
         });
     }
 }
