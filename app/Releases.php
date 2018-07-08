@@ -3,12 +3,13 @@
 namespace App;
 
 use DateTime;
-use Illuminate\Database\Eloquent\Model;
+use ElcoBvg\Opcache\Model;
 use App\Traits\GetByName;
 use App\Traits\GetById;
+use App\Traits\StoredInCache;
 
 class Releases extends Model {
-    use GetByName, GetById;
+    use GetByName, GetById, StoredInCache;
 
     /**
      * The table associated with the model.
@@ -30,6 +31,19 @@ class Releases extends Model {
      * @var bool
      */
     public $timestamps = false;
+    
+    public static function getValidationRules() {
+        return [
+            'name' => 'required|max:100|unique:releases',
+            'display_name' => 'required|max:100',
+            'start_date' => 'required|date_format:Y-m-d',
+            'end_date' => 'nullable|date_format:Y-m-d'
+        ];
+    }
+    
+    public static function getCacheQuery() {
+        return static::orderBy('start_date', 'asc');
+    }
     
     public static function getEarliestStartDate(array $releases) {
         $earliest_start_date = NULL;

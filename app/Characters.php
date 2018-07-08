@@ -2,12 +2,14 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Facades\Auth;
+use ElcoBvg\Opcache\Model;
 use App\Traits\GetById;
 use App\Traits\GetByName;
+use App\Traits\StoredInCache;
 
 class Characters extends Model {
-    use GetById, GetByName;
+    use GetById, GetByName, StoredInCache;
 
     /**
      * The table associated with the model.
@@ -29,6 +31,19 @@ class Characters extends Model {
      * @var bool
      */
     public $timestamps = false;
+    
+    public static function getValidationRules() {
+        return [
+            'name' => 'required|max:100|unique:characters',
+            'display_name' => 'required|max:255',
+            'is_active' => 'required|integer|min:0|max:1',
+            'sort_order' => 'required|integer|min:1',
+        ];
+    }
+    
+    public static function getCacheQuery() {
+        return static::orderBy('sort_order', 'asc');
+    }
     
     public static function isCoOpCharacter($character_name) {
         $co_op_characters = array(

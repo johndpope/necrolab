@@ -72,7 +72,10 @@ return [
             'driver' => 'redis',
             'connection' => 'default',
         ],
-
+        
+        'opcache' => [
+            'driver' => 'opcache',
+        ],
     ],
 
     /*

@@ -2,13 +2,14 @@
 
 namespace App;
 
+use Laravel\Passport\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Permission\Traits\HasRoles;
 
-class User extends Authenticatable
+class Users extends Authenticatable
 {
-    use Notifiable, HasRoles;
+    use HasApiTokens, Notifiable, HasRoles;
     
     /**
      * The table associated with the model.

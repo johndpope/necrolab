@@ -2,12 +2,13 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
+use ElcoBvg\Opcache\Model;
 use App\Traits\GetByName;
 use App\Traits\GetById;
+use App\Traits\StoredInCache;
 
 class Modes extends Model {
-    use GetByName, GetById;
+    use GetByName, GetById, StoredInCache;
 
     /**
      * The table associated with the model.
@@ -29,6 +30,18 @@ class Modes extends Model {
      * @var bool
      */
     public $timestamps = false;
+    
+    public static function getValidationRules() {
+        return [
+            'name' => 'required|max:100|unique:modes',
+            'display_name' => 'required|max:100',
+            'sort_order' => 'required|integer|min:1',
+        ];
+    }
+    
+    public static function getCacheQuery() {
+        return static::orderBy('sort_order', 'asc');
+    }
     
     public static function getModeFromString($string) {
         $mode = Modes::getByName('normal');
