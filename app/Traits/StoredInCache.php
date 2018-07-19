@@ -6,17 +6,27 @@ use DateTime;
 use Illuminate\Support\Facades\Cache;
 
 trait StoredInCache {
-    public static function getCacheQuery() {
-        return NULL;
+    protected static $cached_records = [];
+    
+    protected static function getStoredInCacheQuery() {
+        return static::where('1', 1);
     }
 
-    public static function getAllFromCache() {        
-        $opcache = Cache::store('opcache');
+    protected static function loadAllFromCache() {
+        if(empty(static::$cached_records)) {
+            $opcache = Cache::store('opcache');
+            
+            $cache_key = (new static())->getTable();
+            
+            static::$cached_records = $opcache->remember($cache_key, new DateTime('+1 year'), function() {
+                return static::getStoredInCacheQuery()->get();
+            });
+        }
+    }
+    
+    public static function all($columns = []) {
+        static::loadAllFromCache();
         
-        $cache_key = (new static())->getTable();
-        
-        return $opcache->remember($cache_key, new DateTime('+1 year'), function() {
-            return static::getCacheQuery()->get();
-        });
+        return static::$cached_records;
     }
 }

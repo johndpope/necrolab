@@ -41,7 +41,7 @@ class Characters extends Model {
         ];
     }
     
-    public static function getCacheQuery() {
+    public static function getStoredInCacheQuery() {
         return static::orderBy('sort_order', 'asc');
     }
     

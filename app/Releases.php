@@ -41,7 +41,7 @@ class Releases extends Model {
         ];
     }
     
-    public static function getCacheQuery() {
+    public static function getStoredInCacheQuery() {
         return static::orderBy('start_date', 'asc');
     }
     

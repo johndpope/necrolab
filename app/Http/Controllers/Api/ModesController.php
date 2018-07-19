@@ -28,7 +28,7 @@ class ModesController extends Controller {
      */
     public function index() {
         return ModesResource::collection(
-            Modes::getAllFromCache()
+            Modes::all()
         );
     }
 

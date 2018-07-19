@@ -42,3 +42,6 @@ Route::get('/1/external_sites/{id}', 'Api\ExternalSitesController@show');
 Route::put('/1/external_sites/{id}', 'Api\ExternalSitesController@update');
 Route::put('/1/external_sites/{id}/enable', 'Api\ExternalSitesController@enable');
 Route::put('/1/external_sites/{id}/disable', 'Api\ExternalSitesController@disable');
+
+// Steam Players
+Route::get('/1/players/steam', 'Api\SteamUsersController@index');

@@ -28,7 +28,7 @@ class ReleasesController extends Controller {
      */
     public function index() {
         return ReleasesResource::collection(
-            Releases::getAllFromCache()
+            Releases::all()
         );
     }
 

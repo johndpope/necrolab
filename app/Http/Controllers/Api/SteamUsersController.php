@@ -4,10 +4,14 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\CharactersResource;
-use App\Characters;
+use App\Http\Resources\SteamUsersResource;
+use App\Http\Requests\Api\ReadSteamUsers;
+use App\Components\CacheNames\Users\Steam as SteamUsersCacheNames;
+use App\Components\EntriesDataset;
+use App\SteamUsers;
+use App\ExternalSites;
 
-class CharactersController extends Controller {
+class SteamUsersController extends Controller {
     /**
      * Instantiate a new controller instance.
      *
@@ -16,20 +20,29 @@ class CharactersController extends Controller {
     public function __construct() {
         $this->middleware('auth:api')->except('index');
         
-        $this->middleware('permission:characters:store')->only('store');
-        $this->middleware('permission:characters:show')->only('show');
-        $this->middleware('permission:characters:update')->only('update');
+        $this->middleware('permission:steam_users:store')->only('store');
+        $this->middleware('permission:steam_users:show')->only('show');
+        $this->middleware('permission:steam_users:update')->only('update');
     }
 
     /**
      * Display a listing of the resource.
      *
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function index() {
-        return CharactersResource::collection(
-            Characters::all()
+    public function index(ReadSteamUsers $request) {
+        $dataset = new EntriesDataset(
+            SteamUsersCacheNames::getUsersIndex(), 
+            'su.steam_user_id', 
+            SteamUsers::getApiReadQuery()
         );
+        
+        $dataset->setFromRequest($request);
+        
+        $dataset->process();
+    
+        return SteamUsersResource::collection($dataset->getPaginator());
     }
 
     /**
@@ -39,18 +52,17 @@ class CharactersController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function store(Request $request) {
-        $request->validate(Characters::getValidationRules());
+        $request->validate(SteamUsers::getValidationRules());
         
-        $record = new Characters();
+        $record = new SteamUsers();
         
         $record->name = $request->input('name');
         $record->display_name = $request->input('display_name');
-        $record->is_active = $request->input('is_active');
         $record->sort_order = $request->input('sort_order');
         
         $record->save();
         
-        return new CharactersResource($record);
+        return new SteamUsersResource($record);
     }
 
     /**
@@ -60,8 +72,8 @@ class CharactersController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function show($id) {
-        return new CharactersResource(
-            Characters::findOrFail($id)
+        return new SteamUsersResource(
+            SteamUsers::findOrFail($id)
         );
     }
 
@@ -73,21 +85,20 @@ class CharactersController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id) {
-        $validation_rules = Characters::getValidationRules();
+        $validation_rules = SteamUsers::getValidationRules();
         
         // Remove the validation rules for all fields that will not be updated.
         unset($validation_rules['name']);
     
         $request->validate($validation_rules);
         
-        $record = Characters::findOrFail($id);
+        $record = SteamUsers::findOrFail($id);
         
         $record->display_name = $request->input('display_name');
-        $record->is_active = $request->input('is_active');
         $record->sort_order = $request->input('sort_order');
         
         $record->save();
         
-        return new CharactersResource($record);
+        return new SteamUsersResource($record);
     }
 }

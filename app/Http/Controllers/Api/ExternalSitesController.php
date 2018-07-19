@@ -35,7 +35,7 @@ class ExternalSitesController extends Controller {
      */
     public function index() {
         return ExternalSitesResource::collection(
-            ExternalSites::getAllFromCache()
+            ExternalSites::all()
         );
     }
 

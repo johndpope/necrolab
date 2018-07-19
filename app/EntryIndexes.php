@@ -5,6 +5,9 @@ namespace App;
 use PDO;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+use App\Components\Encoder;
+use App\Components\CacheNames\Users\Steam as SteamUsersCacheNames;
 use App\Traits\HasTempTable;
 
 class EntryIndexes extends Model {
@@ -67,5 +70,21 @@ class EntryIndexes extends Model {
             SET 
                 data = excluded.data
         ");
+    }
+    
+    public static function getDecodedRecord(string $name, string $sub_name = '') {
+        return Cache::store('opcache')->remember("{$name}:{$sub_name}", 1, function() use($name, $sub_name) {                            
+            $encoded_data = static::where('name', $name)
+                ->where('sub_name', $sub_name)
+                ->first();
+            
+            $decoded_data = [];
+            
+            if(!empty($encoded_data)) {
+                $decoded_data = Encoder::decode(stream_get_contents($encoded_data->data));
+            }
+
+            return $decoded_data;
+        });
     }
 }

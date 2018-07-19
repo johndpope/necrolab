@@ -40,7 +40,7 @@ class ExternalSites extends Model {
         ];
     }
     
-    public static function getCacheQuery() {
+    public static function getStoredInCacheQuery() {
         return static::orderBy('name', 'asc');
     }
     
