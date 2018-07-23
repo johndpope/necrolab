@@ -281,4 +281,72 @@ class Leaderboards extends Model {
         
         return $ids_by_lbid;
     }
+    
+    public static function getApiReadQuery() {
+        return DB::table('leaderboards AS l')
+            ->select([
+                'l.leaderboard_id',
+                'l.lbid',
+                'l.name',
+                'l.display_name',
+                'c.name AS character_name',
+                'lt.name AS leaderboard_type_name',
+                DB::raw('string_agg(rt.name, \',\') AS rankings'),
+                'l.is_custom',
+                'l.is_co_op',
+                'l.is_seeded'
+            ])
+            ->join('characters AS c', 'c.character_id', '=', 'l.character_id')
+            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->leftJoin('leaderboard_ranking_types AS lrt', 'lrt.leaderboard_id', '=', 'l.leaderboard_id')
+            ->leftJoin('ranking_types AS rt', 'rt.id', '=', 'lrt.ranking_type_id')
+            ->groupBy(
+                'l.leaderboard_id',
+                'l.lbid',
+                'l.name',
+                'l.display_name',
+                'c.name',
+                'lt.name',
+                'l.is_custom',
+                'l.is_co_op',
+                'l.is_seeded'
+            )
+            ->orderBy('lt.name', 'asc')
+            ->orderBy('l.name', 'asc');
+    }
+    
+    public static function getNonDailyApiReadQuery(int $release_id, int $mode_id) {
+        return static::getApiReadQuery()
+            ->where('release_id', $release_id)
+            ->where('mode_id', $mode_id)
+            ->where('lt.name', '!=', 'daily');
+    }
+    
+    public static function getScoreApiReadQuery(int $release_id, int $mode_id) {
+        return static::getApiReadQuery()
+            ->where('release_id', $release_id)
+            ->where('mode_id', $mode_id)
+            ->where('lt.name', '=', 'score');
+    }
+    
+    public static function getSpeedApiReadQuery(int $release_id, int $mode_id) {
+        return static::getApiReadQuery()
+            ->where('release_id', $release_id)
+            ->where('mode_id', $mode_id)
+            ->where('lt.name', '=', 'speed');
+    }
+    
+    public static function getDeathlessApiReadQuery(int $release_id) {
+        $mode_id = Modes::getByName('normal')->mode_id;
+    
+        return static::getApiReadQuery()
+            ->where('release_id', $release_id)
+            ->where('mode_id', $mode_id)
+            ->where('lt.name', '=', 'deathless');
+    }
+    
+    public static function getApiShowQuery(string $lbid) {
+        return static::getApiReadQuery()
+            ->where('l.lbid', $lbid);
+    }
 }

@@ -12,10 +12,16 @@ class SteamUsersResource extends JsonResource {
      * @return array
      */
     public function toArray($request) {
-        return [
-            'steamid' => $this->steamid,
-            'personaname' => $this->personaname,
-            'profileurl' => $this->profileurl
-        ];
+        $record = [];
+        
+        if(!empty($this->steamid)) {
+            $record = [
+                'id' => (string)$this->steamid,
+                'personaname' => $this->personaname,
+                'profileurl' => $this->profileurl
+            ];
+        }
+    
+        return $record;
     }
 }

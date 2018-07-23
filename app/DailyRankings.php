@@ -85,4 +85,14 @@ class DailyRankings extends Model {
                 updated = excluded.updated
         ");
     }
+    
+    public static function getApiReadQuery(int $release_id, int $daily_ranking_day_type_id) {
+        return DB::table('daily_rankings')
+            ->select([
+                'date'
+            ])
+            ->where('release_id', $release_id)
+            ->where('daily_ranking_day_type_id', $daily_ranking_day_type_id)
+            ->orderBy('date', 'desc');
+    }
 }

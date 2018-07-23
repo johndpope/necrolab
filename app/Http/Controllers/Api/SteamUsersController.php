@@ -9,7 +9,6 @@ use App\Http\Requests\Api\ReadSteamUsers;
 use App\Components\CacheNames\Users\Steam as SteamUsersCacheNames;
 use App\Components\EntriesDataset;
 use App\SteamUsers;
-use App\ExternalSites;
 
 class SteamUsersController extends Controller {
     /**
@@ -18,10 +17,12 @@ class SteamUsersController extends Controller {
      * @return void
      */
     public function __construct() {
-        $this->middleware('auth:api')->except('index');
+        $this->middleware('auth:api')->except([
+            'index',
+            'show'
+        ]);
         
         $this->middleware('permission:steam_users:store')->only('store');
-        $this->middleware('permission:steam_users:show')->only('show');
         $this->middleware('permission:steam_users:update')->only('update');
     }
 
@@ -68,12 +69,12 @@ class SteamUsersController extends Controller {
     /**
      * Display the specified resource.
      *
-     * @param  int  $id
+     * @param  int  $steamid
      * @return \Illuminate\Http\Response
      */
-    public function show($id) {
+    public function show($steamid) {
         return new SteamUsersResource(
-            SteamUsers::findOrFail($id)
+            SteamUsers::getApiReadQuery()->where('su.steamid', $steamid)->first()
         );
     }
 

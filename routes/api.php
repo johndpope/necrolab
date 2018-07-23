@@ -45,3 +45,17 @@ Route::put('/1/external_sites/{id}/disable', 'Api\ExternalSitesController@disabl
 
 // Steam Players
 Route::get('/1/players/steam', 'Api\SteamUsersController@index');
+Route::get('/1/players/steam/{id}', 'Api\SteamUsersController@show');
+
+// Steam Power Rankings
+Route::get('/1/rankings/power/steam', 'Api\SteamPowerRankingsController@index');
+
+// Steam Daily Rankings
+Route::get('/1/rankings/daily/steam', 'Api\SteamDailyRankingsController@index');
+
+// Steam Leaderboards
+Route::get('/1/leaderboards/steam', 'Api\SteamLeaderboardsController@index');
+Route::get('/1/leaderboards/steam/score', 'Api\SteamLeaderboardsController@scoreIndex');
+Route::get('/1/leaderboards/steam/speed', 'Api\SteamLeaderboardsController@speedIndex');
+Route::get('/1/leaderboards/steam/deathless', 'Api\SteamLeaderboardsController@deathlessIndex');
+Route::get('/1/leaderboards/steam/{lbid}', 'Api\SteamLeaderboardsController@show');

@@ -88,4 +88,15 @@ class PowerRankings extends Model {
         
         return $rankings_by_id;
     }
+    
+    public static function getApiReadQuery(int $release_id, int $mode_id, int $seeded) {
+        return DB::table('power_rankings')
+            ->select([
+                'date'
+            ])
+            ->where('release_id', $release_id)
+            ->where('mode_id', $mode_id)
+            ->where('seeded', $seeded)
+            ->orderBy('date', 'desc');
+    }
 }

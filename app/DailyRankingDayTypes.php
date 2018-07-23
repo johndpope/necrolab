@@ -4,9 +4,13 @@ namespace App;
 
 use DateTime;
 use DateInterval;
-use Illuminate\Database\Eloquent\Model;
+use ElcoBvg\Opcache\Model;
+use App\Traits\StoredInCache;
+use App\Traits\GetByName;
 
 class DailyRankingDayTypes extends Model {
+    use StoredInCache, GetByName;
+    
     /**
      * The table associated with the model.
      *
@@ -28,6 +32,11 @@ class DailyRankingDayTypes extends Model {
      */
     public $timestamps = false;
     
+    public static function getStoredInCacheQuery() {
+        return static::where('enabled', 1)
+            ->orderBy('name', 'asc');
+    }
+    
     public static function getAllActiveForDate(DateTime $date) {
         $all_records = static::where('enabled', 1)->get();
         
@@ -37,7 +46,7 @@ class DailyRankingDayTypes extends Model {
             $steam_live_launch_date = new DateTime(env('STEAM_LIVE_LAUNCH_DATE'));
         
             foreach($all_records as $active_day_type) {
-                $number_of_days = $active_day_type->number_of_days;
+                $number_of_days = $active_day_type->name;
                 
                 if($number_of_days == 0) {
                     $number_of_days = $date->diff($steam_live_launch_date)->format('%a');
