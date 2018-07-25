@@ -86,4 +86,14 @@ class LeaderboardSnapshots extends Model {
         
         return $snapshots_by_leaderboard_id;
     }
+    
+    public static function getApiReadQuery($lbid) {
+        return DB::table('leaderboards AS l')
+            ->select([
+                'ls.date'
+            ])
+            ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_id', '=', 'l.leaderboard_id')
+            ->where('l.lbid', $lbid)
+            ->orderBy('date', 'desc');
+    }
 }

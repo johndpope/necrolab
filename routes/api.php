@@ -17,6 +17,10 @@ use Illuminate\Http\Request;
     return $request->user();
 });*/
 
+Route::fallback(function(){
+    return response()->json([], 404);
+});
+
 // Releases
 Route::get('/1/releases', 'Api\ReleasesController@index');
 Route::post('/1/releases', 'Api\ReleasesController@store');
@@ -58,4 +62,12 @@ Route::get('/1/leaderboards/steam', 'Api\SteamLeaderboardsController@index');
 Route::get('/1/leaderboards/steam/score', 'Api\SteamLeaderboardsController@scoreIndex');
 Route::get('/1/leaderboards/steam/speed', 'Api\SteamLeaderboardsController@speedIndex');
 Route::get('/1/leaderboards/steam/deathless', 'Api\SteamLeaderboardsController@deathlessIndex');
+Route::get('/1/leaderboards/steam/daily', 'Api\SteamLeaderboardsController@dailyIndex');
 Route::get('/1/leaderboards/steam/{lbid}', 'Api\SteamLeaderboardsController@show');
+
+// Leaderboard Snapshots
+Route::get('/1/leaderboards/{lbid}/snapshots', 'Api\LeaderboardSnapshotsController@index');
+
+// Leaderboard Entries
+Route::get('/1/leaderboards/entries', 'Api\LeaderboardEntriesController@nonDailyIndex');
+Route::get('/1/leaderboards/daily/entries', 'Api\LeaderboardEntriesController@dailyIndex');

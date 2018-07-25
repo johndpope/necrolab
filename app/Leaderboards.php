@@ -349,4 +349,18 @@ class Leaderboards extends Model {
         return static::getApiReadQuery()
             ->where('l.lbid', $lbid);
     }
+    
+    public static function getDailyApiReadQuery(int $release_id) {
+        $mode_id = Modes::getByName('normal')->mode_id;
+    
+        return DB::table('leaderboards AS l')
+            ->select([
+                'l.daily_date'
+            ])
+            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->where('l.release_id', $release_id)
+            ->where('l.mode_id', $mode_id)
+            ->where('lt.name', 'daily')
+            ->orderBy('l.daily_date', 'desc');
+    }
 }

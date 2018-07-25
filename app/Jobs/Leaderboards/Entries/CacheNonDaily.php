@@ -61,7 +61,7 @@ class CacheNonDaily implements ShouldQueue {
         /* ---------- Add each entry into its respective index ----------*/
         
         foreach($cursor->getRecord() as $entry) {            
-            $users_index_base_name = CacheNames::getIndex((int)$entry->leaderboard_id, []);
+            $users_index_base_name = CacheNames::getIndex((int)$entry->lbid, []);
                 
             ExternalSites::addToSiteIdIndexes($indexes, $entry, $users_index_base_name, (int)$entry->steam_user_id, (int)$entry->rank);
         }

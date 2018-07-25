@@ -7,6 +7,6 @@ class Encoder {
     }
     
     public static function decode($encoded_data) {
-        return json_decode(gzdecode($encoded_data));
+        return json_decode(gzdecode($encoded_data), true);
     }
 }

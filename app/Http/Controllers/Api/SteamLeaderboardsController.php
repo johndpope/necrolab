@@ -6,8 +6,10 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LeaderboardsResource;
+use App\Http\Resources\DailyLeaderboardsResource;
 use App\Http\Requests\Api\ReadLeaderboards;
 use App\Http\Requests\Api\ReadDeathlessLeaderboards;
+use App\Http\Requests\Api\ReadDailyLeaderboards;
 use App\Leaderboards;
 use App\Releases;
 use App\Modes;
@@ -24,6 +26,7 @@ class SteamLeaderboardsController extends Controller {
             'scoreIndex',
             'speedIndex',
             'deathlessIndex',
+            'dailyIndex',
             'show'
         ]);
     }
@@ -115,6 +118,24 @@ class SteamLeaderboardsController extends Controller {
     public function show($lbid) {
         return new LeaderboardsResource(
             Leaderboards::getApiShowQuery($lbid)->first()
+        );
+    }
+    
+    /**
+     * Display a listing of all daily leaderboards.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function dailyIndex(ReadDailyLeaderboards $request) {
+        $release_id = Releases::getByName($request->release)->release_id;
+        
+        return DailyLeaderboardsResource::collection(
+            Cache::store('opcache')->remember("leaderboards:steam:daily:{$release_id}", 5, function() use($release_id) {
+                return Leaderboards::getDailyApiReadQuery(
+                    $release_id
+                )->get();
+            })
         );
     }
 }

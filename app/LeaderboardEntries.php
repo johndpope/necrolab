@@ -145,7 +145,7 @@ class LeaderboardEntries extends Model {
     
         $query = DB::table('leaderboard_snapshots AS ls')
             ->select([
-                'ls.leaderboard_id',
+                'l.lbid',
                 'su.steam_user_id',
                 'le.rank'
             ])
@@ -188,6 +188,88 @@ class LeaderboardEntries extends Model {
             ->whereNull('lb.leaderboards_blacklist_id');
             
         ExternalSites::addSiteIdSelectFields($query);
+        
+        return $query;
+    }
+    
+    public static function getNonDailyApiReadQuery(int $lbid, DateTime $date) {    
+        $entries_table_name = static::getTableName($date);
+    
+        $query = DB::table('leaderboards AS l')
+            ->select([
+                'su.steamid',
+                'lt.name AS leaderboard_type',
+                'le.rank',
+                'led.name AS details',
+                'sup.zone',
+                'sup.level',
+                'sup.is_win',
+                'sup.score',
+                'sup.time',
+                'sup.win_count',
+                'sr.ugcid',
+                'se.name AS seed',
+                'sr.downloaded',
+                'sr.uploaded_to_s3',
+                'srv.name AS version',
+                'rr.name AS run_result'
+            ])
+            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_id', '=', 'l.leaderboard_id')
+            ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
+            ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id')
+            ->join("leaderboard_entry_details AS led", 'led.leaderboard_entry_details_id', '=', 'sup.leaderboard_entry_details_id')
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
+            ->leftJoin('steam_replays AS sr', 'sr.steam_user_pb_id', '=', 'sup.steam_user_pb_id')
+            ->leftJoin('run_results AS rr',  'rr.run_result_id', '=', 'sr.run_result_id')
+            ->leftJoin('steam_replay_versions AS srv', 'srv.steam_replay_version_id', '=', 'sr.steam_replay_version_id')
+            ->leftJoin('seeds AS se', 'se.id', '=', 'sr.seed_id')
+            ->where('l.lbid', $lbid)
+            ->where('ls.date', $date->format('Y-m-d'))
+            ->orderBy('le.rank', 'asc');
+        
+        return $query;
+    }
+    
+    public static function getDailyApiReadQuery(int $release_id, DateTime $date) {    
+        $entries_table_name = static::getTableName($date);
+    
+        $query = DB::table('leaderboards AS l')
+            ->select([
+                'su.steamid',
+                'lt.name AS leaderboard_type',
+                'le.rank',
+                'led.name AS details',
+                'sup.zone',
+                'sup.level',
+                'sup.is_win',
+                'sup.score',
+                'sup.time',
+                'sup.win_count',
+                'sr.ugcid',
+                'se.name AS seed',
+                'sr.downloaded',
+                'sr.uploaded_to_s3',
+                'srv.name AS version',
+                'rr.name AS run_result'
+            ])
+            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->join('leaderboard_snapshots AS ls', function($join) {
+                $join->on('ls.leaderboard_id', '=', 'l.leaderboard_id')
+                    ->on('ls.date', '=', 'l.daily_date');
+            })
+            ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
+            ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id')
+            ->join("leaderboard_entry_details AS led", 'led.leaderboard_entry_details_id', '=', 'sup.leaderboard_entry_details_id')
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
+            ->leftJoin('steam_replays AS sr', 'sr.steam_user_pb_id', '=', 'sup.steam_user_pb_id')
+            ->leftJoin('run_results AS rr',  'rr.run_result_id', '=', 'sr.run_result_id')
+            ->leftJoin('steam_replay_versions AS srv', 'srv.steam_replay_version_id', '=', 'sr.steam_replay_version_id')
+            ->leftJoin('seeds AS se', 'se.id', '=', 'sr.seed_id')
+            ->where('l.release_id', $release_id)
+            ->where('lt.name', 'daily')
+            ->where('l.daily_date', $date->format('Y-m-d'))
+            ->orderBy('le.rank', 'asc');
         
         return $query;
     }
