@@ -3,11 +3,15 @@
 namespace App;
 
 use DateTime;
+use DateInterval;
+use stdClass;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
 use App\Components\PostgresCursor;
+use App\DateIncrementor;
+use App\CallbackHandler;
 use App\Characters;
 use App\Releases;
 use App\Modes;
@@ -203,6 +207,32 @@ class Leaderboards extends Model {
         }
     
         return $is_valid;
+    }
+    
+    public static function getXmlUrls() {
+        $start_date = new DateTime('2017-01-01');
+        $end_date = new DateTime(date('Y-m-d'));
+        
+        $current_date = clone $start_date;
+        
+        $base_s3_url = env('AWS_URL');
+        
+        $xml_urls = [];
+        
+        while($current_date <= $end_date) {
+            $curent_date_formatted = $current_date->format('Y-m-d');
+        
+            $xml_url = new stdClass();
+            
+            $xml_url->date = $curent_date_formatted;
+            $xml_url->url = "{$base_s3_url}/leaderboard_xml/{$curent_date_formatted}.zip";
+            
+            $xml_urls[] = $xml_url;
+        
+            $current_date->add(new DateInterval('P1D'));
+        }
+        
+        return $xml_urls;
     }
     
     public static function createTemporaryTable() {    

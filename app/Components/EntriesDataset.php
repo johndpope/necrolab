@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use ElcoBvg\Opcache\LengthAwarePaginator as Paginator;
 use App\Components\CacheNames\Users\Steam as SteamUsersCacheNames;
+use App\Components\Encoder;
 use App\EntryIndexes;
 use App\ExternalSites;
 
@@ -29,6 +30,10 @@ class EntriesDataset {
     protected $limit = 100;
     
     protected $external_site_id = 0;
+    
+    protected $binary_fields = [];
+    
+    protected $sort_callback;
     
     protected $paginator;
     
@@ -60,6 +65,14 @@ class EntriesDataset {
     
     public function setExternalSiteId(int $external_site_id) {
         $this->external_site_id = $external_site_id;
+    }
+    
+    public function setBinaryFields(array $binary_fields) {
+        $this->binary_fields = $binary_fields;
+    }
+    
+    public function setSortCallback(callable $callback) {
+        $this->sort_callback = $callback;
     }
     
     public function setFromRequest(Request $request) {
@@ -162,6 +175,22 @@ class EntriesDataset {
             
             // Retrieve the dataset from the database
             $data = $this->query->get();
+            
+            // If there are any binary fields retrieve their data streams
+            if(!empty($this->binary_fields)) {
+                foreach($data as &$row) {
+                    foreach($this->binary_fields as $binary_field) {
+                        if(!empty($row->$binary_field)) {
+                            $row->$binary_field = Encoder::decode(stream_get_contents($row->$binary_field));
+                        }
+                    }
+                }
+            }
+            
+            // If a manual sorting callback has been specified then execute that
+            if(!empty($this->sort_callback)) {
+                $data = $data->sortBy($this->sort_callback);
+            }
             
             // Add url metadata to the paginator if a request instance was set
             $request_metadata = [];

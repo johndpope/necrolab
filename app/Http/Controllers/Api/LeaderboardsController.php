@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\LeaderboardsResource;
 use App\Http\Resources\DailyLeaderboardsResource;
+use App\Http\Resources\LeaderboardsXmlResource;
 use App\Http\Requests\Api\ReadLeaderboards;
 use App\Http\Requests\Api\ReadDeathlessLeaderboards;
 use App\Http\Requests\Api\ReadDailyLeaderboards;
@@ -14,7 +15,7 @@ use App\Leaderboards;
 use App\Releases;
 use App\Modes;
 
-class SteamLeaderboardsController extends Controller {
+class LeaderboardsController extends Controller {
     /**
      * Instantiate a new controller instance.
      *
@@ -27,7 +28,8 @@ class SteamLeaderboardsController extends Controller {
             'speedIndex',
             'deathlessIndex',
             'dailyIndex',
-            'show'
+            'show',
+            'xmlIndex'
         ]);
     }
 
@@ -135,6 +137,20 @@ class SteamLeaderboardsController extends Controller {
                 return Leaderboards::getDailyApiReadQuery(
                     $release_id
                 )->get();
+            })
+        );
+    }
+    
+    /**
+     * Display a listing of all leaderboard xml entries.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function xmlIndex() {        
+        return LeaderboardsXmlResource::collection(
+            Cache::store('opcache')->remember("leaderboards:xml", 5, function() {
+                return collect(Leaderboards::getXmlUrls());
             })
         );
     }

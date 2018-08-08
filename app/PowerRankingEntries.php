@@ -61,22 +61,25 @@ class PowerRankingEntries extends Model {
                     $score_rank = "{$character->name}_score_rank";
                     
                     if(isset($entry[$score_rank])) {
-                        $character_data[$character->name]['score']['rank'] = (int)$entry[$score_rank];
                         $character_data[$character->name]['score']['pb_id'] = (int)$entry["{$character->name}_score_pb_id"];
+                        $character_data[$character->name]['score']['rank'] = (int)$entry[$score_rank];
+                        $character_data[$character->name]['score']['score'] = (int)$entry["{$character->name}_score"];
                     }
                     
                     $speed_rank = "{$character->name}_speed_rank";
                     
                     if(isset($entry[$speed_rank])) {
-                        $character_data[$character->name]['speed']['rank'] = (int)$entry[$speed_rank];
                         $character_data[$character->name]['speed']['pb_id'] = (int)$entry["{$character->name}_speed_pb_id"];
+                        $character_data[$character->name]['speed']['rank'] = (int)$entry[$speed_rank];
+                        $character_data[$character->name]['speed']['time'] = (int)$entry["{$character->name}_time"];
                     }
                     
                     $deathless_rank = "{$character->name}_deathless_rank";
                     
                     if(isset($entry[$deathless_rank])) {
-                        $character_data[$character->name]['deathless']['rank'] = (int)$entry[$deathless_rank];
                         $character_data[$character->name]['deathless']['pb_id'] = (int)$entry["{$character->name}_deathless_pb_id"];
+                        $character_data[$character->name]['deathless']['rank'] = (int)$entry[$deathless_rank];
+                        $character_data[$character->name]['deathless']['win_count'] = (int)$entry["{$character->name}_win_count"];
                     }
                     
                     $character_data[$character->name]['rank'] = (int)$entry[$rank_name];
@@ -158,5 +161,26 @@ class PowerRankingEntries extends Model {
         ExternalSites::addSiteIdSelectFields($query);
         
         return $query;
+    }
+    
+    public static function getApiReadQuery(int $release_id, int $mode_id, int $seeded, DateTime $date) {
+        $entries_table_name = static::getTableName($date);
+    
+        return DB::table('power_rankings AS pr')
+            ->select([
+                'su.steam_user_id',
+                'su.steamid',
+                'pre.rank',
+                'pre.score_rank',
+                'pre.deathless_rank',
+                'pre.speed_rank',
+                'pre.characters'
+            ])
+            ->join("{$entries_table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.power_ranking_id')
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'pre.steam_user_id')
+            ->where('pr.release_id', $release_id)
+            ->where('pr.mode_id', $mode_id)
+            ->where('pr.seeded', $seeded)
+            ->where('pr.date', $date->format('Y-m-d'));
     }
 }

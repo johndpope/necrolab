@@ -51,19 +51,27 @@ Route::put('/1/external_sites/{id}/disable', 'Api\ExternalSitesController@disabl
 Route::get('/1/players/steam', 'Api\SteamUsersController@index');
 Route::get('/1/players/steam/{id}', 'Api\SteamUsersController@show');
 
-// Steam Power Rankings
-Route::get('/1/rankings/power/steam', 'Api\SteamPowerRankingsController@index');
+// Power Rankings
+Route::get('/1/rankings/power', 'Api\PowerRankingsController@index');
 
-// Steam Daily Rankings
-Route::get('/1/rankings/daily/steam', 'Api\SteamDailyRankingsController@index');
+// Power Ranking Entries
+Route::get('/1/rankings/power/entries', 'Api\PowerRankingEntriesController@index');
+Route::get('/1/rankings/score/entries', 'Api\PowerRankingEntriesController@scoreIndex');
+Route::get('/1/rankings/speed/entries', 'Api\PowerRankingEntriesController@speedIndex');
+Route::get('/1/rankings/deathless/entries', 'Api\PowerRankingEntriesController@deathlessIndex');
+Route::get('/1/rankings/character/entries', 'Api\PowerRankingEntriesController@characterIndex');
 
-// Steam Leaderboards
-Route::get('/1/leaderboards/steam', 'Api\SteamLeaderboardsController@index');
-Route::get('/1/leaderboards/steam/score', 'Api\SteamLeaderboardsController@scoreIndex');
-Route::get('/1/leaderboards/steam/speed', 'Api\SteamLeaderboardsController@speedIndex');
-Route::get('/1/leaderboards/steam/deathless', 'Api\SteamLeaderboardsController@deathlessIndex');
-Route::get('/1/leaderboards/steam/daily', 'Api\SteamLeaderboardsController@dailyIndex');
-Route::get('/1/leaderboards/steam/{lbid}', 'Api\SteamLeaderboardsController@show');
+// Daily Rankings
+Route::get('/1/rankings/daily', 'Api\DailyRankingsController@index');
+
+// Leaderboards
+Route::get('/1/leaderboards', 'Api\LeaderboardsController@index');
+Route::get('/1/leaderboards/score', 'Api\LeaderboardsController@scoreIndex');
+Route::get('/1/leaderboards/speed', 'Api\LeaderboardsController@speedIndex');
+Route::get('/1/leaderboards/deathless', 'Api\LeaderboardsController@deathlessIndex');
+Route::get('/1/leaderboards/daily', 'Api\LeaderboardsController@dailyIndex');
+Route::get('/1/leaderboards/xml', 'Api\LeaderboardsController@xmlIndex');
+Route::get('/1/leaderboards/{lbid}', 'Api\LeaderboardsController@show');
 
 // Leaderboard Snapshots
 Route::get('/1/leaderboards/{lbid}/snapshots', 'Api\LeaderboardSnapshotsController@index');

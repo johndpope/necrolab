@@ -120,6 +120,8 @@ class Generate implements ShouldQueue {
                         $rank_points, 
                         $leaderboard_entry->steam_user_id
                     );
+                    
+                    $power_ranking_entry_record["{$leaderboard_entry->character_name}_time"] = $leaderboard_entry->time;
                     break;
                 case 'score':
                     // Add the rank points for this record to the score ranking
@@ -132,6 +134,8 @@ class Generate implements ShouldQueue {
                         $rank_points, 
                         $leaderboard_entry->steam_user_id
                     );
+                    
+                    $power_ranking_entry_record["{$leaderboard_entry->character_name}_score"] = $leaderboard_entry->score;
                     break;
                 case 'deathless':
                     // Add the rank points for this record to the deathless ranking
@@ -144,6 +148,8 @@ class Generate implements ShouldQueue {
                         $rank_points, 
                         $leaderboard_entry->steam_user_id
                     );
+                    
+                    $power_ranking_entry_record["{$leaderboard_entry->character_name}_win_count"] = $leaderboard_entry->win_count;
                     break;
             }
             

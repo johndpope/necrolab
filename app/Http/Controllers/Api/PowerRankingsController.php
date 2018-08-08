@@ -11,7 +11,7 @@ use App\PowerRankings;
 use App\Releases;
 use App\Modes;
 
-class SteamPowerRankingsController extends Controller {
+class PowerRankingsController extends Controller {
     /**
      * Instantiate a new controller instance.
      *

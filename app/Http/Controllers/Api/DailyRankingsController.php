@@ -11,7 +11,7 @@ use App\DailyRankings;
 use App\Releases;
 use App\DailyRankingDayTypes;
 
-class SteamDailyRankingsController extends Controller {
+class DailyRankingsController extends Controller {
     /**
      * Instantiate a new controller instance.
      *

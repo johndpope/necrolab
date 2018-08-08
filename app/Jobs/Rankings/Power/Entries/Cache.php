@@ -80,35 +80,41 @@ class Cache implements ShouldQueue {
             
             /* ---------- Score rank ---------- */
             
-            ExternalSites::addToSiteIdIndexes(
-                $indexes, 
-                $entry, 
-                CacheNames::getScore($entry->release_id, $entry->mode_id, $entry->seeded),
-                $steam_user_id, 
-                (int)$entry->score_rank
-            );
+            if(!empty($entry->score_rank)) {
+                ExternalSites::addToSiteIdIndexes(
+                    $indexes, 
+                    $entry, 
+                    CacheNames::getScore($entry->release_id, $entry->mode_id, $entry->seeded),
+                    $steam_user_id, 
+                    (int)$entry->score_rank
+                );
+            }
             
             
             /* ---------- Speed rank ---------- */
             
-            ExternalSites::addToSiteIdIndexes(
-                $indexes, 
-                $entry, 
-                CacheNames::getSpeed($entry->release_id, $entry->mode_id, $entry->seeded),
-                $steam_user_id, 
-                (int)$entry->speed_rank
-            );
+            if(!empty($entry->speed_rank)) {
+                ExternalSites::addToSiteIdIndexes(
+                    $indexes, 
+                    $entry, 
+                    CacheNames::getSpeed($entry->release_id, $entry->mode_id, $entry->seeded),
+                    $steam_user_id, 
+                    (int)$entry->speed_rank
+                );
+            }
             
             
             /* ---------- Deathless rank ---------- */
             
-            ExternalSites::addToSiteIdIndexes(
-                $indexes, 
-                $entry, 
-                CacheNames::getDeathless($entry->release_id, $entry->mode_id, $entry->seeded),
-                $steam_user_id, 
-                (int)$entry->deathless_rank
-            );
+            if(!empty($entry->deathless_rank)) {
+                ExternalSites::addToSiteIdIndexes(
+                    $indexes, 
+                    $entry, 
+                    CacheNames::getDeathless($entry->release_id, $entry->mode_id, $entry->seeded),
+                    $steam_user_id, 
+                    (int)$entry->deathless_rank
+                );
+            }
             
             
             /* ---------- Character ranks ---------- */
@@ -122,7 +128,7 @@ class Cache implements ShouldQueue {
                         $entry, 
                         CacheNames::getCharacter($entry->release_id, $entry->mode_id, $entry->seeded, $characters[$character_name]->character_id),
                         $steam_user_id, 
-                        (int)$character_rank->rank
+                        (int)$character_rank['rank']
                     );
                 }
             }
