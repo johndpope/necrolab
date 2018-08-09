@@ -64,6 +64,9 @@ Route::get('/1/rankings/character/entries', 'Api\PowerRankingEntriesController@c
 // Daily Rankings
 Route::get('/1/rankings/daily', 'Api\DailyRankingsController@index');
 
+// Daily Ranking Entries
+Route::get('/1/rankings/daily/entries', 'Api\DailyRankingEntriesController@index');
+
 // Leaderboards
 Route::get('/1/leaderboards', 'Api\LeaderboardsController@index');
 Route::get('/1/leaderboards/score', 'Api\LeaderboardsController@scoreIndex');

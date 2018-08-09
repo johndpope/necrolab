@@ -124,4 +124,36 @@ class DailyRankingEntries extends Model {
         
         return $query;
     }
+    
+    public static function getApiReadQuery(int $release_id, int $mode_id, int $daily_ranking_day_type_id, DateTime $date) {
+        $entries_table_name = static::getTableName($date);
+
+        $query = DB::table('daily_rankings AS dr')
+            ->select([
+                'su.steamid',
+                'dre.rank',
+                'dre.first_place_ranks',
+                'dre.top_5_ranks',
+                'dre.top_10_ranks',
+                'dre.top_20_ranks',
+                'dre.top_50_ranks',
+                'dre.top_100_ranks',
+                'dre.total_points',
+                'dre.total_score',
+                'dre.total_dailies',
+                'dre.total_wins',
+                'dre.sum_of_ranks',
+                'dre.steam_user_id'
+            ])
+            ->join("{$entries_table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.daily_ranking_id')
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'dre.steam_user_id')
+            ->where('dr.date', $date->format('Y-m-d'))
+            ->where('dr.release_id', $release_id)
+            ->where('dr.mode_id', $mode_id)
+            ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type_id);
+            
+        ExternalSites::addSiteIdSelectFields($query);
+        
+        return $query;
+    }
 }

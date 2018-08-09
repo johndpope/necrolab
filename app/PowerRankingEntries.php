@@ -178,9 +178,9 @@ class PowerRankingEntries extends Model {
             ])
             ->join("{$entries_table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.power_ranking_id')
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'pre.steam_user_id')
+            ->where('pr.date', $date->format('Y-m-d'))
             ->where('pr.release_id', $release_id)
             ->where('pr.mode_id', $mode_id)
-            ->where('pr.seeded', $seeded)
-            ->where('pr.date', $date->format('Y-m-d'));
+            ->where('pr.seeded', $seeded);
     }
 }
