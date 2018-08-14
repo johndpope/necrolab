@@ -52,9 +52,12 @@ Route::get('/1/players/steam', 'Api\SteamUsersController@index');
 Route::get('/1/players/steam/{id}', 'Api\SteamUsersController@show');
 
 // Player Pbs
-Route::get('/1/players/steam/pbs/score', 'Api\SteamUsersController@scoreIndex');
-Route::get('/1/players/steam/pbs/speed', 'Api\SteamUsersController@speedIndex');
-Route::get('/1/players/steam/pbs/deathless', 'Api\SteamUsersController@deathlessIndex');
+Route::get('/1/players/steam/pbs/score', 'Api\SteamUserPbsController@scoreIndex');
+Route::get('/1/players/steam/pbs/speed', 'Api\SteamUserPbsController@speedIndex');
+Route::get('/1/players/steam/pbs/deathless', 'Api\SteamUserPbsController@deathlessIndex');
+Route::get('/1/players/steam/{steamid}/pbs/score', 'Api\SteamUserPbsController@playerScoreIndex');
+Route::get('/1/players/steam/{steamid}/pbs/speed', 'Api\SteamUserPbsController@playerSpeedIndex');
+Route::get('/1/players/steam/{steamid}/pbs/deathless', 'Api\SteamUserPbsController@playerDeathlessIndex');
 
 // Power Rankings
 Route::get('/1/rankings/power', 'Api\PowerRankingsController@index');
