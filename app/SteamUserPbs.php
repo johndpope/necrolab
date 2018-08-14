@@ -204,4 +204,54 @@ class SteamUserPbs extends Model {
         
         return $all_ids_by_unique;
     }
+    
+    public static function getPlayerApiReadQuery(
+        string $steamid, 
+        int $character_id, 
+        int $release_id, 
+        int $mode_id,
+        int $leaderboard_type_id,
+        int $seeded, 
+        int $co_op, 
+        int $custom
+    ) {
+        return DB::table('steam_user_pbs AS sup')
+            ->select([
+                'l.lbid',                
+                'lt.name AS leaderboard_type',
+                'ls.date AS first_snapshot_date',
+                'sup.first_rank',
+                'led.name AS details',
+                'sup.zone',
+                'sup.level',
+                'sup.is_win',
+                'sup.score',
+                'sup.time',
+                'sup.win_count',
+                'sr.ugcid',
+                'se.name AS seed',
+                'sr.downloaded',
+                'sr.uploaded_to_s3',
+                'srv.name AS version',
+                'rr.name AS run_result'
+            ])
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
+            ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id')
+            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_snapshot_id', '=', 'sup.first_leaderboard_snapshot_id')
+            ->join("leaderboard_entry_details AS led", 'led.leaderboard_entry_details_id', '=', 'sup.leaderboard_entry_details_id')
+            ->leftJoin('steam_replays AS sr', 'sr.steam_user_pb_id', '=', 'sup.steam_user_pb_id')
+            ->leftJoin('run_results AS rr',  'rr.run_result_id', '=', 'sr.run_result_id')
+            ->leftJoin('steam_replay_versions AS srv', 'srv.steam_replay_version_id', '=', 'sr.steam_replay_version_id')
+            ->leftJoin('seeds AS se', 'se.id', '=', 'sr.seed_id')
+            ->where('su.steamid', $steamid)
+            ->where('l.character_id', $character_id)
+            ->where('l.release_id', $release_id)
+            ->where('l.mode_id', $mode_id)
+            ->where('l.leaderboard_type_id', $leaderboard_type_id)
+            ->where('l.is_seeded', $seeded)
+            ->where('l.is_co_op', $co_op)
+            ->where('l.is_custom', $custom)
+            ->orderBy('sup.steam_user_pb_id', 'desc');
+    }
 }

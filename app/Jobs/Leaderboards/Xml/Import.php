@@ -85,7 +85,7 @@ class Import implements ShouldQueue {
                         $page = 1;
                         
                         do {
-                            $callback_hander->setCallbackArguments([
+                            $callback_hander->setArguments([
                                 'GET',
                                 $next_page_url
                             ]);

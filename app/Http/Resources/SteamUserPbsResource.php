@@ -11,15 +11,26 @@ class SteamUserPbsResource extends JsonResource {
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request) {            
-        $record = [
-            'steamid' => $this->steamid,
-            'details' => $this->details,
-            'zone' => $this->zone,
-            'level' => $this->level,
-            'win' => $this->is_win,
-            'score' => $this->score
-        ];
+    public function toArray($request) {
+        $record = [];
+
+        if(!empty($this->steamid)) {
+            $record['steamid'] = $this->steamid;
+        }
+        
+        if(!empty($this->first_snapshot_date)) {
+            $record['date'] = $this->first_snapshot_date;
+        }
+        
+        if(!empty($this->first_rank)) {
+            $record['rank'] = $this->first_rank;
+        }
+
+        $record['details'] = $this->details;
+        $record['zone'] = $this->zone;
+        $record['level'] = $this->level;
+        $record['win'] = $this->is_win;
+        $record['score'] = $this->score;
         
         switch($this->leaderboard_type) {
             case 'speed':

@@ -2,11 +2,12 @@
 
 namespace App;
 
-use Illuminate\Database\Eloquent\Model;
+use ElcoBvg\Opcache\Model;
 use App\Traits\GetByName;
+use App\Traits\StoredInCache;
 
 class LeaderboardTypes extends Model {
-    use GetByName;
+    use GetByName, StoredInCache;
 
     /**
      * The table associated with the model.
@@ -28,6 +29,10 @@ class LeaderboardTypes extends Model {
      * @var bool
      */
     public $timestamps = false;
+    
+    public static function getStoredInCacheQuery() {
+        return static::orderBy('leaderboard_type_id', 'asc');
+    }
     
     public static function getTypeFromString($string) {
         $leaderboard_type = NULL;

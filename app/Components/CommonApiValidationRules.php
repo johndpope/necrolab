@@ -22,7 +22,7 @@ class CommonApiValidationRules {
         'seeded' => 'required|integer|in:0,1',
         'co_op' => 'required|integer|in:0,1',
         'custom' => 'required|integer|in:0,1',
-        'steamid' => 'required|integer'
+        'steamid' => 'required|string'
     ];
 
     public static function getRules(array $rule_names) {    

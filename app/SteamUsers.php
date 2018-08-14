@@ -86,10 +86,11 @@ class SteamUsers extends Model {
     }
     
     public static function getAllIdsBySteamid() {
-        $query = static::select([
-            'steam_user_id',
-            'steamid'
-        ]);
+        $query = DB::table('steam_users AS su')
+            ->select([
+                'steam_user_id',
+                'steamid'
+            ]);
         
         $cursor = new PostgresCursor(
             'steam_user_ids', 
