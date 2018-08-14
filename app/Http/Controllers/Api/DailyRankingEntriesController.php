@@ -9,7 +9,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\DailyRankingEntriesResource;
 use App\Http\Requests\Api\ReadDailyRankingEntries;
 use App\Components\CacheNames\Rankings\Daily as CacheNames;
-use App\Components\EntriesDataset;
+use App\Components\Dataset\Dataset;
+use App\Components\Dataset\Indexes\Sql as SqlIndex;
+use App\Components\Dataset\DataProviders\Sql as SqlDataProvider;
 use App\DailyRankingEntries;
 use App\Releases;
 use App\Modes;
@@ -39,22 +41,39 @@ class DailyRankingEntriesController extends Controller {
         $daily_ranking_day_type_id = DailyRankingDayTypes::getByName($request->number_of_days)->daily_ranking_day_type_id;
         $date = new DateTime($request->date);
         
-        $dataset = new EntriesDataset(
-            CacheNames::getRankings($release_id, $mode_id, $daily_ranking_day_type_id), 
-            'su.steam_user_id', 
-            DailyRankingEntries::getApiReadQuery($release_id, $mode_id, $daily_ranking_day_type_id, $date)
-        );
+        $index_name = CacheNames::getRankings($release_id, $mode_id, $daily_ranking_day_type_id);
+        
+        
+        /* ---------- Data Provider ---------- */
+        
+        $data_provider = new SqlDataProvider(DailyRankingEntries::getApiReadQuery($release_id, $mode_id, $daily_ranking_day_type_id, $date));
+        
+        
+        /* ---------- Index ---------- */
+        
+        $index = new SqlIndex($index_name);
+        
+        
+        /* ---------- Dataset ---------- */
+        
+        $dataset = new Dataset($index_name, $data_provider);
+        
+        $dataset->setIndex($index, 'su.steam_user_id');
         
         $dataset->setIndexSubName($request->date);
         
         $dataset->setFromRequest($request);
-            
+        
+        $dataset->setBinaryFields([
+            'characters'
+        ]);
+        
         $dataset->setSortCallback(function($entry, $key) {
             return $entry->rank;
         });
         
         $dataset->process();
-    
+        
         return DailyRankingEntriesResource::collection($dataset->getPaginator());
     }
 }

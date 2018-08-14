@@ -128,8 +128,8 @@ class SteamUsers extends Model {
         return $query;
     }
     
-    public static function getApiReadQuery(array $steamids = []) {
-        $query = DB::table('steam_users AS su')
+    public static function getApiReadQuery() {
+        return DB::table('steam_users AS su')
             ->select([
                 'su.steam_user_id',
                 'su.steamid',
@@ -137,16 +137,5 @@ class SteamUsers extends Model {
                 'su.profileurl',
             ])
             ->orderBy('su.personaname', 'asc');
-        
-        if(!empty($steamids)) {
-            $any_values = '{' . implode(',', $steamids) . '}';
-            
-            // Add the ANY criteria to the dataset query           
-            $query->whereRaw("su.steamid = ANY(?::bigint[])", [
-                $any_values
-            ]);
-        }
-        
-        return $query;
     }
 }

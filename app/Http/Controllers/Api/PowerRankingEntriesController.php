@@ -10,7 +10,9 @@ use App\Http\Resources\PowerRankingEntriesResource;
 use App\Http\Requests\Api\ReadPowerRankingEntries;
 use App\Http\Requests\Api\ReadPowerRankingCharacterEntries;
 use App\Components\CacheNames\Rankings\Power as CacheNames;
-use App\Components\EntriesDataset;
+use App\Components\Dataset\Dataset;
+use App\Components\Dataset\Indexes\Sql as SqlIndex;
+use App\Components\Dataset\DataProviders\Sql as SqlDataProvider;
 use App\PowerRankingEntries;
 use App\Releases;
 use App\Modes;
@@ -36,13 +38,27 @@ class PowerRankingEntriesController extends Controller {
      * Retrieves a paginated listing of the current entries request.
      *
      * @param string $index_name
-     * @param  \Illuminate\Http\Request  $request
+     * @param \Illuminate\Http\Request  $request
      * @param \Illuminate\Database\Query\Builder $query
      * @param callable $sort_callback
      * @return \Illuminate\Http\Response
      */
     protected function getEntriesResponse(string $index_name, Request $request, Builder $query, callable $sort_callback) {
-        $dataset = new EntriesDataset($index_name, 'su.steam_user_id', $query);
+        /* ---------- Data Provider ---------- */
+        
+        $data_provider = new SqlDataProvider($query);
+        
+        
+        /* ---------- Index ---------- */
+        
+        $index = new SqlIndex($index_name);
+        
+        
+        /* ---------- Dataset ---------- */
+        
+        $dataset = new Dataset($index_name, $data_provider);
+        
+        $dataset->setIndex($index, 'su.steam_user_id');
         
         $dataset->setIndexSubName($request->date);
         
@@ -55,7 +71,7 @@ class PowerRankingEntriesController extends Controller {
         $dataset->setSortCallback($sort_callback);
         
         $dataset->process();
-    
+        
         return PowerRankingEntriesResource::collection($dataset->getPaginator());
     }
 

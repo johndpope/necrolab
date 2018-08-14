@@ -51,9 +51,7 @@ class Generate implements ShouldQueue {
         $this->date = $date;
     }
     
-    protected function flattenLeaderboardEntries() {
-        $leaderboard_entries_query = LeaderboardEntries::getPowerRankingsQuery($this->date);
-        
+    protected function flattenLeaderboardEntries() {        
         $cursor = new PostgresCursor(
             'power_rankings_generate', 
             LeaderboardEntries::getPowerRankingsQuery($this->date),

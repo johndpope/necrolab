@@ -7,7 +7,9 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\SteamUsersResource;
 use App\Http\Requests\Api\ReadSteamUsers;
 use App\Components\CacheNames\Users\Steam as SteamUsersCacheNames;
-use App\Components\EntriesDataset;
+use App\Components\Dataset\Dataset;
+use App\Components\Dataset\Indexes\Sql as SqlIndex;
+use App\Components\Dataset\DataProviders\Sql as SqlDataProvider;
 use App\SteamUsers;
 
 class SteamUsersController extends Controller {
@@ -32,17 +34,30 @@ class SteamUsersController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function index(ReadSteamUsers $request) {
-        $dataset = new EntriesDataset(
-            SteamUsersCacheNames::getUsersIndex(), 
-            'su.steam_user_id', 
-            SteamUsers::getApiReadQuery()
-        );
+    public function index(ReadSteamUsers $request) {        
+        $index_name = SteamUsersCacheNames::getUsersIndex();
+        
+        
+        /* ---------- Data Provider ---------- */
+        
+        $data_provider = new SqlDataProvider(SteamUsers::getApiReadQuery());
+        
+        
+        /* ---------- Index ---------- */
+        
+        $index = new SqlIndex($index_name);
+        
+        
+        /* ---------- Dataset ---------- */
+        
+        $dataset = new Dataset($index_name, $data_provider);
+        
+        $dataset->setIndex($index, 'su.steam_user_id');
         
         $dataset->setFromRequest($request);
         
         $dataset->process();
-    
+        
         return SteamUsersResource::collection($dataset->getPaginator());
     }
 

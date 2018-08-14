@@ -225,8 +225,7 @@ class LeaderboardEntries extends Model {
             ->leftJoin('steam_replay_versions AS srv', 'srv.steam_replay_version_id', '=', 'sr.steam_replay_version_id')
             ->leftJoin('seeds AS se', 'se.id', '=', 'sr.seed_id')
             ->where('l.lbid', $lbid)
-            ->where('ls.date', $date->format('Y-m-d'))
-            ->orderBy('le.rank', 'asc');
+            ->where('ls.date', $date->format('Y-m-d'));
         
         return $query;
     }
@@ -268,8 +267,7 @@ class LeaderboardEntries extends Model {
             ->leftJoin('seeds AS se', 'se.id', '=', 'sr.seed_id')
             ->where('l.release_id', $release_id)
             ->where('lt.name', 'daily')
-            ->where('l.daily_date', $date->format('Y-m-d'))
-            ->orderBy('le.rank', 'asc');
+            ->where('l.daily_date', $date->format('Y-m-d'));
         
         return $query;
     }

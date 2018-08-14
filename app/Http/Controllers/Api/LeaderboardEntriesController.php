@@ -9,7 +9,9 @@ use App\Http\Resources\LeaderboardEntriesResource;
 use App\Http\Requests\Api\ReadLeaderboardEntries;
 use App\Http\Requests\Api\ReadDailyLeaderboardEntries;
 use App\Components\CacheNames\Leaderboards\Steam as CacheNames;
-use App\Components\EntriesDataset;
+use App\Components\Dataset\Dataset;
+use App\Components\Dataset\Indexes\Sql as SqlIndex;
+use App\Components\Dataset\DataProviders\Sql as SqlDataProvider;
 use App\LeaderboardEntries;
 use App\Releases;
 use App\Modes;
@@ -34,18 +36,35 @@ class LeaderboardEntriesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function nonDailyIndex(ReadLeaderboardEntries $request) {
-        $dataset = new EntriesDataset(
-            CacheNames::getIndex((int)$request->lbid, []), 
-            'su.steam_user_id', 
-            LeaderboardEntries::getNonDailyApiReadQuery($request->lbid, new DateTime($request->date))
-        );
+        $index_name = CacheNames::getIndex((int)$request->lbid, []);
+        
+        
+        /* ---------- Data Provider ---------- */
+        
+        $data_provider = new SqlDataProvider(LeaderboardEntries::getNonDailyApiReadQuery($request->lbid, new DateTime($request->date)));
+        
+        
+        /* ---------- Index ---------- */
+        
+        $index = new SqlIndex($index_name);
+        
+        
+        /* ---------- Dataset ---------- */
+        
+        $dataset = new Dataset($index_name, $data_provider);
+        
+        $dataset->setIndex($index, 'sup.steam_user_id');
         
         $dataset->setIndexSubName($request->date);
         
         $dataset->setFromRequest($request);
         
+        $dataset->setSortCallback(function($entry, $key) {
+            return $entry->rank;
+        });
+        
         $dataset->process();
-    
+        
         return LeaderboardEntriesResource::collection($dataset->getPaginator());
     }
     
@@ -59,22 +78,39 @@ class LeaderboardEntriesController extends Controller {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName('normal')->mode_id;
         $date = new DateTime($request->date);
-    
-        $dataset = new EntriesDataset(
-            CacheNames::getDailyIndex($date, [
-                $release_id,
-                $mode_id
-            ]),
-            'su.steam_user_id', 
-            LeaderboardEntries::getDailyApiReadQuery($release_id, $date)
-        );
+        
+        $index_name = CacheNames::getDailyIndex($date, [
+            $release_id,
+            $mode_id
+        ]);
+        
+        
+        /* ---------- Data Provider ---------- */
+        
+        $data_provider = new SqlDataProvider(LeaderboardEntries::getDailyApiReadQuery($release_id, $date));
+        
+        
+        /* ---------- Index ---------- */
+        
+        $index = new SqlIndex($index_name);
+        
+        
+        /* ---------- Dataset ---------- */
+        
+        $dataset = new Dataset($index_name, $data_provider);
+        
+        $dataset->setIndex($index, 'sup.steam_user_id');
         
         $dataset->setIndexSubName($request->date);
         
         $dataset->setFromRequest($request);
         
+        $dataset->setSortCallback(function($entry, $key) {
+            return $entry->rank;
+        });
+        
         $dataset->process();
-    
+        
         return LeaderboardEntriesResource::collection($dataset->getPaginator());
     }
 }
