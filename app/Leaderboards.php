@@ -393,4 +393,91 @@ class Leaderboards extends Model {
             ->where('lt.name', 'daily')
             ->orderBy('l.daily_date', 'desc');
     }
+    
+    public static function getPlayerApiReadQuery(string $steamid) {
+        return DB::table('steam_user_pbs AS sup')
+            ->select([
+                'l.leaderboard_id',
+                'l.lbid',
+                'l.name',
+                'l.display_name',
+                'c.name AS character_name',
+                'lt.name AS leaderboard_type_name',
+                DB::raw('string_agg(rt.name, \',\') AS rankings'),
+                'l.is_custom',
+                'l.is_co_op',
+                'l.is_seeded'
+            ])
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
+            ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id')
+            ->join('characters AS c', 'c.character_id', '=', 'l.character_id')
+            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->leftJoin('leaderboard_ranking_types AS lrt', 'lrt.leaderboard_id', '=', 'l.leaderboard_id')
+            ->leftJoin('ranking_types AS rt', 'rt.id', '=', 'lrt.ranking_type_id')
+            ->where('su.steamid', $steamid)
+            ->groupBy(
+                'l.leaderboard_id',
+                'l.lbid',
+                'l.name',
+                'l.display_name',
+                'c.name',
+                'lt.name',
+                'l.is_custom',
+                'l.is_co_op',
+                'l.is_seeded'
+            )
+            ->orderBy('lt.name', 'asc')
+            ->orderBy('l.name', 'asc');
+    }
+    
+    public static function getPlayerNonDailyApiReadQuery(string $steamid, int $release_id, int $mode_id) {
+        return static::getPlayerApiReadQuery($steamid)
+            ->where('release_id', $release_id)
+            ->where('mode_id', $mode_id)
+            ->where('lt.name', '!=', 'daily');
+    }
+    
+    public static function getPlayerScoreApiReadQuery(string $steamid, int $release_id, int $mode_id) {
+        return static::getPlayerApiReadQuery($steamid)
+            ->where('release_id', $release_id)
+            ->where('mode_id', $mode_id)
+            ->where('lt.name', '=', 'score');
+    }
+    
+    public static function getPlayerSpeedApiReadQuery(string $steamid, int $release_id, int $mode_id) {
+        return static::getPlayerApiReadQuery($steamid)
+            ->where('release_id', $release_id)
+            ->where('mode_id', $mode_id)
+            ->where('lt.name', '=', 'speed');
+    }
+    
+    public static function getPlayerDeathlessApiReadQuery(string $steamid, int $release_id) {
+        $mode_id = Modes::getByName('normal')->mode_id;
+    
+        return static::getPlayerApiReadQuery($steamid)
+            ->where('release_id', $release_id)
+            ->where('mode_id', $mode_id)
+            ->where('lt.name', '=', 'deathless');
+    }
+    
+    public static function getPlayerDailyApiReadQuery(string $steamid, int $release_id) {
+        $mode_id = Modes::getByName('normal')->mode_id;
+    
+        return DB::table('steam_user_pbs AS sup')
+            ->select([
+                'l.leaderboard_id',
+                'l.daily_date'
+            ])
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
+            ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id')
+            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->where('l.release_id', $release_id)
+            ->where('l.mode_id', $mode_id)
+            ->where('lt.name', 'daily')
+            ->groupBy(
+                'l.leaderboard_id',
+                'l.daily_date'
+            )
+            ->orderBy('l.daily_date', 'desc');
+    }
 }

@@ -49,7 +49,7 @@ class SteamUserPbsController extends Controller {
         $co_op = $validated_request['co_op'];
         $custom = $validated_request['custom'];
         
-        $cache_key = "player:steam:{$steamid}:{$character_id}:{$release_id}:{$mode_id}:{$leaderboard_type_id}:{$seeded}:{$co_op}:{$custom}";
+        $cache_key = "players:steam:{$steamid}:pbs:{$character_id}:{$release_id}:{$mode_id}:{$leaderboard_type_id}:{$seeded}:{$co_op}:{$custom}";
         
         return SteamUserPbsResource::collection(
             Cache::store('opcache')->remember($cache_key, 5, function() use(

@@ -51,10 +51,12 @@ Route::put('/1/external_sites/{id}/disable', 'Api\ExternalSitesController@disabl
 Route::get('/1/players/steam', 'Api\SteamUsersController@index');
 Route::get('/1/players/steam/{id}', 'Api\SteamUsersController@show');
 
-// Player Pbs
+// Steam User PBs
 Route::get('/1/players/steam/pbs/score', 'Api\SteamUserPbsController@scoreIndex');
 Route::get('/1/players/steam/pbs/speed', 'Api\SteamUserPbsController@speedIndex');
 Route::get('/1/players/steam/pbs/deathless', 'Api\SteamUserPbsController@deathlessIndex');
+
+// Specific Steam User PBs
 Route::get('/1/players/steam/{steamid}/pbs/score', 'Api\SteamUserPbsController@playerScoreIndex');
 Route::get('/1/players/steam/{steamid}/pbs/speed', 'Api\SteamUserPbsController@playerSpeedIndex');
 Route::get('/1/players/steam/{steamid}/pbs/deathless', 'Api\SteamUserPbsController@playerDeathlessIndex');
@@ -87,6 +89,13 @@ Route::get('/1/leaderboards/deathless', 'Api\LeaderboardsController@deathlessInd
 Route::get('/1/leaderboards/daily', 'Api\LeaderboardsController@dailyIndex');
 Route::get('/1/leaderboards/xml', 'Api\LeaderboardsController@xmlIndex');
 Route::get('/1/leaderboards/{lbid}', 'Api\LeaderboardsController@show');
+
+// Steam User Leaderboards
+Route::get('/1/players/steam/{steamid}/leaderboards', 'Api\LeaderboardsController@playerIndex');
+Route::get('/1/players/steam/{steamid}/leaderboards/score', 'Api\LeaderboardsController@playerScoreIndex');
+Route::get('/1/players/steam/{steamid}/leaderboards/speed', 'Api\LeaderboardsController@playerSpeedIndex');
+Route::get('/1/players/steam/{steamid}/leaderboards/deathless', 'Api\LeaderboardsController@playerDeathlessIndex');
+Route::get('/1/players/steam/{steamid}/leaderboards/daily', 'Api\LeaderboardsController@playerDailyIndex');
 
 // Leaderboard Snapshots
 Route::get('/1/leaderboards/{lbid}/snapshots', 'Api\LeaderboardSnapshotsController@index');

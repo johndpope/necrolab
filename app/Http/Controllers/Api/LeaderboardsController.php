@@ -12,6 +12,7 @@ use App\Http\Requests\Api\ReadLeaderboards;
 use App\Http\Requests\Api\ReadDeathlessLeaderboards;
 use App\Http\Requests\Api\ReadDailyLeaderboards;
 use App\Leaderboards;
+use App\LeaderboardTypes;
 use App\Releases;
 use App\Modes;
 
@@ -29,7 +30,12 @@ class LeaderboardsController extends Controller {
             'deathlessIndex',
             'dailyIndex',
             'show',
-            'xmlIndex'
+            'xmlIndex',
+            'playerIndex',
+            'playerScoreIndex',
+            'playerSpeedIndex',
+            'playerDeathlessIndex',
+            'playerDailyIndex'
         ]);
     }
 
@@ -151,6 +157,117 @@ class LeaderboardsController extends Controller {
         return LeaderboardsXmlResource::collection(
             Cache::store('opcache')->remember("leaderboards:xml", 5, function() {
                 return collect(Leaderboards::getXmlUrls());
+            })
+        );
+    }
+    
+    /**
+     * Display a listing of the leaderboards a player has an entry in.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function playerIndex($steamid, ReadLeaderboards $request) {
+        $release_id = Releases::getByName($request->release)->release_id;
+        $mode_id = Modes::getByName($request->mode)->mode_id;
+        
+        $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:{$mode_id}";
+        
+        return LeaderboardsResource::collection(
+            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id, $mode_id) {
+                return Leaderboards::getPlayerNonDailyApiReadQuery(
+                    $steamid,
+                    $release_id,
+                    $mode_id
+                )->get();
+            })
+        );
+    }
+    
+    /**
+     * Display a listing of the score leaderboards a player has an entry in.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function playerScoreIndex($steamid, ReadLeaderboards $request) {
+        $release_id = Releases::getByName($request->release)->release_id;
+        $mode_id = Modes::getByName($request->mode)->mode_id;
+        
+        $cache_key = "players:steam:{$steamid}:leaderboards:score:{$release_id}:{$mode_id}";
+        
+        return LeaderboardsResource::collection(
+            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id, $mode_id) {
+                return Leaderboards::getPlayerScoreApiReadQuery(
+                    $steamid,
+                    $release_id,
+                    $mode_id
+                )->get();
+            })
+        );
+    }
+    
+    /**
+     * Display a listing of the speed leaderboards a player has an entry in.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function playerSpeedIndex($steamid, ReadLeaderboards $request) {
+        $release_id = Releases::getByName($request->release)->release_id;
+        $mode_id = Modes::getByName($request->mode)->mode_id;
+        
+        $cache_key = "players:steam:{$steamid}:leaderboards:speed:{$release_id}:{$mode_id}";
+        
+        return LeaderboardsResource::collection(
+            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id, $mode_id) {
+                return Leaderboards::getPlayerSpeedApiReadQuery(
+                    $steamid,
+                    $release_id,
+                    $mode_id
+                )->get();
+            })
+        );
+    }
+    
+    /**
+     * Display a listing of the deathless leaderboards a player has an entry in.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function playerDeathlessIndex($steamid, ReadDeathlessLeaderboards $request) {
+        $release_id = Releases::getByName($request->release)->release_id;
+        
+        $cache_key = "players:steam:{$steamid}:leaderboards:speed:{$release_id}";
+        
+        return LeaderboardsResource::collection(
+            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id) {
+                return Leaderboards::getPlayerDeathlessApiReadQuery(
+                    $steamid,
+                    $release_id
+                )->get();
+            })
+        );
+    }
+    
+    /**
+     * Display a listing of all daily leaderboards that a player has an entry in.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function playerDailyIndex($steamid, ReadDailyLeaderboards $request) {
+        $release_id = Releases::getByName($request->release)->release_id;
+        
+        $cache_key = "players:steam:{$steamid}:leaderboards:daily:{$release_id}";
+        
+        return DailyLeaderboardsResource::collection(
+            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id) {
+                return Leaderboards::getPlayerDailyApiReadQuery(
+                    $steamid,
+                    $release_id
+                )->get();
             })
         );
     }
