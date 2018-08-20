@@ -81,6 +81,13 @@ Route::get('/1/rankings/daily/entries', 'Api\DailyRankingEntriesController@index
 Route::get('/1/leaderboards/entries', 'Api\LeaderboardEntriesController@nonDailyIndex');
 Route::get('/1/leaderboards/daily/entries', 'Api\LeaderboardEntriesController@dailyIndex');
 
+// Steam User Leaderboard Entries
+Route::get('/1/players/steam/{steamid}/leaderboards/entries', 'Api\LeaderboardEntriesController@playerNonDailyIndex');
+Route::get('/1/players/steam/{steamid}/leaderboards/score/entries', 'Api\LeaderboardEntriesController@playerScoreIndex');
+Route::get('/1/players/steam/{steamid}/leaderboards/speed/entries', 'Api\LeaderboardEntriesController@playerSpeedIndex');
+Route::get('/1/players/steam/{steamid}/leaderboards/deathless/entries', 'Api\LeaderboardEntriesController@playerDeathlessIndex');
+Route::get('/1/players/steam/{steamid}/leaderboards/daily/entries', 'Api\LeaderboardEntriesController@playerDailyIndex');
+
 // Leaderboards
 Route::get('/1/leaderboards', 'Api\LeaderboardsController@index');
 Route::get('/1/leaderboards/score', 'Api\LeaderboardsController@scoreIndex');
@@ -99,3 +106,6 @@ Route::get('/1/players/steam/{steamid}/leaderboards/daily', 'Api\LeaderboardsCon
 
 // Leaderboard Snapshots
 Route::get('/1/leaderboards/{lbid}/snapshots', 'Api\LeaderboardSnapshotsController@index');
+
+// Steam User Leaderboard Snapshots
+Route::get('/1/players/steam/{steamid}/leaderboards/{lbid}/snapshots', 'Api\LeaderboardSnapshotsController@playerIndex');

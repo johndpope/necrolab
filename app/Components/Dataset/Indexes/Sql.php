@@ -5,18 +5,10 @@ use stdClass;
 use Illuminate\Support\Facades\Cache;
 use App\Components\CacheNames\Users\Steam as SteamUsersCacheNames;
 use App\Components\Dataset\Indexes\Index;
-use App\Components\Dataset\Traits\HasIndexName;
-use App\Components\Dataset\Traits\HasIndexSubName;
-use App\Components\Dataset\Traits\HasSearchTerm;
-use App\Components\Dataset\Traits\HasPage;
-use App\Components\Dataset\Traits\HasLimit;
-use App\Components\Dataset\Traits\HasExternalSiteId;
 use App\EntryIndexes;
 
 class Sql
-extends Index {
-    use HasIndexName, HasIndexSubName, HasExternalSiteId, HasSearchTerm, HasPage, HasLimit;
-    
+extends Index {    
     protected $total_count = 0;
     
     protected $paginated_index = [];
@@ -82,7 +74,7 @@ extends Index {
             $this->total_count = $filtered_index->count;
             
             // Calculate the offset based on the page and limit
-            $offset = ($this->page - 1) * $this->limit;
+            $offset = static::getCalculatedOffset($this->page, $this->limit);
             
             // Slice the filtered index from the filtered index based on the page and the limit to get the paginated index
             $this->paginated_index = array_slice($filtered_index->data, $offset, $this->limit);

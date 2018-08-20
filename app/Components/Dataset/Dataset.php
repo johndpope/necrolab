@@ -108,6 +108,10 @@ class Dataset {
                 $this->data_provider->setIndexValues($this->index->getPaginatedIndex(), $this->index_field_name);
                 $total_count = $this->index->getTotalCount();
             }
+            else {
+                $this->data_provider->setPage($this->page);
+                $this->data_provider->setLimit($this->limit);
+            }
             
             // Process the data provider and return its data
             $this->data_provider->process();

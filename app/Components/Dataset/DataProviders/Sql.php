@@ -35,6 +35,15 @@ extends DataProvider {
                 $any_values
             ]);
         }
+        else {
+            // Set the limit criteria in the query
+            $this->query->limit($this->limit);
+            
+            // Calculate and set the offset criteria in the query
+            $offset = static::getCalculatedOffset($this->page, $this->limit);
+                
+            $this->query->offset($offset);
+        }
 
         // Retrieve the dataset from the database
         $this->data = $this->query->get();

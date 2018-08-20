@@ -15,7 +15,19 @@ class SteamUserPbsResource extends JsonResource {
         $record = [];
 
         if(!empty($this->steamid)) {
-            $record['steamid'] = $this->steamid;
+            $record['steamid'] = (string)$this->steamid;
+        }
+        
+        if(!empty($this->lbid)) {
+            $record['lbid'] = $this->lbid;
+        }
+        
+        if(!empty($this->character_name)) {
+            $record['character'] = $this->character_name;
+        }
+        
+        if(!empty($this->leaderboard_type)) {
+            $record['type'] = $this->leaderboard_type;
         }
         
         if(!empty($this->first_snapshot_date)) {
@@ -34,10 +46,10 @@ class SteamUserPbsResource extends JsonResource {
         
         switch($this->leaderboard_type) {
             case 'speed':
-                $record['time'] = $this->time;
+                $record['time'] = (float)$this->time;
                 break;
             case 'deathless':
-                $record['win_count'] = $this->win_count;
+                $record['win_count'] = (int)$this->win_count;
                 break;
         }
         
