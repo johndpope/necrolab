@@ -6,7 +6,7 @@ use App\Components\CacheNames\Core;
 
 class Steam
 extends Core {    
-    protected const STEAM_USERS = 'steam_users';
+    protected const STEAM_USERS = 'su';
     
     protected const ALL_RECORDS = 'records';
     

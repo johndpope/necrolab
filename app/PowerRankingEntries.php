@@ -6,10 +6,12 @@ use DateTime;
 use PDO;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Query\Builder;
 use App\Components\Encoder;
 use App\ExternalSites;
 use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
+use App\Releases;
 
 class PowerRankingEntries extends Model {
     use HasPartitions, HasTempTable;
@@ -144,6 +146,7 @@ class PowerRankingEntries extends Model {
 
         $query = DB::table('power_rankings AS pr')
             ->select([
+                'pr.date',
                 'pr.release_id',
                 'pr.mode_id',
                 'pr.seeded',
@@ -182,5 +185,81 @@ class PowerRankingEntries extends Model {
             ->where('pr.release_id', $release_id)
             ->where('pr.mode_id', $mode_id)
             ->where('pr.seeded', $seeded);
+    }
+    
+    public static function getSteamUserApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded, callable $additional_criteria = NULL) {
+        $release = Releases::getById($release_id);
+        
+        $start_date = new DateTime($release['start_date']);
+        $end_date = new DateTime($release['end_date']);
+    
+        $query = NULL;
+        
+        $table_names = static::getTableNames($start_date, $end_date);
+        
+        if(!empty($table_names)) {
+            foreach($table_names as $table_name) {                    
+                $partition_query = DB::table('power_rankings AS pr')
+                    ->select([
+                        'pr.date',
+                        'su.steam_user_id',
+                        'su.steamid',
+                        'pre.rank',
+                        'pre.score_rank',
+                        'pre.deathless_rank',
+                        'pre.speed_rank',
+                        'pre.characters'
+                    ])
+                    ->join("{$table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.power_ranking_id')
+                    ->join('steam_users AS su', 'su.steam_user_id', '=', 'pre.steam_user_id')
+                    ->where('su.steamid', $steamid)
+                    ->whereBetween('pr.date', [
+                        $start_date->format('Y-m-d'),
+                        $end_date->format('Y-m-d')
+                    ])
+                    ->where('pr.release_id', $release_id)
+                    ->where('pr.mode_id', $mode_id)
+                    ->where('pr.seeded', $seeded);
+                
+                if(!empty($additional_criteria)) {
+                    call_user_func_array($additional_criteria, [
+                        $partition_query
+                    ]);
+                }
+                
+                if(!isset($query)) {
+                    $query = $partition_query;
+                }
+                else {
+                    $query->unionAll($partition_query);
+                }
+            }
+        }
+            
+        return $query;
+    }
+    
+    public static function getSteamUserScoreApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded) { 
+        $additional_criteria = function(Builder $query) {
+            $query->whereNotNull('pre.score_rank');
+        };
+    
+        return static::getSteamUserApiReadQuery($steamid, $release_id, $mode_id, $seeded, $additional_criteria);
+    }
+    
+    public static function getSteamUserSpeedApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded) { 
+        $additional_criteria = function(Builder $query) {
+            $query->whereNotNull('pre.speed_rank');
+        };
+    
+        return static::getSteamUserApiReadQuery($steamid, $release_id, $mode_id, $seeded, $additional_criteria);
+    }
+    
+    public static function getSteamUserDeathlessApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded) { 
+        $additional_criteria = function(Builder $query) {
+            $query->whereNotNull('pre.deathless_rank');
+        };
+    
+        return static::getSteamUserApiReadQuery($steamid, $release_id, $mode_id, $seeded, $additional_criteria);
     }
 }

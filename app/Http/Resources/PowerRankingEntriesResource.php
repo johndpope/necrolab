@@ -102,14 +102,25 @@ class PowerRankingEntriesResource extends JsonResource {
         }
         
         
-        return [
-            'steamid' => $this->steamid,
-            'characters' => $character_rankings,
-            'score' => $score_rankings,
-            'speed' => $speed_rankings,
-            'deathless' => $deathless_rankings,
-            'rank' => (int)$this->rank,
-            'points' => (float)$total_points
-        ];
+        /* ---------- Compile response record ---------- */
+        
+        $record = [];
+        
+        // If this record is in a Steam User context then only show its date.
+        if(!empty($this->date)) {
+            $record['date'] = $this->date;
+        }
+        else {
+            $record['steamid'] = $this->steamid;
+        }
+        
+        $record['characters'] = $character_rankings;
+        $record['score'] = $score_rankings;
+        $record['speed'] = $speed_rankings;
+        $record['deathless'] = $deathless_rankings;
+        $record['rank'] = (int)$this->rank;
+        $record['points'] = (float)$total_points;
+        
+        return $record;
     }
 }

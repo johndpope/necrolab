@@ -71,6 +71,13 @@ Route::get('/1/rankings/speed/entries', 'Api\PowerRankingEntriesController@speed
 Route::get('/1/rankings/deathless/entries', 'Api\PowerRankingEntriesController@deathlessIndex');
 Route::get('/1/rankings/character/entries', 'Api\PowerRankingEntriesController@characterIndex');
 
+// Steam User Power Ranking Entries
+Route::get('/1/players/steam/{steamid}/rankings/power/entries', 'Api\PowerRankingEntriesController@playerIndex');
+Route::get('/1/players/steam/{steamid}/rankings/score/entries', 'Api\PowerRankingEntriesController@playerScoreIndex');
+Route::get('/1/players/steam/{steamid}/rankings/speed/entries', 'Api\PowerRankingEntriesController@playerSpeedIndex');
+Route::get('/1/players/steam/{steamid}/rankings/deathless/entries', 'Api\PowerRankingEntriesController@playerDeathlessIndex');
+Route::get('/1/players/steam/{steamid}/rankings/character/entries', 'Api\PowerRankingEntriesController@playerCharacterIndex');
+
 // Daily Rankings
 Route::get('/1/rankings/daily', 'Api\DailyRankingsController@index');
 

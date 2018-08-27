@@ -4,11 +4,12 @@ namespace App\Http\Controllers\Api;
 
 use DateTime;
 use Illuminate\Http\Request;
-use Illuminate\Database\Query\Builder;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PowerRankingEntriesResource;
 use App\Http\Requests\Api\ReadPowerRankingEntries;
 use App\Http\Requests\Api\ReadPowerRankingCharacterEntries;
+use App\Http\Requests\Api\ReadSteamUserPowerRankingEntries;
+use App\Http\Requests\Api\ReadSteamUserCharacterRankingEntries;
 use App\Components\CacheNames\Rankings\Power as CacheNames;
 use App\Components\Dataset\Dataset;
 use App\Components\Dataset\Indexes\Sql as SqlIndex;
@@ -30,7 +31,12 @@ class PowerRankingEntriesController extends Controller {
             'scoreIndex',
             'speedIndex',
             'deathlessIndex',
-            'characterIndex'
+            'characterIndex',
+            'playerIndex',
+            'playerScoreIndex',
+            'playerSpeedIndex',
+            'playerDeathlessIndex',
+            'playerCharacterIndex',
         ]);
     }
     
@@ -181,5 +187,83 @@ class PowerRankingEntriesController extends Controller {
                 return $entry->characters[$character_name]['rank'];
             }
         );
+    }
+    
+    /**
+     * Display a listing of power ranking entries for the specified player.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function playerIndex($steamid, ReadSteamUserPowerRankingEntries $request) {
+        $release_id = Releases::getByName($request->release)->release_id;
+        $mode_id = Modes::getByName($request->mode)->mode_id;
+    
+        /* ---------- Data Provider ---------- */
+        
+        $data_provider = new SqlDataProvider(
+            PowerRankingEntries::getSteamUserApiReadQuery(
+                $steamid, 
+                $release_id, 
+                $mode_id, 
+                $request->seeded
+            )
+        );
+        
+        
+        /* ---------- Dataset ---------- */
+        
+        $cache_key = "players:steam:{$steamid}:rankings:power:{$release_id}:{$mode_id}:{$request->seeded}";
+        
+        $dataset = new Dataset($cache_key, $data_provider);
+        
+        $dataset->setFromRequest($request);
+        
+        $dataset->setBinaryFields([
+            'characters'
+        ]);
+        
+        $dataset->process();
+        
+        return PowerRankingEntriesResource::collection($dataset->getPaginator());
+    }
+    
+    /**
+     * Display a listing of score ranking entries for the specified player.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function playerScoreIndex($steamid, ReadSteamUserPowerRankingEntries $request) {
+        $release_id = Releases::getByName($request->release)->release_id;
+        $mode_id = Modes::getByName($request->mode)->mode_id;
+    
+        /* ---------- Data Provider ---------- */
+        
+        $data_provider = new SqlDataProvider(
+            PowerRankingEntries::getSteamUserScoreApiReadQuery(
+                $steamid, 
+                $release_id, 
+                $mode_id, 
+                $request->seeded
+            )
+        );
+        
+        
+        /* ---------- Dataset ---------- */
+        
+        $cache_key = "players:steam:{$steamid}:rankings:score:{$release_id}:{$mode_id}:{$request->seeded}";
+        
+        $dataset = new Dataset($cache_key, $data_provider);
+        
+        $dataset->setFromRequest($request);
+        
+        $dataset->setBinaryFields([
+            'characters'
+        ]);
+        
+        $dataset->process();
+        
+        return PowerRankingEntriesResource::collection($dataset->getPaginator());
     }
 }
