@@ -28,6 +28,8 @@ class Dataset {
     
     protected $binary_fields = [];
     
+    protected $filter_callback;
+    
     protected $sort_callback;
     
     protected $paginator;
@@ -50,6 +52,10 @@ class Dataset {
     
     public function setBinaryFields(array $binary_fields) {
         $this->binary_fields = $binary_fields;
+    }
+    
+    public function setFilterCallback(callable $callback) {
+        $this->filter_callback = $callback;
     }
     
     public function setSortCallback(callable $callback) {
@@ -125,6 +131,22 @@ class Dataset {
                         if(!empty($row->$binary_field)) {
                             $row->$binary_field = Encoder::decode(stream_get_contents($row->$binary_field));
                         }
+                    }
+                }
+            }
+            
+            /* 
+                If a filter callback has been specified then loop through the returned 
+                data and execute the callback against each row.
+            */
+            if(!empty($this->filter_callback)) {                
+                foreach($data as $index => $entry) {
+                    $include_row = call_user_func_array($this->filter_callback, [
+                        $entry
+                    ]);
+                    
+                    if(!$include_row) {
+                        unset($data[$index]);
                     }
                 }
             }

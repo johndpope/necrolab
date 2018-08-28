@@ -27,8 +27,6 @@ class ReadSteamUserCharacterRankingEntries extends Core {
             'mode',
             'seeded',
             'character',
-            'start_date',
-            'end_date',
             'page',
             'limit'
         ]);

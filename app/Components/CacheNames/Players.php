@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Components\CacheNames\Users;
+namespace App\Components\CacheNames;
 
 use App\Components\CacheNames\Core;
 
-class Steam
+class Players
 extends Core {    
     protected const STEAM_USERS = 'su';
     
@@ -16,6 +16,10 @@ extends Core {
 
     public static function getBase() {
         return self::STEAM_USERS;
+    }
+    
+    public static function getPlayer(string $player_id) {
+        return static::getBase() . ":{$player_id}";
     }
     
     public static function getIds() {

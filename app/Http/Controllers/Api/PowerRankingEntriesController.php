@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use DateTime;
 use Illuminate\Http\Request;
+use Illuminate\Database\Query\Builder;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PowerRankingEntriesResource;
 use App\Http\Requests\Api\ReadPowerRankingEntries;
@@ -92,7 +93,7 @@ class PowerRankingEntriesController extends Controller {
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $date = new DateTime($request->date);
     
-        return static::getEntriesResponse(
+        return $this->getEntriesResponse(
             CacheNames::getBase($release_id, $mode_id, $request->seeded),
             $request,
             PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $request->seeded, $date),
@@ -113,7 +114,7 @@ class PowerRankingEntriesController extends Controller {
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $date = new DateTime($request->date);
     
-        return static::getEntriesResponse(
+        return $this->getEntriesResponse(
             CacheNames::getScore($release_id, $mode_id, $request->seeded),
             $request,
             PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $request->seeded, $date),
@@ -134,7 +135,7 @@ class PowerRankingEntriesController extends Controller {
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $date = new DateTime($request->date);
     
-        return static::getEntriesResponse(
+        return $this->getEntriesResponse(
             CacheNames::getSpeed($release_id, $mode_id, $request->seeded),
             $request,
             PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $request->seeded, $date),
@@ -155,7 +156,7 @@ class PowerRankingEntriesController extends Controller {
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $date = new DateTime($request->date);
     
-        return static::getEntriesResponse(
+        return $this->getEntriesResponse(
             CacheNames::getDeathless($release_id, $mode_id, $request->seeded),
             $request,
             PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $request->seeded, $date),
@@ -179,7 +180,7 @@ class PowerRankingEntriesController extends Controller {
         $character_id = Characters::getByName($character_name)->character_id;
         $date = new DateTime($request->date);
         
-        return static::getEntriesResponse(
+        return $this->getEntriesResponse(
             CacheNames::getCharacter($release_id, $mode_id, $request->seeded, $character_id),
             $request,
             PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $request->seeded, $date),
@@ -187,6 +188,44 @@ class PowerRankingEntriesController extends Controller {
                 return $entry->characters[$character_name]['rank'];
             }
         );
+    }
+    
+    /**
+     * Retrieves a paginated listing of the current entries request for the specified player.
+     *
+     * @param string $index_name
+     * @param \Illuminate\Http\Request  $request
+     * @param \Illuminate\Database\Query\Builder $query
+     * @param callable $filter_callback (optional)
+     * @return \Illuminate\Http\Response
+     */
+    protected function getPlayerEntriesResponse(string $index_name, Request $request, Builder $query, callable $filter_callback = NULL) {
+        /* ---------- Data Provider ---------- */
+        
+        $data_provider = new SqlDataProvider($query);
+        
+        
+        /* ---------- Dataset ---------- */
+        
+        $dataset = new Dataset($index_name, $data_provider);
+        
+        $dataset->setFromRequest($request);
+        
+        $dataset->setBinaryFields([
+            'characters'
+        ]);
+        
+        if(isset($filter_callback)) {
+            $dataset->setFilterCallback($filter_callback);
+        }
+        
+        $dataset->setSortCallback(function($entry, $key) {
+            return 0 - (new DateTime($entry->date))->getTimestamp();
+        });
+        
+        $dataset->process();
+        
+        return PowerRankingEntriesResource::collection($dataset->getPaginator());
     }
     
     /**
@@ -198,10 +237,10 @@ class PowerRankingEntriesController extends Controller {
     public function playerIndex($steamid, ReadSteamUserPowerRankingEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
-    
-        /* ---------- Data Provider ---------- */
         
-        $data_provider = new SqlDataProvider(
+        return $this->getPlayerEntriesResponse(
+            CacheNames::getPlayer($steamid, $release_id, $mode_id, $request->seeded),
+            $request,
             PowerRankingEntries::getSteamUserApiReadQuery(
                 $steamid, 
                 $release_id, 
@@ -209,23 +248,6 @@ class PowerRankingEntriesController extends Controller {
                 $request->seeded
             )
         );
-        
-        
-        /* ---------- Dataset ---------- */
-        
-        $cache_key = "players:steam:{$steamid}:rankings:power:{$release_id}:{$mode_id}:{$request->seeded}";
-        
-        $dataset = new Dataset($cache_key, $data_provider);
-        
-        $dataset->setFromRequest($request);
-        
-        $dataset->setBinaryFields([
-            'characters'
-        ]);
-        
-        $dataset->process();
-        
-        return PowerRankingEntriesResource::collection($dataset->getPaginator());
     }
     
     /**
@@ -237,10 +259,10 @@ class PowerRankingEntriesController extends Controller {
     public function playerScoreIndex($steamid, ReadSteamUserPowerRankingEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
-    
-        /* ---------- Data Provider ---------- */
         
-        $data_provider = new SqlDataProvider(
+        return $this->getPlayerEntriesResponse(
+            CacheNames::getPlayerScore($steamid, $release_id, $mode_id, $request->seeded),
+            $request,
             PowerRankingEntries::getSteamUserScoreApiReadQuery(
                 $steamid, 
                 $release_id, 
@@ -248,22 +270,81 @@ class PowerRankingEntriesController extends Controller {
                 $request->seeded
             )
         );
+    }
+    
+    /**
+     * Display a listing of speed ranking entries for the specified player.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function playerSpeedIndex($steamid, ReadSteamUserPowerRankingEntries $request) {
+        $release_id = Releases::getByName($request->release)->release_id;
+        $mode_id = Modes::getByName($request->mode)->mode_id;
         
+        return $this->getPlayerEntriesResponse(
+            CacheNames::getPlayerSpeed($steamid, $release_id, $mode_id, $request->seeded),
+            $request,
+            PowerRankingEntries::getSteamUserSpeedApiReadQuery(
+                $steamid, 
+                $release_id, 
+                $mode_id, 
+                $request->seeded
+            )
+        );
+    }
+    
+    /**
+     * Display a listing of deathless ranking entries for the specified player.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function playerDeathlessIndex($steamid, ReadSteamUserPowerRankingEntries $request) {
+        $release_id = Releases::getByName($request->release)->release_id;
+        $mode_id = Modes::getByName($request->mode)->mode_id;
         
-        /* ---------- Dataset ---------- */
-        
-        $cache_key = "players:steam:{$steamid}:rankings:score:{$release_id}:{$mode_id}:{$request->seeded}";
-        
-        $dataset = new Dataset($cache_key, $data_provider);
-        
-        $dataset->setFromRequest($request);
-        
-        $dataset->setBinaryFields([
-            'characters'
-        ]);
-        
-        $dataset->process();
-        
-        return PowerRankingEntriesResource::collection($dataset->getPaginator());
+        return $this->getPlayerEntriesResponse(
+            CacheNames::getPlayerDeathless($steamid, $release_id, $mode_id, $request->seeded),
+            $request,
+            PowerRankingEntries::getSteamUserDeathlessApiReadQuery(
+                $steamid, 
+                $release_id, 
+                $mode_id, 
+                $request->seeded
+            )
+        );
+    }
+    
+    /**
+     * Display a listing of character ranking entries for the specified player.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function playerCharacterIndex($steamid, ReadSteamUserCharacterRankingEntries $request) {
+        $release_id = Releases::getByName($request->release)->release_id;
+        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $character_name = $request->character;
+        $character_id = Characters::getByName($character_name)->character_id;
+                //76561198063495867
+        return $this->getPlayerEntriesResponse(
+            CacheNames::getPlayerCharacter($steamid, $release_id, $mode_id, $request->seeded, $character_id),
+            $request,
+            PowerRankingEntries::getSteamUserApiReadQuery(
+                $steamid, 
+                $release_id, 
+                $mode_id, 
+                $request->seeded
+            ),
+            /*
+                Since character data is now stored in a bytea field all power ranking entries for this
+                player need to be retrieved, and the data checked for if the specified character rank exists.
+                This is expensive so other solutions will be looked into as soon as possible.
+            */
+            function($entry) use ($character_name) {
+                return isset($entry->characters[$character_name]);
+            }
+        );
     }
 }

@@ -26,8 +26,6 @@ class ReadSteamUserPowerRankingEntries extends Core {
             'release',
             'mode',
             'seeded',
-            'start_date',
-            'end_date',
             'page',
             'limit'
         ]);
