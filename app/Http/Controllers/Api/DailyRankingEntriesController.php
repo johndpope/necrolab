@@ -8,6 +8,7 @@ use Illuminate\Database\Query\Builder;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\DailyRankingEntriesResource;
 use App\Http\Requests\Api\ReadDailyRankingEntries;
+use App\Http\Requests\Api\ReadSteamUserDailyRankingEntries;
 use App\Components\CacheNames\Rankings\Daily as CacheNames;
 use App\Components\Dataset\Dataset;
 use App\Components\Dataset\Indexes\Sql as SqlIndex;
@@ -25,7 +26,8 @@ class DailyRankingEntriesController extends Controller {
      */
     public function __construct() {
         $this->middleware('auth:api')->except([
-            'index'
+            'index',
+            'playerIndex'
         ]);
     }
 
@@ -46,7 +48,12 @@ class DailyRankingEntriesController extends Controller {
         
         /* ---------- Data Provider ---------- */
         
-        $data_provider = new SqlDataProvider(DailyRankingEntries::getApiReadQuery($release_id, $mode_id, $daily_ranking_day_type_id, $date));
+        $data_provider = new SqlDataProvider(DailyRankingEntries::getApiReadQuery(
+            $release_id, 
+            $mode_id, 
+            $daily_ranking_day_type_id, 
+            $date
+        ));
         
         
         /* ---------- Index ---------- */
@@ -70,6 +77,51 @@ class DailyRankingEntriesController extends Controller {
         
         $dataset->setSortCallback(function($entry, $key) {
             return $entry->rank;
+        });
+        
+        $dataset->process();
+        
+        return DailyRankingEntriesResource::collection($dataset->getPaginator());
+    }
+    
+    /**
+     * Display a listing of daily ranking entries for the specified player.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function playerIndex($steamid, ReadSteamUserDailyRankingEntries $request) {
+        $release_id = Releases::getByName($request->release)->release_id;
+        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $daily_ranking_day_type_id = DailyRankingDayTypes::getByName($request->number_of_days)->daily_ranking_day_type_id;
+        
+        
+        /* ---------- Data Provider ---------- */
+        
+        $data_provider = new SqlDataProvider(DailyRankingEntries::getSteamUserApiReadQuery(
+            $steamid,
+            $release_id, 
+            $mode_id, 
+            $daily_ranking_day_type_id
+        ));
+        
+        
+        /* ---------- Dataset ---------- */
+        
+        $dataset = new Dataset(
+            CacheNames::getPlayerRankings(
+                $steamid, 
+                $release_id, 
+                $mode_id, 
+                $daily_ranking_day_type_id
+            ), 
+            $data_provider
+        );
+        
+        $dataset->setFromRequest($request);
+        
+        $dataset->setSortCallback(function($entry, $key) {
+            return 0 - (new DateTime($entry->date))->getTimestamp();
         });
         
         $dataset->process();

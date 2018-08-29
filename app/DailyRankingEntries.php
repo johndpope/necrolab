@@ -152,8 +152,59 @@ class DailyRankingEntries extends Model {
             ->where('dr.mode_id', $mode_id)
             ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type_id);
             
-        ExternalSites::addSiteIdSelectFields($query);
+        //ExternalSites::addSiteIdSelectFields($query);
         
+        return $query;
+    }
+    
+    public static function getSteamUserApiReadQuery(string $steamid, int $release_id, int $mode_id, int $daily_ranking_day_type_id) {
+        $release = Releases::getById($release_id);
+        
+        $start_date = new DateTime($release['start_date']);
+        $end_date = new DateTime($release['end_date']);
+    
+        $query = NULL;
+        
+        $table_names = static::getTableNames($start_date, $end_date);
+        
+        if(!empty($table_names)) {
+            foreach($table_names as $table_name) {                    
+                $partition_query = DB::table('daily_rankings AS dr')
+                    ->select([
+                        'dr.date',
+                        'dre.rank',
+                        'dre.first_place_ranks',
+                        'dre.top_5_ranks',
+                        'dre.top_10_ranks',
+                        'dre.top_20_ranks',
+                        'dre.top_50_ranks',
+                        'dre.top_100_ranks',
+                        'dre.total_points',
+                        'dre.total_score',
+                        'dre.total_dailies',
+                        'dre.total_wins',
+                        'dre.sum_of_ranks'
+                    ])
+                    ->join("{$table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.daily_ranking_id')
+                    ->join('steam_users AS su', 'su.steam_user_id', '=', 'dre.steam_user_id')
+                    ->where('su.steamid', $steamid)
+                    ->whereBetween('dr.date', [
+                        $start_date->format('Y-m-d'),
+                        $end_date->format('Y-m-d')
+                    ])
+                    ->where('dr.release_id', $release_id)
+                    ->where('dr.mode_id', $mode_id)
+                    ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type_id);
+                
+                if(!isset($query)) {
+                    $query = $partition_query;
+                }
+                else {
+                    $query->unionAll($partition_query);
+                }
+            }
+        }
+            
         return $query;
     }
 }

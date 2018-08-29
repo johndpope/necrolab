@@ -327,7 +327,7 @@ class PowerRankingEntriesController extends Controller {
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $character_name = $request->character;
         $character_id = Characters::getByName($character_name)->character_id;
-                //76561198063495867
+
         return $this->getPlayerEntriesResponse(
             CacheNames::getPlayerCharacter($steamid, $release_id, $mode_id, $request->seeded, $character_id),
             $request,

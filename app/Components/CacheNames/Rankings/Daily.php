@@ -3,6 +3,7 @@
 namespace App\Components\CacheNames\Rankings;
 
 use App\Components\CacheNames\Core;
+use App\Components\CacheNames\Players as PlayerCacheNames;
 
 class Daily
 extends Core {            
@@ -28,6 +29,10 @@ extends Core {
     
     public static function getRankings($release_id, $mode_id, $number_of_days) {
         return static::getBase($release_id, $mode_id) . ":{$number_of_days}";
+    }
+    
+    public static function getPlayerRankings($player_id, $release_id, $mode_id, $number_of_days) {
+        return PlayerCacheNames::getPlayer($player_id) . ':' . static::getRankings($release_id, $mode_id, $number_of_days);
     }
 
     public static function getEntries($release_id, $mode_id, $number_of_days) {

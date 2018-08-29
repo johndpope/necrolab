@@ -84,6 +84,9 @@ Route::get('/1/rankings/daily', 'Api\DailyRankingsController@index');
 // Daily Ranking Entries
 Route::get('/1/rankings/daily/entries', 'Api\DailyRankingEntriesController@index');
 
+// Steam User Daily Ranking Entries
+Route::get('/1/players/steam/{steamid}/rankings/daily/entries', 'Api\DailyRankingEntriesController@playerIndex');
+
 // Leaderboard Entries
 Route::get('/1/leaderboards/entries', 'Api\LeaderboardEntriesController@nonDailyIndex');
 Route::get('/1/leaderboards/daily/entries', 'Api\LeaderboardEntriesController@dailyIndex');
