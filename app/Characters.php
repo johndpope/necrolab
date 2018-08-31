@@ -42,7 +42,8 @@ class Characters extends Model {
     }
     
     public static function getStoredInCacheQuery() {
-        return static::orderBy('sort_order', 'asc');
+        return static::where('is_active', 1)
+            ->orderBy('sort_order', 'asc');
     }
     
     public static function isCoOpCharacter($character_name) {

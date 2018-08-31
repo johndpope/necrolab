@@ -41,7 +41,8 @@ class ExternalSites extends Model {
     }
     
     public static function getStoredInCacheQuery() {
-        return static::orderBy('name', 'asc');
+        return static::where('active', 1)
+            ->orderBy('name', 'asc');
     }
     
     public static function addSiteIdSelectFields($query) {        
