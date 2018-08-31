@@ -24,6 +24,20 @@ trait StoredInCache {
         }
     }
     
+    protected static function clearCache() {
+        $opcache = Cache::store('opcache');
+    
+        $cache_key = (new static())->getTable();
+        
+        $opcache->forget($cache_key);
+    }
+    
+    public static function refreshCache() {
+        static::clearCache();
+        
+        static::loadAllFromCache();
+    }
+    
     public static function all($columns = []) {
         static::loadAllFromCache();
         

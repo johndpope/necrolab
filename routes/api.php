@@ -101,6 +101,9 @@ Route::get('/1/players/steam/{steamid}/leaderboards/speed/entries', 'Api\Leaderb
 Route::get('/1/players/steam/{steamid}/leaderboards/deathless/entries', 'Api\LeaderboardEntriesController@playerDeathlessIndex');
 Route::get('/1/players/steam/{steamid}/leaderboards/daily/entries', 'Api\LeaderboardEntriesController@playerDailyIndex');
 
+// Leaderboard Types
+Route::get('/1/leaderboards/types', 'Api\LeaderboardTypesController@index');
+
 // Leaderboards
 Route::get('/1/leaderboards', 'Api\LeaderboardsController@index');
 Route::get('/1/leaderboards/score', 'Api\LeaderboardsController@scoreIndex');

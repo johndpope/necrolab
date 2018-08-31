@@ -13,7 +13,13 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        // Register model event observers
+        \App\DailyRankingDayTypes::observe(\App\Observers\DailyRankingDayTypesObserver::class);
+        \App\Modes::observe(\App\Observers\ModesObserver::class);
+        \App\LeaderboardTypes::observe(\App\Observers\LeaderboardTypesObserver::class);
+        \App\Characters::observe(\App\Observers\CharactersObserver::class);
+        \App\Releases::observe(\App\Observers\ReleasesObserver::class);
+        \App\ExternalSites::observe(\App\Observers\ExternalSitesObserver::class);
     }
 
     /**
