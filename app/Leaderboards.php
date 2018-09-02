@@ -7,8 +7,10 @@ use DateInterval;
 use stdClass;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Query\Builder;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
+use App\Traits\AddsSqlCriteria;
 use App\Components\PostgresCursor;
 use App\DateIncrementor;
 use App\CallbackHandler;
@@ -18,7 +20,7 @@ use App\Modes;
 use App\LeaderboardTypes;
 
 class Leaderboards extends Model {
-    use HasTempTable, HasManualSequence;
+    use HasTempTable, HasManualSequence, AddsSqlCriteria;
 
     /**
      * The table associated with the model.
@@ -312,6 +314,18 @@ class Leaderboards extends Model {
         return $ids_by_lbid;
     }
     
+    public static function addSelects(Builder $query) {
+        
+    }
+    
+    public static function addJoins(Builder $query) {
+        
+    }
+    
+    public static function addLeftJoins(Builder $query) {
+        
+    }
+    
     public static function getApiReadQuery() {
         return DB::table('leaderboards AS l')
             ->select([
@@ -321,7 +335,7 @@ class Leaderboards extends Model {
                 'l.display_name',
                 'c.name AS character_name',
                 'lt.name AS leaderboard_type_name',
-                DB::raw('string_agg(rt.name, \',\') AS rankings'),
+                DB::raw('string_agg(DISTINCT rt.name, \',\') AS rankings'),
                 'l.is_custom',
                 'l.is_co_op',
                 'l.is_seeded'
@@ -403,7 +417,7 @@ class Leaderboards extends Model {
                 'l.display_name',
                 'c.name AS character_name',
                 'lt.name AS leaderboard_type_name',
-                DB::raw('string_agg(rt.name, \',\') AS rankings'),
+                DB::raw('string_agg(DISTINCT rt.name, \',\') AS rankings'),
                 'l.is_custom',
                 'l.is_co_op',
                 'l.is_seeded'
