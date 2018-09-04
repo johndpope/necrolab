@@ -144,7 +144,7 @@ class LeaderboardEntriesController extends Controller {
         $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:{$mode_id}:{$seeded}:{$co_op}:{$custom}:entries:{$date->format('Y-m-d')}";
         
         return LeaderboardEntriesResource::collection(
-            Cache::store('opcache')->remember($cache_key, 1, function() use(
+            Cache::store('opcache')->remember($cache_key, 5, function() use(
                 $steamid,
                 $date,
                 $release_id, 
@@ -187,7 +187,7 @@ class LeaderboardEntriesController extends Controller {
         $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:{$mode_id}:{$seeded}:{$co_op}:{$custom}:score:entries:{$date->format('Y-m-d')}";
         
         return LeaderboardEntriesResource::collection(
-            Cache::store('opcache')->remember($cache_key, 1, function() use(
+            Cache::store('opcache')->remember($cache_key, 5, function() use(
                 $steamid,
                 $date,
                 $release_id, 
@@ -230,7 +230,7 @@ class LeaderboardEntriesController extends Controller {
         $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:{$mode_id}:{$seeded}:{$co_op}:{$custom}:speed:entries:{$date->format('Y-m-d')}";
         
         return LeaderboardEntriesResource::collection(
-            Cache::store('opcache')->remember($cache_key, 1, function() use(
+            Cache::store('opcache')->remember($cache_key, 5, function() use(
                 $steamid,
                 $date,
                 $release_id, 
@@ -272,7 +272,7 @@ class LeaderboardEntriesController extends Controller {
         $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:{$seeded}:{$co_op}:{$custom}:deathless:entries:{$date->format('Y-m-d')}";
         
         return LeaderboardEntriesResource::collection(
-            Cache::store('opcache')->remember($cache_key, 1, function() use(
+            Cache::store('opcache')->remember($cache_key, 5, function() use(
                 $steamid,
                 $date,
                 $release_id, 
