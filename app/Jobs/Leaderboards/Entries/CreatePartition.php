@@ -43,6 +43,7 @@ class CreatePartition implements ShouldQueue {
         
         Schema::create("leaderboard_entries_{$date_formatted}", function (Blueprint $table) {
             $table->integer('leaderboard_snapshot_id');
+            $table->integer('steam_user_id');
             $table->integer('steam_user_pb_id');
             $table->integer('rank');
 
@@ -51,12 +52,17 @@ class CreatePartition implements ShouldQueue {
                 ->on('leaderboard_snapshots')
                 ->onDelete('cascade');
                 
+            $table->foreign('steam_user_id')
+                ->references('steam_user_id')
+                ->on('steam_users')
+                ->onDelete('cascade');
+                
             $table->foreign('steam_user_pb_id')
                 ->references('steam_user_pb_id')
                 ->on('steam_user_pbs')
                 ->onDelete('cascade');
 
-            $table->primary(['leaderboard_snapshot_id', 'steam_user_pb_id']);
+            $table->primary(['leaderboard_snapshot_id', 'steam_user_id']);
         });
     }
 }

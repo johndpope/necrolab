@@ -67,7 +67,7 @@ class CacheNonDaily implements ShouldQueue {
         }
         
         
-        /* ---------- Store all generated indexes in redis ----------*/
+        /* ---------- Store all generated indexes in the entry_indexes table ----------*/
         
         EntryIndexes::createTemporaryTable();
         

@@ -62,7 +62,7 @@ class LeaderboardEntriesController extends Controller {
         
         $dataset = new Dataset($index_name, $data_provider);
         
-        $dataset->setIndex($index, 'sup.steam_user_id');
+        $dataset->setIndex($index, 'le.steam_user_id');
         
         $dataset->setIndexSubName($request->date);
         
@@ -108,7 +108,7 @@ class LeaderboardEntriesController extends Controller {
         
         $dataset = new Dataset($index_name, $data_provider);
         
-        $dataset->setIndex($index, 'sup.steam_user_id');
+        $dataset->setIndex($index, 'le.steam_user_id');
         
         $dataset->setIndexSubName($request->date);
         

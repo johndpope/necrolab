@@ -42,6 +42,7 @@ class LeaderboardEntries extends Model {
         DB::statement("
             CREATE TEMPORARY TABLE " . static::getTempTableName() . " (
                 leaderboard_snapshot_id integer NOT NULL,
+                steam_user_id integer NOT NULL,
                 steam_user_pb_id integer NOT NULL,
                 rank integer NOT NULL
             )
@@ -64,11 +65,13 @@ class LeaderboardEntries extends Model {
         DB::statement("
             INSERT INTO " . static::getTableName($date) . " (
                 leaderboard_snapshot_id,
+                steam_user_id,
                 steam_user_pb_id,
                 rank
             )
             SELECT 
                 leaderboard_snapshot_id,
+                steam_user_id,
                 steam_user_pb_id,
                 rank
             FROM " . static::getTempTableName() . "
@@ -147,7 +150,7 @@ class LeaderboardEntries extends Model {
         $query = DB::table('leaderboard_snapshots AS ls')
             ->select([
                 'l.lbid',
-                'su.steam_user_id',
+                'le.steam_user_id',
                 'le.rank'
             ])
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'ls.leaderboard_id')
@@ -174,7 +177,7 @@ class LeaderboardEntries extends Model {
                 'l.release_id',
                 'l.daily_date',
                 'l.mode_id',
-                'su.steam_user_id',
+                'le.steam_user_id',
                 'le.rank'
             ])
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'ls.leaderboard_id')

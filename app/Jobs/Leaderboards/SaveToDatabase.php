@@ -87,7 +87,7 @@ class SaveToDatabase implements ShouldQueue {
             $leaderboards_insert_queue = Leaderboards::getTempInsertQueue(5000);
             $leaderboard_snapshots_insert_queue = LeaderboardSnapshots::getTempInsertQueue(12000);
             $leaderboard_ranking_types_insert_queue = LeaderboardRankingTypes::getTempInsertQueue(30000);
-            $leaderboard_entries_insert_queue = LeaderboardEntries::getTempInsertQueue(20000);
+            $leaderboard_entries_insert_queue = LeaderboardEntries::getTempInsertQueue(15000);
             $leaderboard_entry_details_insert_queue = LeaderboardEntryDetails::getTempInsertQueue(30000);
         
             foreach($this->data_manager->getTempLeaderboard() as $leaderboard) {            
@@ -262,6 +262,7 @@ class SaveToDatabase implements ShouldQueue {
                         if($pb_is_valid) {
                             $leaderboard_entries_insert_queue->addRecord(array(
                                 'leaderboard_snapshot_id' => $leaderboard_snapshot_id,
+                                'steam_user_id' => $steam_user_id,
                                 'steam_user_pb_id' => $steam_user_pb_id,
                                 'rank' => $rank
                             ));

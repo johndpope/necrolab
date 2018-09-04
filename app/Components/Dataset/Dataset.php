@@ -82,14 +82,20 @@ class Dataset {
         $limit = $request_data['limit'] ?? 100;
         
         $this->setLimit((int)$limit);
+        
+        if(!empty($request_data['search'])) {
+            $this->setSearchTerm($request_data['search']);
+        }
     }
     
     public function process() {
         $opcache = Cache::store('opcache');
         
         // Compile the cache key name that will be used to cache this dataset
-        $base_key_name = "dataset:{$this->cache_base_name}:{$this->index_sub_name}:{$this->external_site_id}";
-        $dataset_cache_name = "{$base_key_name}:{$this->search_term}:{$this->page}:{$this->limit}";
+        $search_term_hash = sha1($this->search_term);
+
+        $base_key_name = "dataset:{$this->cache_base_name}:{$this->index_sub_name}:{$this->external_site_id}:{$search_term_hash}";
+        $dataset_cache_name = "{$base_key_name}:{$this->page}:{$this->limit}";
         
         // Attempt to retrieve this paginated dataset from cache first
         $this->paginator = $opcache->get($dataset_cache_name);
@@ -170,7 +176,7 @@ class Dataset {
             $this->paginator = new Paginator($data, $total_count, $this->limit, NULL, $request_metadata);
             
             // Save the paginator to cache for one minute
-            $opcache->put($dataset_cache_name, $this->paginator, 1);
+            $opcache->put($dataset_cache_name, $this->paginator, 5);
         }
     }
     

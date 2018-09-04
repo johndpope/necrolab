@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Cache;
 use App\Components\CacheNames\Users\Steam as SteamUsersCacheNames;
 use App\Components\Dataset\Indexes\Index;
 use App\EntryIndexes;
+use App\SteamUsers;
 
 class Sql
 extends Index {    
@@ -19,8 +20,10 @@ extends Index {
     
     public function process() {
         $opcache = Cache::store('opcache');
+        
+        $search_term_hash = sha1($this->search_term);
 
-        $filtered_index_key_name = "{$this->index_name}:{$this->index_sub_name}:{$this->external_site_id}:{$this->search_term}";
+        $filtered_index_key_name = "{$this->index_name}:{$this->index_sub_name}:{$this->external_site_id}:{$search_term_hash}";
         $paginated_index_key_name = "index:{$filtered_index_key_name}:{$this->page}:{$this->limit}";
         
         // Attempt to retrieve this paginated index from cache first
@@ -43,14 +46,14 @@ extends Index {
                 if(!empty($base_index_data)) {
                     // If a search term has been specified then filter the base index by it
                     if(!empty($this->search_term)) {
-                        $steam_usernames = EntryIndexes::getDecodedRecord(SteamUsersCacheNames::getUsersByName());
+                        $matching_steam_user_ids = SteamUsers::getIdsBySearchTerm($this->search_term);
                         
                         /*
-                            Loop through the base index and use the steam_user_id in it to match search term to the corresponding 
-                            steam username index record. If there is a match then add that row to the filtered index.
+                            Loop through the base index and check for if its steam_user_id exists in $matching_steam_user_ids.
+                            If there is a match then add that row to the filtered index.
                         */
                         foreach($base_index_data as $steam_user_id) {
-                            if(isset($steam_usernames[$steam_user_id]) && stripos($steam_usernames[$steam_user_id]) !== false) {
+                            if(isset($matching_steam_user_ids[$steam_user_id])) {
                                 $filtered_index->data[] = $steam_user_id;
                             }
                         }
@@ -67,7 +70,7 @@ extends Index {
                 $filtered_index->count = count($filtered_index->data);
 
                 // Save the filtered index to opcache for one minute
-                $opcache->put($filtered_index_key_name, $filtered_index, 1);
+                $opcache->put($filtered_index_key_name, $filtered_index, 5);
             }
             
             // Set the total count of this index
@@ -80,7 +83,7 @@ extends Index {
             $this->paginated_index = array_slice($filtered_index->data, $offset, $this->limit);
             
             // Save the paginated index to cache for one minute
-            $opcache->put($paginated_index_key_name, $this->paginated_index, 1);
+            $opcache->put($paginated_index_key_name, $this->paginated_index, 5);
         }
     }
     

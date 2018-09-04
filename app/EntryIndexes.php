@@ -73,7 +73,7 @@ class EntryIndexes extends Model {
     }
     
     public static function getDecodedRecord(string $name, string $sub_name = '') {
-        return Cache::store('opcache')->remember("{$name}:{$sub_name}", 1, function() use($name, $sub_name) {                            
+        return Cache::store('opcache')->remember("{$name}:{$sub_name}", 5, function() use($name, $sub_name) {                            
             $encoded_data = static::where('name', $name)
                 ->where('sub_name', $sub_name)
                 ->first();

@@ -25,8 +25,8 @@ extends DataProvider {
     }
     
     public function process() {            
-        // If index values have been passed into this instance then use its values to filter the query
-        if(!empty($this->index_values)) {                
+        // If an index field name has been specified then use the corresponding index values to filter the query
+        if(!empty($this->index_field_name)) {                
             // Implode these index values into a value that's usable with Postgres' ANY criteria
             $any_values = '{' . implode(',', $this->index_values) . '}';
             

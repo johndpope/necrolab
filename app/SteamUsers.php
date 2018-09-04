@@ -5,6 +5,7 @@ namespace App;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use App\Components\PostgresCursor;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
@@ -75,6 +76,7 @@ class SteamUsers extends Model {
                 communityvisibilitystate = sut.communityvisibilitystate,
                 profilestate = sut.profilestate,
                 personaname = sut.personaname,
+                personaname_search_index = to_tsvector(sut.personaname),
                 profileurl = sut.profileurl,
                 avatar = sut.avatar,
                 avatarmedium = sut.avatarmedium,
@@ -114,6 +116,20 @@ class SteamUsers extends Model {
             'steam_user_id',
             'steamid'
         ])->where('updated', '<', $thirty_days_ago->format('Y-m-d H:i:s'));
+    }
+    
+    public static function getIdsBySearchTerm(string $search_term) {
+        $term_hash_name = sha1($search_term);
+    
+        return Cache::store('opcache')->remember("steam_users:search:{$term_hash_name}", 5, function() use($search_term) {                            
+            return static::select([
+                'steam_user_id'
+            ])
+            ->whereRaw('personaname_search_index @@ to_tsquery(?)', [
+                $search_term
+            ])
+            ->pluck('steam_user_id', 'steam_user_id');
+        });
     }
     
     public static function getCacheQuery() {        
