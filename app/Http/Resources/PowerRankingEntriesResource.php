@@ -106,13 +106,13 @@ class PowerRankingEntriesResource extends JsonResource {
         
         $record = [];
         
-        // If this record is in a Steam User context then only show its date.
+        // If this record is in a Steam User context then only show its date. Otherwise show player data.
         if(!empty($this->date)) {
             $record['date'] = $this->date;
         }
         else {
-            $record['steamid'] = $this->steamid;
-        }
+            $record['player'] = new SteamUsersResource($this->resource);
+        }        
         
         $record['characters'] = $character_rankings;
         $record['score'] = $score_rankings;

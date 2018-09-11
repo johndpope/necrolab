@@ -10,7 +10,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
 use App\Components\PostgresCursor;
 use App\Components\Encoder;
-use App\Components\CacheNames\Users\Steam as CacheNames;
+use App\Components\CacheNames\Players as CacheNames;
 use App\SteamUsers;
 use App\ExternalSites;
 use App\EntryIndexes;
@@ -49,12 +49,9 @@ class Cache implements ShouldQueue {
         $users_index_base_name = CacheNames::getUsersIndex();
         
         $indexes = [];
-        $steam_user_names = [];
         
         foreach($cursor->getRecord() as $steam_user) {
             $steam_user_id = (int)$steam_user->steam_user_id;
-            
-            $steam_user_names[$steam_user_id] = $steam_user->personaname;
             
             ExternalSites::addToSiteIdIndexes($indexes, $steam_user, $users_index_base_name, $steam_user_id);
         }
@@ -65,17 +62,6 @@ class Cache implements ShouldQueue {
         EntryIndexes::createTemporaryTable();
         
         $entry_indexes_insert_queue = EntryIndexes::getTempInsertQueue(2000);
-        
-        
-        /* ---------- Store the personaname index ----------*/
-        
-        $entry_indexes_insert_queue->addRecord([
-            'data' => Encoder::encode($steam_user_names),
-            'name' => CacheNames::getUsersByName(),
-            'sub_name' => ''
-        ]);
-        
-        unset($steam_user_names);
         
         
         /* ---------- Store the steam_user_id indexes for all sites ----------*/

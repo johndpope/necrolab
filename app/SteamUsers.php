@@ -6,13 +6,15 @@ use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Database\Query\Builder;
 use App\Components\PostgresCursor;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
+use App\Traits\AddsSqlCriteria;
 use App\ExternalSites;
 
 class SteamUsers extends Model {
-    use HasTempTable, HasManualSequence;
+    use HasTempTable, HasManualSequence, AddsSqlCriteria;
 
     /**
      * The table associated with the model.
@@ -87,6 +89,37 @@ class SteamUsers extends Model {
         ");
     }
     
+    public static function addSelects(Builder $query) {
+        $query->addSelect([
+            'su.steamid',
+            'su.personaname AS steam_username',
+            'su.profileurl AS steam_profile_url',
+            'bu.beampro_id',
+            'bu.username AS beampro_username',
+            'du.discord_id',
+            'du.username AS discord_username',
+            'du.discriminator AS discord_discriminator',
+            'ru.reddit_id',
+            'ru.username AS reddit_username',
+            'tu.twitch_id',
+            'tu.user_display_name AS twitch_username',
+            'twu.twitter_id',
+            'twu.nickname AS twitter_nickname',
+            'twu.name AS twitter_name',
+            'yu.youtube_id',
+            'yu.youtube_id AS youtube_username'
+        ]);
+    }
+    
+    public static function addLeftJoins(Builder $query) {    
+        $query->leftJoin('beampro_users AS bu', 'bu.beampro_user_id', '=', 'su.beampro_user_id');
+        $query->leftJoin('discord_users AS du', 'du.discord_user_id', '=', 'su.discord_user_id');
+        $query->leftJoin('reddit_users AS ru', 'ru.reddit_user_id', '=', 'su.reddit_user_id');
+        $query->leftJoin('twitch_users AS tu', 'tu.twitch_user_id', '=', 'su.twitch_user_id');
+        $query->leftJoin('twitter_users AS twu', 'twu.twitter_user_id', '=', 'su.twitter_user_id');
+        $query->leftJoin('youtube_users AS yu', 'yu.youtube_user_id', '=', 'su.youtube_user_id');
+    }
+    
     public static function getAllIdsBySteamid() {
         $query = DB::table('steam_users AS su')
             ->select([
@@ -135,8 +168,7 @@ class SteamUsers extends Model {
     public static function getCacheQuery() {        
         $query = DB::table('steam_users AS su')
             ->select([
-                'su.steam_user_id',
-                'su.personaname'
+                'su.steam_user_id'
             ])
             ->orderBy('su.personaname', 'asc');
         
@@ -146,13 +178,13 @@ class SteamUsers extends Model {
     }
     
     public static function getApiReadQuery() {
-        return DB::table('steam_users AS su')
-            ->select([
-                'su.steam_user_id',
-                'su.steamid',
-                'su.personaname',
-                'su.profileurl',
-            ])
-            ->orderBy('su.personaname', 'asc');
+        $query = DB::table('steam_users AS su');
+        
+        static::addSelects($query);
+        static::addLeftJoins($query);
+        
+        $query->orderBy('su.personaname', 'asc');
+        
+        return $query;
     }
 }

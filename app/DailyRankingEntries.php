@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
+use App\SteamUsers;
 
 class DailyRankingEntries extends Model {
     use HasPartitions, HasTempTable;
@@ -130,7 +131,6 @@ class DailyRankingEntries extends Model {
 
         $query = DB::table('daily_rankings AS dr')
             ->select([
-                'su.steamid',
                 'dre.rank',
                 'dre.first_place_ranks',
                 'dre.top_5_ranks',
@@ -152,7 +152,8 @@ class DailyRankingEntries extends Model {
             ->where('dr.mode_id', $mode_id)
             ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type_id);
             
-        //ExternalSites::addSiteIdSelectFields($query);
+        SteamUsers::addSelects($query);
+        SteamUsers::addLeftJoins($query);
         
         return $query;
     }

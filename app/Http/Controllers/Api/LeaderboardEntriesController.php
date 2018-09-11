@@ -300,18 +300,16 @@ class LeaderboardEntriesController extends Controller {
      */
     public function playerDailyIndex($steamid, ReadSteamUserDailyLeaderboardEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
-        $start_date = new DateTime($request->start_date);
-        $end_date = new DateTime($request->end_date);
         
         
         /* ---------- Data Provider ---------- */
         
-        $data_provider = new SqlDataProvider(LeaderboardEntries::getSteamUserDailyApiReadQuery($steamid, $release_id, $start_date, $end_date));
+        $data_provider = new SqlDataProvider(LeaderboardEntries::getSteamUserDailyApiReadQuery($steamid, $release_id));
         
         
         /* ---------- Dataset ---------- */
         
-        $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:daily:entries:{$start_date->format('Y-m-d')}:{$end_date->format('Y-m-d')}";
+        $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:daily:entries";
         
         $dataset = new Dataset($cache_key, $data_provider);
         

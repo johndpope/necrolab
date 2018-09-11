@@ -9,6 +9,8 @@ use App\ExternalSites;
 use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
 use App\Modes;
+use App\SteamUsers;
+use App\SteamUserPbs;
 
 class LeaderboardEntries extends Model {
     use HasPartitions, HasTempTable;
@@ -157,8 +159,7 @@ class LeaderboardEntries extends Model {
             ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
             ->leftJoin('leaderboards_blacklist AS lb', 'lb.leaderboard_id', '=', 'l.leaderboard_id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
-            ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id')
-            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
             ->where('ls.date', $date->format('Y-m-d'))
             ->where('lt.name', '!=', 'daily')
             ->whereNull('lb.leaderboards_blacklist_id');
@@ -184,8 +185,7 @@ class LeaderboardEntries extends Model {
             ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
             ->leftJoin('leaderboards_blacklist AS lb', 'lb.leaderboard_id', '=', 'l.leaderboard_id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
-            ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id')
-            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
             ->where('ls.date', $date->format('Y-m-d'))
             ->where('lt.name', '=', 'daily')
             ->where('l.is_co_op', '=', 0)
@@ -201,35 +201,25 @@ class LeaderboardEntries extends Model {
     
         $query = DB::table('leaderboards AS l')
             ->select([
-                'su.steamid',
                 'lt.name AS leaderboard_type',
-                'le.rank',
-                'led.name AS details',
-                'sup.zone',
-                'sup.level',
-                'sup.is_win',
-                'sup.score',
-                'sup.time',
-                'sup.win_count',
-                'sr.ugcid',
-                'se.name AS seed',
-                'sr.downloaded',
-                'sr.uploaded_to_s3',
-                'srv.name AS version',
-                'rr.name AS run_result'
+                'le.rank'
             ])
             ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
             ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_id', '=', 'l.leaderboard_id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
-            ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id')
-            ->join("leaderboard_entry_details AS led", 'led.leaderboard_entry_details_id', '=', 'sup.leaderboard_entry_details_id')
-            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
-            ->leftJoin('steam_replays AS sr', 'sr.steam_user_pb_id', '=', 'sup.steam_user_pb_id')
-            ->leftJoin('run_results AS rr',  'rr.run_result_id', '=', 'sr.run_result_id')
-            ->leftJoin('steam_replay_versions AS srv', 'srv.steam_replay_version_id', '=', 'sr.steam_replay_version_id')
-            ->leftJoin('seeds AS se', 'se.id', '=', 'sr.seed_id')
-            ->where('l.lbid', $lbid)
-            ->where('ls.date', $date->format('Y-m-d'));
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
+            ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id');
+            
+        SteamUsers::addSelects($query);
+        SteamUserPbs::addSelects($query);
+            
+        SteamUserPbs::addJoins($query);        
+
+        SteamUsers::addLeftJoins($query);
+        SteamUserPbs::addLeftJoins($query);
+            
+        $query->where('l.lbid', $lbid)
+            ->where('ls.date', $date->format('Y-m-d'));        
         
         return $query;
     }
@@ -239,22 +229,8 @@ class LeaderboardEntries extends Model {
     
         $query = DB::table('leaderboards AS l')
             ->select([
-                'su.steamid',
                 'lt.name AS leaderboard_type',
                 'le.rank',
-                'led.name AS details',
-                'sup.zone',
-                'sup.level',
-                'sup.is_win',
-                'sup.score',
-                'sup.time',
-                'sup.win_count',
-                'sr.ugcid',
-                'se.name AS seed',
-                'sr.downloaded',
-                'sr.uploaded_to_s3',
-                'srv.name AS version',
-                'rr.name AS run_result'
             ])
             ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
             ->join('leaderboard_snapshots AS ls', function($join) {
@@ -262,14 +238,18 @@ class LeaderboardEntries extends Model {
                     ->on('ls.date', '=', 'l.daily_date');
             })
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
-            ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id')
-            ->join("leaderboard_entry_details AS led", 'led.leaderboard_entry_details_id', '=', 'sup.leaderboard_entry_details_id')
-            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
-            ->leftJoin('steam_replays AS sr', 'sr.steam_user_pb_id', '=', 'sup.steam_user_pb_id')
-            ->leftJoin('run_results AS rr',  'rr.run_result_id', '=', 'sr.run_result_id')
-            ->leftJoin('steam_replay_versions AS srv', 'srv.steam_replay_version_id', '=', 'sr.steam_replay_version_id')
-            ->leftJoin('seeds AS se', 'se.id', '=', 'sr.seed_id')
-            ->where('l.release_id', $release_id)
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
+            ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id');
+        
+        SteamUsers::addSelects($query);
+        SteamUserPbs::addSelects($query);
+            
+        SteamUserPbs::addJoins($query);        
+
+        SteamUsers::addLeftJoins($query);
+        SteamUserPbs::addLeftJoins($query);
+        
+        $query->where('l.release_id', $release_id)
             ->where('lt.name', 'daily')
             ->where('l.daily_date', $date->format('Y-m-d'));
         
@@ -279,38 +259,24 @@ class LeaderboardEntries extends Model {
     public static function getSteamUserNonDailyApiQuery(string $steamid, DateTime $date, int $release_id, int $mode_id, int $seeded, int $co_op, int $custom) {
         $entries_table_name = static::getTableName($date);
     
-        return DB::table('leaderboards AS l')
+        $query = DB::table('leaderboards AS l')
             ->select([
-                'su.steamid',
                 'c.name AS character_name',
                 'lt.name AS leaderboard_type',
                 'le.rank',
-                'led.name AS details',
-                'sup.zone',
-                'sup.level',
-                'sup.is_win',
-                'sup.score',
-                'sup.time',
-                'sup.win_count',
-                'sr.ugcid',
-                'se.name AS seed',
-                'sr.downloaded',
-                'sr.uploaded_to_s3',
-                'srv.name AS version',
-                'rr.name AS run_result'
             ])
             ->join('characters AS c', 'c.character_id', '=', 'l.character_id')
             ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
             ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_id', '=', 'l.leaderboard_id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
-            ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id')
-            ->join("leaderboard_entry_details AS led", 'led.leaderboard_entry_details_id', '=', 'sup.leaderboard_entry_details_id')
-            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
-            ->leftJoin('steam_replays AS sr', 'sr.steam_user_pb_id', '=', 'sup.steam_user_pb_id')
-            ->leftJoin('run_results AS rr',  'rr.run_result_id', '=', 'sr.run_result_id')
-            ->leftJoin('steam_replay_versions AS srv', 'srv.steam_replay_version_id', '=', 'sr.steam_replay_version_id')
-            ->leftJoin('seeds AS se', 'se.id', '=', 'sr.seed_id')
-            ->where('l.release_id', $release_id)
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
+            ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id');
+        
+        SteamUserPbs::addSelects($query);
+        SteamUserPbs::addJoins($query);
+        SteamUserPbs::addLeftJoins($query);
+        
+        $query->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
             ->where('l.is_seeded', $seeded)
             ->where('l.is_co_op', $co_op)
@@ -319,6 +285,8 @@ class LeaderboardEntries extends Model {
             ->where('su.steamid', $steamid)
             ->orderBy('c.sort_order', 'asc')
             ->orderBy('lt.leaderboard_type_id', 'asc');
+            
+        return $query;
     }
     
     public static function getSteamUserNonDailyApiReadQuery(string $steamid, DateTime $date, int $release_id, int $mode_id, int $seeded, int $co_op, int $custom) {
@@ -355,41 +323,26 @@ class LeaderboardEntries extends Model {
         return $query;
     }
     
-    public static function getSteamUserDailyApiReadQuery(string $steamid, int $release_id, DateTime $start_date, DateTime $end_date) {            
-        return DB::table('steam_user_pbs AS sup')
+    public static function getSteamUserDailyApiReadQuery(string $steamid, int $release_id) {            
+        $query = DB::table('steam_user_pbs AS sup')
             ->select([
                 'l.daily_date AS first_snapshot_date',
                 'lt.name AS leaderboard_type',
-                'sup.first_rank AS rank',
-                'led.name AS details',
-                'sup.zone',
-                'sup.level',
-                'sup.is_win',
-                'sup.score',
-                'sup.time',
-                'sup.win_count',
-                'sr.ugcid',
-                'se.name AS seed',
-                'sr.downloaded',
-                'sr.uploaded_to_s3',
-                'srv.name AS version',
-                'rr.name AS run_result'
+                'sup.first_rank AS rank'
             ])
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id')
             ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
-            ->join("leaderboard_entry_details AS led", 'led.leaderboard_entry_details_id', '=', 'sup.leaderboard_entry_details_id')
-            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
-            ->leftJoin('steam_replays AS sr', 'sr.steam_user_pb_id', '=', 'sup.steam_user_pb_id')
-            ->leftJoin('run_results AS rr',  'rr.run_result_id', '=', 'sr.run_result_id')
-            ->leftJoin('steam_replay_versions AS srv', 'srv.steam_replay_version_id', '=', 'sr.steam_replay_version_id')
-            ->leftJoin('seeds AS se', 'se.id', '=', 'sr.seed_id')
-            ->where('su.steamid', $steamid)
+            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id');
+        
+        SteamUserPbs::addSelects($query);
+        SteamUserPbs::addJoins($query);
+        SteamUserPbs::addLeftJoins($query);
+        
+        $query->where('su.steamid', $steamid)
             ->where('l.release_id', $release_id)
             ->where('lt.name', 'daily')
-            ->whereBetween('l.daily_date', [
-                $start_date->format('Y-m-d'),
-                $end_date->format('Y-m-d')
-            ])
             ->orderBy('l.daily_date', 'desc');
+        
+        return $query;
     }
 }

@@ -12,6 +12,7 @@ use App\ExternalSites;
 use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
 use App\Releases;
+use App\SteamUsers;
 
 class PowerRankingEntries extends Model {
     use HasPartitions, HasTempTable;
@@ -169,10 +170,8 @@ class PowerRankingEntries extends Model {
     public static function getApiReadQuery(int $release_id, int $mode_id, int $seeded, DateTime $date) {
         $entries_table_name = static::getTableName($date);
     
-        return DB::table('power_rankings AS pr')
+        $query = DB::table('power_rankings AS pr')
             ->select([
-                'su.steam_user_id',
-                'su.steamid',
                 'pre.rank',
                 'pre.score_rank',
                 'pre.deathless_rank',
@@ -185,6 +184,11 @@ class PowerRankingEntries extends Model {
             ->where('pr.release_id', $release_id)
             ->where('pr.mode_id', $mode_id)
             ->where('pr.seeded', $seeded);
+        
+        SteamUsers::addSelects($query);
+        SteamUsers::addLeftJoins($query);
+        
+        return $query;
     }
     
     public static function getSteamUserApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded, callable $additional_criteria = NULL) {
@@ -202,8 +206,6 @@ class PowerRankingEntries extends Model {
                 $partition_query = DB::table('power_rankings AS pr')
                     ->select([
                         'pr.date',
-                        'su.steam_user_id',
-                        'su.steamid',
                         'pre.rank',
                         'pre.score_rank',
                         'pre.deathless_rank',

@@ -24,8 +24,6 @@ class ReadSteamUserDailyLeaderboardEntries extends Core {
     public function rules() {
         return CommonApiValidationRules::getRules([
             'release',
-            'start_date',
-            'end_date',
             'page',
             'limit'
         ]);

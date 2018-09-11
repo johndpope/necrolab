@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Api;
 
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
+use Illuminate\Support\Facades\Cache;
 use App\Http\Resources\SteamUsersResource;
 use App\Http\Requests\Api\ReadSteamUsers;
-use App\Components\CacheNames\Users\Steam as SteamUsersCacheNames;
+use App\Components\CacheNames\Players as CacheNames;
 use App\Components\Dataset\Dataset;
 use App\Components\Dataset\Indexes\Sql as SqlIndex;
 use App\Components\Dataset\DataProviders\Sql as SqlDataProvider;
@@ -35,7 +36,7 @@ class SteamUsersController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function index(ReadSteamUsers $request) {        
-        $index_name = SteamUsersCacheNames::getUsersIndex();
+        $index_name = CacheNames::getUsersIndex();
         
         
         /* ---------- Data Provider ---------- */
@@ -89,7 +90,11 @@ class SteamUsersController extends Controller {
      */
     public function show($steamid) {
         return new SteamUsersResource(
-            SteamUsers::getApiReadQuery()->where('su.steamid', $steamid)->first()
+            Cache::store('opcache')->remember("steam_users:{$steamid}", 5, function() use($steamid) {
+                return SteamUsers::getApiReadQuery()
+                    ->where('su.steamid', $steamid)
+                    ->first();
+            })
         );
     }
 

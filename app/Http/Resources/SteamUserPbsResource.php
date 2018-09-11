@@ -13,10 +13,6 @@ class SteamUserPbsResource extends JsonResource {
      */
     public function toArray($request) {
         $record = [];
-
-        if(!empty($this->steamid)) {
-            $record['steamid'] = (string)$this->steamid;
-        }
         
         if(!empty($this->lbid)) {
             $record['lbid'] = $this->lbid;

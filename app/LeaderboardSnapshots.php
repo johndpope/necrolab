@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use App\Components\PostgresCursor;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
+use App\LeaderboardEntries;
 
 class LeaderboardSnapshots extends Model {
     use HasTempTable, HasManualSequence;
@@ -70,6 +71,43 @@ class LeaderboardSnapshots extends Model {
             SET 
                 updated = excluded.updated
         ");
+    }
+    
+    public static function updateStats(DateTime $date) {
+        $table_name = LeaderboardEntries::getTableName($date);
+    
+        DB::update("
+            WITH leaderboard_snapshot_stats AS (
+                SELECT 
+                        ls.leaderboard_snapshot_id,
+                        COUNT(le.steam_user_id) AS players,
+                        SUM(
+                            CASE
+                                WHEN lt.name = 'score' OR lt.name = 'daily' THEN sup.score
+                                ELSE 0
+                            END
+                        ) AS score,
+                        SUM(sup.time) AS time,
+                        SUM(sup.win_count) AS win_count
+                FROM leaderboard_snapshots ls
+                JOIN leaderboards l ON l.leaderboard_id = ls.leaderboard_id
+                JOIN leaderboard_types lt ON lt.leaderboard_type_id = l.leaderboard_type_id
+                JOIN {$table_name} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id
+                JOIN steam_user_pbs sup ON sup.steam_user_pb_id = le.steam_user_pb_id
+                WHERE ls.date = :date
+                GROUP BY ls.leaderboard_snapshot_id
+            )
+            UPDATE leaderboard_snapshots ls
+            SET 
+                players = lss.players,
+                score = lss.score,
+                time = lss.time,
+                win_count = lss.win_count
+            FROM leaderboard_snapshot_stats lss
+            WHERE lss.leaderboard_snapshot_id = ls.leaderboard_snapshot_id
+        ", [
+            ':date' => $date->format('Y-m-d')
+        ]);
     }
     
     public static function getAllByLeaderboardIdForDate(DateTime $date) {

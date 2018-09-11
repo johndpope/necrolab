@@ -25,6 +25,7 @@ use App\Jobs\SteamUsers\Cache as SteamUsersCacheJob;
 use App\Jobs\SteamUserPbs\Cache as SteamUserPbsCacheJob;
 use App\Jobs\Leaderboards\Entries\CacheNonDaily as CacheNonDailyLeadeboardEntriesJob;
 use App\Jobs\Leaderboards\Entries\CacheDaily as CacheDailyLeadeboardEntriesJob;
+use App\Jobs\Leaderboards\Entries\AggregateStats AS AggregateStatsJob;
 
 class SaveToDatabase implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -273,6 +274,7 @@ class SaveToDatabase implements ShouldQueue {
                 }
             }
             
+            // Commit the last of the queued records to go into the database
             $steam_users_insert_queue->commit();
             $steam_replays_insert_queue->commit();
             $steam_user_pbs_insert_queue->commit();
@@ -282,8 +284,10 @@ class SaveToDatabase implements ShouldQueue {
             $leaderboard_entries_insert_queue->commit();
             $leaderboard_entry_details_insert_queue->commit();
             
+            // Remove all existing leaderboard entries for this date
             LeaderboardEntries::clear($this->date);
             
+            // Save all imported data to their permanent locations
             Leaderboards::saveTemp();
             LeaderboardRankingTypes::saveTemp();
             LeaderboardSnapshots::saveTemp();
@@ -295,13 +299,16 @@ class SaveToDatabase implements ShouldQueue {
             
             DB::commit();
             
+            // Dispatch all asynchronous jobs that utilize this imported data
             PowerRankingsGenerateJob::dispatch($this->date);
             DailyRankingsGenerateJob::dispatch($this->date);
             SteamUsersCacheJob::dispatch();
             SteamUserPbsCacheJob::dispatch();
+            AggregateStatsJob::dispatch($this->date);
             CacheNonDailyLeadeboardEntriesJob::dispatch($this->date);
             CacheDailyLeadeboardEntriesJob::dispatch($this->date);
             
+            // Remove local temporary files
             $this->data_manager->deleteTemp();
         }
     }

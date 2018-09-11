@@ -7,9 +7,10 @@ use App\Components\CacheNames\Core as CacheNames;
 use App\Traits\GetById;
 use App\Traits\GetByName;
 use App\Traits\StoredInCache;
+use App\Traits\AddsSqlCriteria;
 
 class ExternalSites extends Model {
-    use GetById, GetByName, StoredInCache;
+    use GetById, GetByName, StoredInCache, AddsSqlCriteria;
 
     /**
      * The table associated with the model.

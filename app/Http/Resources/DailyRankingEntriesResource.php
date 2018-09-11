@@ -14,12 +14,12 @@ class DailyRankingEntriesResource extends JsonResource {
     public function toArray($request) {
         $record = [];
         
-        if(!empty($this->steamid)) {
-            $record['steamid'] = (string)$this->steamid;
-        }
-        
+        // If this record is in a Steam User context then only show its date. Otherwise show player data.
         if(!empty($this->date)) {
             $record['date'] = $this->date;
+        }
+        else {
+            $record['player'] = new SteamUsersResource($this->resource);
         }
         
         $record['rank'] = (int)$this->rank;

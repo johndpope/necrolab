@@ -13,9 +13,14 @@ class LeaderboardEntriesResource extends JsonResource {
      */
     public function toArray($request) {
         $record = [
-            'rank' => $this->rank,
-            'pb' => new SteamUserPbsResource($this->resource)
+            'rank' => $this->rank
         ];
+        
+        if(!empty($this->steamid)) {
+            $record['player'] = new SteamUsersResource($this->resource);
+        }
+        
+        $record['pb'] = new SteamUserPbsResource($this->resource);
     
         return $record;
     }
