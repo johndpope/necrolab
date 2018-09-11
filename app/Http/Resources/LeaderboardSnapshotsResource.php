@@ -12,6 +12,12 @@ class LeaderboardSnapshotsResource extends JsonResource {
      * @return array
      */
     public function toArray($request) {    
-        return $this->date;
+        return [
+            'date' => $this->date,
+            'players' => $this->players,
+            'score' => $this->score,
+            'time' => $this->time,
+            'win_count' => $this->win_count
+        ];
     }
 }

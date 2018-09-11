@@ -14,10 +14,10 @@ class CreateLeaderboardSnapshotAggregationFields extends Migration
      */
     public function up() {    
         Schema::table('leaderboard_snapshots', function (Blueprint $table) {
-            $table->integer('players')->nullable();
-            $table->integer('score')->nullable();
-            $table->double('time', 16, 6)->nullable();
-            $table->integer('win_count')->nullable();
+            $table->integer('players')->default(0);
+            $table->integer('score')->default(0);
+            $table->double('time', 16, 6)->default(0.0);
+            $table->integer('win_count')->default(0);
         });
     }
 

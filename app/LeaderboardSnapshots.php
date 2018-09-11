@@ -87,8 +87,8 @@ class LeaderboardSnapshots extends Model {
                                 ELSE 0
                             END
                         ) AS score,
-                        SUM(sup.time) AS time,
-                        SUM(sup.win_count) AS win_count
+                        COALESCE(SUM(sup.time), 0) AS time,
+                        COALESCE(SUM(sup.win_count), 0) AS win_count
                 FROM leaderboard_snapshots ls
                 JOIN leaderboards l ON l.leaderboard_id = ls.leaderboard_id
                 JOIN leaderboard_types lt ON lt.leaderboard_type_id = l.leaderboard_type_id
@@ -131,7 +131,11 @@ class LeaderboardSnapshots extends Model {
     public static function getApiReadQuery(int $lbid) {
         return DB::table('leaderboards AS l')
             ->select([
-                'ls.date'
+                'ls.date',
+                'ls.players',
+                'ls.score',
+                'ls.time',
+                'ls.win_count'
             ])
             ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_id', '=', 'l.leaderboard_id')
             ->where('l.lbid', $lbid)

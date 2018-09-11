@@ -14,18 +14,18 @@ class CreateDailyRankingAggregationFields extends Migration
      */
     public function up() {    
         Schema::table('daily_rankings', function (Blueprint $table) {
-            $table->integer('players')->nullable();
-            $table->integer('first_place_ranks')->nullable();
-            $table->integer('top_5_ranks')->nullable();
-            $table->integer('top_10_ranks')->nullable();
-            $table->integer('top_20_ranks')->nullable();
-            $table->integer('top_50_ranks')->nullable();
-            $table->integer('top_100_ranks')->nullable();
-            $table->double('total_points')->nullable();
-            $table->integer('total_dailies')->nullable();
-            $table->integer('total_wins')->nullable();
-            $table->integer('sum_of_ranks')->nullable();
-            $table->integer('total_score')->nullable();
+            $table->integer('players')->default(0);
+            $table->integer('first_place_ranks')->default(0);
+            $table->integer('top_5_ranks')->default(0);
+            $table->integer('top_10_ranks')->default(0);
+            $table->integer('top_20_ranks')->default(0);
+            $table->integer('top_50_ranks')->default(0);
+            $table->integer('top_100_ranks')->default(0);
+            $table->double('total_points')->default(0.0);
+            $table->integer('total_dailies')->default(0);
+            $table->integer('total_wins')->default(0);
+            $table->integer('sum_of_ranks')->default(0);
+            $table->integer('total_score')->default(0);
         });
     }
 

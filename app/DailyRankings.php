@@ -135,7 +135,19 @@ class DailyRankings extends Model {
     public static function getApiReadQuery(int $release_id, int $daily_ranking_day_type_id) {
         return DB::table('daily_rankings')
             ->select([
-                'date'
+                'date',
+                'players',
+                'first_place_ranks',
+                'top_5_ranks',
+                'top_10_ranks',
+                'top_20_ranks',
+                'top_50_ranks',
+                'top_100_ranks',
+                'total_points',
+                'total_dailies',
+                'total_wins',
+                'sum_of_ranks',
+                'total_score'
             ])
             ->where('release_id', $release_id)
             ->where('daily_ranking_day_type_id', $daily_ranking_day_type_id)
