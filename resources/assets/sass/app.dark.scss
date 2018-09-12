@@ -1,0 +1,11 @@
+// Import variables from the theme
+@import "~bootswatch/dist/darkly/variables";
+
+// Import any local variables
+@import "variables";
+
+// Bootstrap
+@import "~bootstrap/scss/bootstrap";
+
+// The theme
+@import "~bootswatch/dist/darkly/bootswatch";
