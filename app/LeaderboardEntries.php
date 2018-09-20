@@ -160,6 +160,7 @@ class LeaderboardEntries extends Model {
             ->leftJoin('leaderboards_blacklist AS lb', 'lb.leaderboard_id', '=', 'l.leaderboard_id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
+            ->leftJoin('users AS u', 'u.steam_user_id', '=', 'su.steam_user_id')
             ->where('ls.date', $date->format('Y-m-d'))
             ->where('lt.name', '!=', 'daily')
             ->whereNull('lb.leaderboards_blacklist_id');
@@ -186,6 +187,7 @@ class LeaderboardEntries extends Model {
             ->leftJoin('leaderboards_blacklist AS lb', 'lb.leaderboard_id', '=', 'l.leaderboard_id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
+            ->leftJoin('users AS u', 'u.steam_user_id', '=', 'su.steam_user_id')
             ->where('ls.date', $date->format('Y-m-d'))
             ->where('lt.name', '=', 'daily')
             ->where('l.is_co_op', '=', 0)

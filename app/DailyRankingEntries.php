@@ -119,6 +119,7 @@ class DailyRankingEntries extends Model {
             ])
             ->join("{$entries_table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.daily_ranking_id')
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'dre.steam_user_id')
+            ->leftJoin('users AS u', 'u.steam_user_id', '=', 'su.steam_user_id')
             ->where('dr.date', $date->format('Y-m-d'));
             
         ExternalSites::addSiteIdSelectFields($query);

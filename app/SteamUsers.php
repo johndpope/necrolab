@@ -31,11 +31,18 @@ class SteamUsers extends Model {
     protected $primaryKey = 'steam_user_id';
     
     /**
-     * Indicates if the model should be timestamped.
+     * The name of the "created at" column. Disabled in this class.
      *
-     * @var bool
+     * @var string
      */
-    public $timestamps = false;
+    const CREATED_AT = NULL;
+    
+    /**
+     * The name of the "updated at" column.
+     *
+     * @var string
+     */
+    const UPDATED_AT = 'updated';
     
     public static function createTemporaryTable() {    
         DB::statement("
@@ -89,13 +96,24 @@ class SteamUsers extends Model {
         ");
     }
     
+    public static function updateRecordSearchIndex(\App\SteamUsers $record) {    
+        DB::update("
+            UPDATE steam_users
+            SET personaname_search_index = to_tsvector(:personaname)
+            WHERE steam_user_id = :steam_user_id
+        ", [
+            ':personaname' => $record->personaname,
+            ':steam_user_id' => $record->steam_user_id
+        ]);
+    }
+    
     public static function addSelects(Builder $query) {
         $query->addSelect([
             'su.steamid',
             'su.personaname AS steam_username',
             'su.profileurl AS steam_profile_url',
-            'bu.beampro_id',
-            'bu.username AS beampro_username',
+            'mu.external_id AS mixer_id',
+            'mu.username AS mixer_username',
             'du.discord_id',
             'du.username AS discord_username',
             'du.discriminator AS discord_discriminator',
@@ -112,12 +130,13 @@ class SteamUsers extends Model {
     }
     
     public static function addLeftJoins(Builder $query) {    
-        $query->leftJoin('beampro_users AS bu', 'bu.beampro_user_id', '=', 'su.beampro_user_id');
-        $query->leftJoin('discord_users AS du', 'du.discord_user_id', '=', 'su.discord_user_id');
-        $query->leftJoin('reddit_users AS ru', 'ru.reddit_user_id', '=', 'su.reddit_user_id');
-        $query->leftJoin('twitch_users AS tu', 'tu.twitch_user_id', '=', 'su.twitch_user_id');
-        $query->leftJoin('twitter_users AS twu', 'twu.twitter_user_id', '=', 'su.twitter_user_id');
-        $query->leftJoin('youtube_users AS yu', 'yu.youtube_user_id', '=', 'su.youtube_user_id');
+        $query->leftJoin('users AS u', 'u.steam_user_id', '=', 'su.steam_user_id');
+        $query->leftJoin('mixer_users AS mu', 'mu.id', '=', 'u.mixer_user_id');
+        $query->leftJoin('discord_users AS du', 'du.discord_user_id', '=', 'u.discord_user_id');
+        $query->leftJoin('reddit_users AS ru', 'ru.reddit_user_id', '=', 'u.reddit_user_id');
+        $query->leftJoin('twitch_users AS tu', 'tu.twitch_user_id', '=', 'u.twitch_user_id');
+        $query->leftJoin('twitter_users AS twu', 'twu.twitter_user_id', '=', 'u.twitter_user_id');
+        $query->leftJoin('youtube_users AS yu', 'yu.youtube_user_id', '=', 'u.youtube_user_id');
     }
     
     public static function getAllIdsBySteamid() {
@@ -170,6 +189,7 @@ class SteamUsers extends Model {
             ->select([
                 'su.steam_user_id'
             ])
+            ->leftJoin('users AS u', 'u.steam_user_id', '=', 'su.steam_user_id')
             ->orderBy('su.personaname', 'asc');
         
         ExternalSites::addSiteIdSelectFields($query);

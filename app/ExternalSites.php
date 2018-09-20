@@ -53,7 +53,7 @@ class ExternalSites extends Model {
             foreach($sites_by_id as $site) {
                 if($site->active == 1) {                
                     $query->addSelect([
-                        "su.{$site->name}_user_id"
+                        "u.{$site->name}_user_id"
                     ]);
                 }
             }

@@ -160,6 +160,7 @@ class PowerRankingEntries extends Model {
             ])
             ->join("{$entries_table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.power_ranking_id')
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'pre.steam_user_id')
+            ->leftJoin('users AS u', 'u.steam_user_id', '=', 'su.steam_user_id')
             ->where('pr.date', $date->format('Y-m-d'));
             
         ExternalSites::addSiteIdSelectFields($query);

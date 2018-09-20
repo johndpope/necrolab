@@ -16,6 +16,15 @@ class EventServiceProvider extends ServiceProvider
         'App\Events\CachedModelUpdated' => [
             'App\Listeners\RefreshModelCache',
         ],
+        'SocialiteProviders\Manager\SocialiteWasCalled' => [
+            'SocialiteProviders\\Discord\\DiscordExtendSocialite@handle',
+            'SocialiteProviders\\Mixer\\MixerExtendSocialite@handle',
+            'SocialiteProviders\\Steam\\SteamExtendSocialite@handle',
+            'SocialiteProviders\\Patreon\\PatreonExtendSocialite@handle',
+            'SocialiteProviders\\Twitch\\TwitchExtendSocialite@handle',
+            'SocialiteProviders\\Twitter\\TwitterExtendSocialite@handle',
+            'SocialiteProviders\\YouTube\\YouTubeExtendSocialite@handle'
+        ]
     ];
 
     /**

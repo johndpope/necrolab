@@ -161,6 +161,9 @@ return [
         App\Providers\RouteServiceProvider::class,
 
         Spatie\Permission\PermissionServiceProvider::class,
+        
+        // Socialite Service Providers
+        \SocialiteProviders\Manager\ServiceProvider::class
     ],
 
     /*

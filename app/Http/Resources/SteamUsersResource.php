@@ -18,10 +18,10 @@ class SteamUsersResource extends JsonResource {
             'profile_url' => $this->steam_profile_url
         ];
         
-        if(!empty($this->beampro_id)) {
-            $record['beampro'] = [
-                'id' => $this->beampro_id,
-                'username' => $this->beampro_username,
+        if(!empty($this->mixer_id)) {
+            $record['mixer'] = [
+                'id' => $this->mixer_id,
+                'username' => $this->mixer_username,
             ];
         }
         

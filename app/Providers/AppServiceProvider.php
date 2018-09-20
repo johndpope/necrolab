@@ -20,6 +20,7 @@ class AppServiceProvider extends ServiceProvider
         \App\Characters::observe(\App\Observers\CharactersObserver::class);
         \App\Releases::observe(\App\Observers\ReleasesObserver::class);
         \App\ExternalSites::observe(\App\Observers\ExternalSitesObserver::class);
+        \App\SteamUsers::observe(\App\Observers\SteamUsersObserver::class);
     }
 
     /**
