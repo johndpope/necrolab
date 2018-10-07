@@ -1,0 +1,20 @@
+/*
+ * Site filter dropdown style
+ */
+
+.nt-site-filter li {
+    border-bottom: 1px solid rgba(112, 128, 144, 0.1);
+}
+
+.nt-site-filter li:last-child {
+    border-bottom: none;
+}
+
+.nt-site-filter li a,
+.nt-site-filter .dropdown-toggle .selected-tag {
+    font-size: 1.25em;
+}
+
+.nt-site-filter .selected-tag {
+    position: relative !important;
+}

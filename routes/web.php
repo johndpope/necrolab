@@ -19,3 +19,6 @@ Route::get('/login', 'Page\LoginController@index')->name('login');
 Route::get('/login/steam', 'Page\LoginController@loginSteam')->name('login_steam');
 Route::get('/login/steam/success', 'Page\LoginController@loginSteamSuccess')->name('login_steam_success');
 Route::get('/logout', 'Page\LoginController@logout')->name('logout');
+
+// Players page
+Route::get('/players', 'Page\PlayersController@index')->name('players');

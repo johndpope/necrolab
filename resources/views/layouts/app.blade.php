@@ -15,9 +15,10 @@
         @stack('css')
     </head>
     <body @yield('body_attributes')>
-        <div class="w-100">
+        <div id="app" class="w-100">
             @yield('layout')
         </div>
+        
         <script type="text/javascript" src="{{ mix('/js/app.js') }}"></script>
         @stack('js')
     

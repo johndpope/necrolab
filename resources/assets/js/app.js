@@ -1,22 +1,47 @@
 
-/**
- * First we will load all of this project's JavaScript dependencies which
- * includes Vue and other libraries. It is a great starting point when
- * building robust, powerful web applications using Vue and Laravel.
- */
+/* ---------- Load the bootstrapper ---------- */
 
 require('./bootstrap');
 
+
+/* ---------- Register Vue with the window object ---------- */
+
 window.Vue = require('vue');
 
-/**
- * Next, we will create a fresh Vue application instance and attach it to
- * the page. Then, you may begin adding components to this application
- * or customize the JavaScript scaffolding to fit your unique needs.
- */
 
-//Vue.component('datatable', require('./components/Datatable.vue'));
-//Vue.component('testing', require('./components/Testing.vue'));
+/* ---------- Import all sitewide components ---------- */
+
+import bNavbar from 'bootstrap-vue/es/components/navbar/navbar';
+import bNavItem from 'bootstrap-vue/es/components/nav/nav-item';
+import bNavItemDropdown from 'bootstrap-vue/es/components/nav/nav-item-dropdown';
+import bNavbarToggle from 'bootstrap-vue/es/components/navbar/navbar-toggle';
+import bNavbarBrand from 'bootstrap-vue/es/components/navbar/navbar-brand';
+import bNarbarNav from 'bootstrap-vue/es/components/navbar/navbar-nav';
+import bDropdownItem from 'bootstrap-vue/es/components/dropdown/dropdown-item';
+import bButton from 'bootstrap-vue/es/components/button/button';
+import bCollapse from 'bootstrap-vue/es/components/collapse/collapse';
+import bBreadcrumb from 'bootstrap-vue/es/components/breadcrumb/breadcrumb';
+
+
+/* ---------- Register all sitewide components ---------- */
+
+Vue.component('b-navbar', bNavbar);
+Vue.component('b-nav-item', bNavItem);
+Vue.component('b-nav-item-dropdown', bNavItemDropdown);
+Vue.component('b-navbar-toggle', bNavbarToggle);
+Vue.component('b-navbar-brand', bNavbarBrand);
+Vue.component('b-navbar-nav', bNarbarNav);
+Vue.component('b-dropdown-item', bDropdownItem);
+Vue.component('b-button', bButton);
+Vue.component('b-collapse', bCollapse);
+Vue.component('b-breadcrumb', bBreadcrumb);
+
+/* --------- Register all page components ---------- */
+
+Vue.component('players-page', require('./components/pages/PlayersPage.vue'));
+
+
+/* ---------- Initialize Vue ---------- */
 
 const app = new Vue({
     el: '#app'
