@@ -50,7 +50,7 @@ class PowerRankingEntriesResource extends JsonResource {
                         case 'speed':
                             $total_speed_points += $points;
                             
-                            $speed_total_time += $category_data['time'];
+                            $speed_total_time += (float)$category_data['time'];
                             break;
                         case 'deathless':
                             $total_deathless_points += $points;
@@ -84,7 +84,7 @@ class PowerRankingEntriesResource extends JsonResource {
             $speed_rankings = [
                 'rank' => (int)$this->speed_rank,
                 'points' => $total_speed_points,
-                'time' => $speed_total_time
+                'time' => (float)$speed_total_time
             ];
         }
         

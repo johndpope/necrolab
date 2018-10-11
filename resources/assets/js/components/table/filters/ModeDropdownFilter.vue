@@ -1,24 +1,24 @@
 <script>
 import DropdownFilter from './DropdownFilter.vue';
 
-const ReleaseDropdownFilter = {
+const ModeDropdownFilter = {
     extends: DropdownFilter,
-    name: 'release-dropdown-filter',
+    name: 'mode-dropdown-filter',
     props: {
         api_endpoint_url: {
             type: String,
-            default: '/api/1/releases'
+            default: '/api/1/modes'
         },
         field_name: {
             type: String,
-            default: 'release'
+            default: 'mode'
         },
         default_selected_value: {
             type: String,
-            default: 'amplified_dlc'
+            default: 'normal'
         }
     }
 };
 
-export default ReleaseDropdownFilter;
+export default ModeDropdownFilter;
 </script>

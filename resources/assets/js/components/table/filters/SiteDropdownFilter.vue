@@ -37,28 +37,8 @@ const SiteDropdownFilter = {
         blank_option_display: {
             type: String,
             default: 'Steam'
-        },
-        option_value_name: {
-            type: String,
-            default: 'name'
-        },
-        option_display_name: {
-            type: String,
-            default: 'display_name'
         }
-    },
-    computed: {
-        selected: {
-            get() {
-                return this.selected_option;
-            },
-            set(selected_option) {
-                this.selected_option = selected_option;
-                
-                this.$emit("selectedValueChanged", this.field_name, this.selected_option[this.option_value_name]);
-            }
-        }
-    }  
+    } 
 };
 
 export default SiteDropdownFilter;

@@ -1,4 +1,17 @@
 /*
+ * NectoTable styles
+ */
+
+.necrotable .nt-details-row-expanded td {
+    border-bottom: none;
+}
+
+.necrotable .nt-details-row td {
+    border-top: none;
+}
+
+
+/*
  * Site filter dropdown style
  */
 
@@ -10,7 +23,12 @@
     border-bottom: none;
 }
 
-.nt-site-filter li a,
+.nt-site-filter .dropdown-menu li a {
+    padding-top: 0.5em;
+    padding-bottom: 0.5em;
+}
+
+.nt-site-filter .dropdown-menu li a,
 .nt-site-filter .dropdown-toggle .selected-tag {
     font-size: 1.25em;
 }

@@ -1,13 +1,16 @@
 <template>
-    <select v-model="selected" class="form-control form-control-lg">
-        <option v-for="(option, index) in options" :value="index">
-            {{ option[option_display_name] }}
-        </option>
-    </select>
+    <v-select :label="option_display_name" v-model="selected" :options="all_options" :searchable="false" :filterable="false" :clearable="false" class="nt-site-filter">
+    </v-select>
 </template>
 
 <script>
+import vSelect from 'vue-select/src';
+
 const DropdownFilter = {
+    name: 'nt-dropdown-filter',
+    components: {
+        'v-select': vSelect
+    },
     props: {
         api_endpoint_url: {
             type: String,
@@ -19,10 +22,6 @@ const DropdownFilter = {
         },
         field_name: {
             type: String
-        },
-        label: {
-            type: String,
-            default: ''
         },
         has_blank_option: {
             type: Boolean,
@@ -36,17 +35,17 @@ const DropdownFilter = {
             type: Array,
             default: () => []
         },
-        default_selected_index: {
-            type: Number,
-            default: 0
+        default_selected_value: {
+            type: String,
+            default: ''
         },
         option_value_name: {
             type: String,
-            default: 'value'
+            default: 'name'
         },
         option_display_name: {
             type: String,
-            default: 'label'
+            default: 'display_name'
         }
     },
     computed: {
@@ -65,20 +64,28 @@ const DropdownFilter = {
                 }
                 
                 this.all_options = options;
+                
+                if(this.default_selected_value != null) {
+                    let options_length = options.length;
+                    
+                    for(var options_index = 0; options_index < options_length; options_index++) {
+                        let option = options[options_index];
+                        
+                        if(option[this.option_value_name] == this.default_selected_value) {
+                            this.selected = option;
+                            
+                            break;
+                        }
+                    }
+                }
             }
         },
         selected: {
             get() {
-                return this.selected_index;
+                return this.selected_option;
             },
-            set(index) {
-                this.selected_index = index;
-                
-                this.selected_option = {};
-                
-                if(this.all_options[index] != null) {
-                    this.selected_option = this.all_options[index];
-                }
+            set(selected_option) {
+                this.selected_option = selected_option;
                 
                 this.$emit("selectedValueChanged", this.field_name, this.selected_option[this.option_value_name]);
             }
@@ -86,23 +93,23 @@ const DropdownFilter = {
     },
     data() {
         return {
-            all_options: this.default_options,
-            selected_index: this.default_selected_index,
+            all_options: [],
             selected_option: {}
         };
     },
-    methods: {
-        getAllOptions() {
-            return this.all_options;
-        }
-    },
     mounted() {
-        if(this.options.length == 0) {
+        if(this.default_options.length > 0) {
+            this.options = this.default_options;
+        }
+    
+        if(this.api_endpoint_url.length > 0) {
             axios.get(this.api_endpoint_url, {
                 params: this.api_request_parameters
             })
             .then(response =>{
                 this.options = response.data.data;
+                
+                this.$emit("loaded", this.field_name);
             })
             .catch(error =>{
                 console.log(error);
@@ -115,8 +122,13 @@ const DropdownFilter = {
                 
             });
         }
-        
-        this.$emit('initialValueSet', this.field_name, this.all_options[this.selected]);
+        else {
+            if(this.default_options.length > 0) {
+                this.options = this.default_options;
+                
+                this.$emit("loaded", this.field_name);
+            }
+        }
     }
 };
 export default DropdownFilter;

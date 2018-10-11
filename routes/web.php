@@ -22,3 +22,6 @@ Route::get('/logout', 'Page\LoginController@logout')->name('logout');
 
 // Players page
 Route::get('/players', 'Page\PlayersController@index')->name('players');
+
+// Rankings
+Route::get('/rankings/power', 'Page\RankingsController@powerIndex')->name('power_rankings');

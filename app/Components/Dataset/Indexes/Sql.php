@@ -69,7 +69,7 @@ extends Index {
                 // Get a count of how many entries are in the index for pagination
                 $filtered_index->count = count($filtered_index->data);
 
-                // Save the filtered index to opcache for one minute
+                // Save the filtered index to opcache for five minutes
                 $opcache->put($filtered_index_key_name, $filtered_index, 5);
             }
             

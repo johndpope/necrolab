@@ -39,6 +39,7 @@ Vue.component('b-breadcrumb', bBreadcrumb);
 /* --------- Register all page components ---------- */
 
 Vue.component('players-page', require('./components/pages/PlayersPage.vue'));
+Vue.component('power-rankings-page', require('./components/pages/PowerRankingsPage.vue'));
 
 
 /* ---------- Initialize Vue ---------- */
