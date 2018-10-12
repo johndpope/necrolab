@@ -28,9 +28,7 @@
                         </td>
                     </template>
                     <template slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
-                        <b-button @click.stop="toggleDetailsRow(row_index)">
-                            {{ detailsRowVisible(row_index) ? 'Hide' : 'Show' }} Details
-                        </b-button>
+                        <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
                     </template>
                     <template slot="row-details" slot-scope="{ row }">
                         <table class="table table-sm table-bordered">
@@ -99,6 +97,7 @@ import PlayerProfileLink from '../formatting/PlayerProfileLink.vue';
 import LinkedSites from '../sites/LinkedSites.vue';
 import RoundedDecimal from '../formatting/RoundedDecimal.vue';
 import SecondsToTime from '../formatting/SecondsToTime.vue';
+import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
 
 export default {
     name: 'PlayersPageTable',
@@ -107,7 +106,8 @@ export default {
         'player-profile-link': PlayerProfileLink,
         'linked-sites': LinkedSites,
         'rounded-decimal': RoundedDecimal,
-        'seconds-to-time': SecondsToTime
+        'seconds-to-time': SecondsToTime,
+        'toggle-details': ToggleDetails
     },
     data() {
         return {
