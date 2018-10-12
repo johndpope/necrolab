@@ -21,7 +21,7 @@
                             <player-profile-link :id="row.player.id" :username="row.player.username"></player-profile-link>
                         </td>
                         <td>
-                            Social Media
+                            <linked-sites></linked-sites>
                         </td>
                         <td>
                             <rounded-decimal :original_number="row.points"></rounded-decimal>
@@ -96,6 +96,7 @@ import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
 import SeededDropdownFilter from '../table/filters/SeededDropdownFilter.vue';
 import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
 import PlayerProfileLink from '../formatting/PlayerProfileLink.vue';
+import LinkedSites from '../formatting/LinkedSites.vue';
 import RoundedDecimal from '../formatting/RoundedDecimal.vue';
 import SecondsToTime from '../formatting/SecondsToTime.vue';
 
@@ -104,6 +105,7 @@ export default {
     components: {
         'necrotable': NecroTable,
         'player-profile-link': PlayerProfileLink,
+        'linked-sites': LinkedSites,
         'rounded-decimal': RoundedDecimal,
         'seconds-to-time': SecondsToTime
     },
