@@ -1,16 +1,16 @@
 <template>
     <div class="container-fluid mr-0 ml-0 pl-0 pr-0">
-        <div v-if="filters.length > 0" class="row">
+        <div v-if="filters.length > 0" class="row pb-2">
             <div v-for="(filter, filter_index) in filters" :key="filter_index" class="col-sm-12 col-md-6 col-lg-4 pt-2">
                 <component :is="filter" :key="filter.name" @loaded="addLoadedFilter" @selectedValueChanged="updateFromRequestParameter">
                 </component>
             </div>
         </div>
         <div class="row">
-            <div v-if="has_search" class="col-sm-12 col-md-6 pt-2 pb-2">
+            <div v-if="has_search" class="col-sm-12 col-md-6 pb-2">
                 <table-search v-if="has_search" @searchSubmitted="updateFromRequestParameter"></table-search>
             </div>
-            <div v-if="showPagination" class="col-sm-12 col-md-6 col-lg-6 pt-2 pb-2">
+            <div v-if="showPagination" class="col-sm-12 col-md-6 col-lg-6 pb-2">
                 <b-pagination v-if="pagination" size="lg" align="right" :total-rows="total_records" v-model="currentPage" :per-page="limit"></b-pagination>
             </div>
         </div>
@@ -57,11 +57,11 @@
                             </tr>
                             <tr v-if="hasDetailsRow && detailsRowVisible(row_index)" class="nt-details-row">
                                 <td :colspan="number_of_columns">
-                                    <b-card>
+                                    <div class="border p-3 m-2">
                                         <slot name="row-details" :row="row">
                                             Override the "row-details" slot to customize row details.
                                         </slot>
-                                    </b-card>
+                                    </div>
                                 </td>
                             </tr>
                         </template>
@@ -77,14 +77,12 @@
 
 <script>
 import bPagination from 'bootstrap-vue/es/components/pagination/pagination';
-import bCard from 'bootstrap-vue/es/components/card/card';
 import TableSearch from './filters/TableSearch.vue';
 
 const NecroTable = {
     name: 'necrotable',
     components: {
         'b-pagination': bPagination,
-        'b-card': bCard,
         'table-search': TableSearch
     },
     props: {
@@ -115,6 +113,9 @@ const NecroTable = {
         server_pagination: {
             type: Boolean,
             default: true
+        },
+        data_processor: {
+            type: Function
         },
         has_details_row: {
             type: Boolean,
@@ -192,7 +193,7 @@ const NecroTable = {
         },
         updateFromRequestParameter(name, value) {
             this.setRequestParameter(name, value);
-            
+
             if(this.loaded_filters.length >= this.filters.length) {
                 this.updateFromServer();
             }
@@ -202,7 +203,13 @@ const NecroTable = {
                 params: this.request_parameters
             })
             .then(response =>{
-                this.response = response.data;
+                let response_data = response.data;
+                
+                if(this.data_processor != null) {
+                    response_data.data = this.data_processor(response_data.data);
+                }
+                
+                this.response = response_data;
                 
                 this.$emit('serverResponseReceived', this.response);
             })
@@ -256,7 +263,7 @@ const NecroTable = {
         }
         
         if(this.api_endpoint_url.length > 0) {
-            if(this.server_pagination) {
+            if(this.has_pagination && this.server_pagination) {
                 this.setRequestParameter('page', this.server_page);
                 this.setRequestParameter('limit', this.limit);
             }

@@ -39,7 +39,7 @@ class DailyRankingEntriesController extends Controller {
      */
     public function index(ReadDailyRankingEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $mode_id = Modes::getByName('normal')->mode_id;
         $daily_ranking_day_type_id = DailyRankingDayTypes::getByName($request->number_of_days)->daily_ranking_day_type_id;
         $date = new DateTime($request->date);
         
@@ -92,7 +92,7 @@ class DailyRankingEntriesController extends Controller {
      */
     public function playerIndex($steamid, ReadSteamUserDailyRankingEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $mode_id = Modes::getByName('normal')->mode_id;
         $daily_ranking_day_type_id = DailyRankingDayTypes::getByName($request->number_of_days)->daily_ranking_day_type_id;
         
         

@@ -24,7 +24,8 @@ class ReadLeaderboards extends Core {
     public function rules() {
         return CommonApiValidationRules::getRules([
             'release',
-            'mode'
+            'mode',
+            'character'
         ]);
     }
 }

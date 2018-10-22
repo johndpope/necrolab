@@ -109,6 +109,8 @@ class SteamUsers extends Model {
     
     public static function addSelects(Builder $query) {
         $query->addSelect([
+            'u.id AS necrolab_id',
+            'u.name AS necrolab_username',
             'su.steamid',
             'su.personaname AS steam_username',
             'su.profileurl AS steam_profile_url',

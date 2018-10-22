@@ -18,10 +18,7 @@
                             {{ row.rank }}
                         </td>
                         <td>
-                            <player-profile-link :id="row.player.id" :username="row.player.username"></player-profile-link>
-                        </td>
-                        <td>
-                            <linked-sites :player_data="row.player"></linked-sites>
+                            <player-profile-modal :player="row.player"></player-profile-modal>
                         </td>
                         <td>
                             <rounded-decimal :original_number="row.points"></rounded-decimal>
@@ -31,54 +28,7 @@
                         <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
                     </template>
                     <template slot="row-details" slot-scope="{ row }">
-                        <table class="table table-sm table-bordered">
-                            <thead>
-                                <tr>
-                                    <th scope="col"></th>
-                                    <th scope="col">Score</th>
-                                    <th scope="col">Speed</th>
-                                    <th scope="col">Deathless</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <tr>
-                                    <th scope="row">Ranks</th>
-                                    <td>
-                                        {{ getCategoryField(row, 'score', 'rank') }}
-                                    </td>
-                                    <td>
-                                        {{ getCategoryField(row, 'speed', 'rank') }}
-                                    </td>
-                                    <td>
-                                        {{ getCategoryField(row, 'deathless', 'rank') }}
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Points</th>
-                                    <td>
-                                        <rounded-decimal :original_number="getCategoryField(row, 'score', 'points')"></rounded-decimal>
-                                    </td>
-                                    <td>
-                                        <rounded-decimal :original_number="getCategoryField(row, 'speed', 'points')"></rounded-decimal>
-                                    </td>
-                                    <td>
-                                        <rounded-decimal :original_number="getCategoryField(row, 'deathless', 'points')"></rounded-decimal>
-                                    </td>
-                                </tr>
-                                <tr>
-                                    <th scope="row">Score/Time/Wins</th>
-                                    <td>
-                                        {{ getCategoryField(row, 'score', 'score') }}
-                                    </td>
-                                    <td>
-                                        <seconds-to-time :seconds="getCategoryField(row, 'speed', 'time')"></seconds-to-time>
-                                    </td>
-                                    <td>
-                                        {{ getCategoryField(row, 'deathless', 'win_count') }}
-                                    </td>
-                                </tr> 
-                            </tbody>
-                        </table>
+                        <ranking-details-table :record="row"></ranking-details-table>
                     </template>
                 </necrotable>
             </div>
@@ -93,21 +43,21 @@ import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
 import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
 import SeededDropdownFilter from '../table/filters/SeededDropdownFilter.vue';
 import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
-import PlayerProfileLink from '../formatting/PlayerProfileLink.vue';
-import LinkedSites from '../sites/LinkedSites.vue';
+import PlayerProfileModal from '../player/PlayerProfileModal.vue';
 import RoundedDecimal from '../formatting/RoundedDecimal.vue';
 import SecondsToTime from '../formatting/SecondsToTime.vue';
 import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
+import RankingDetailsTable from '../table/RankingDetailsTable.vue';
 
 export default {
-    name: 'PlayersPageTable',
+    name: 'power-rankings-page',
     components: {
         'necrotable': NecroTable,
-        'player-profile-link': PlayerProfileLink,
-        'linked-sites': LinkedSites,
+        'player-profile-modal': PlayerProfileModal,
         'rounded-decimal': RoundedDecimal,
         'seconds-to-time': SecondsToTime,
-        'toggle-details': ToggleDetails
+        'toggle-details': ToggleDetails,
+        'ranking-details-table': RankingDetailsTable
     },
     data() {
         return {
@@ -131,20 +81,8 @@ export default {
             header_columns: [
                 'Rank',
                 'Player',
-                '',
                 'Points'
             ]
-        }
-    },
-    methods: {
-        getCategoryField(row, category_name, field_name) {
-            let field_value = '';
-            
-            if(row[category_name] != null) {
-                field_value = row[category_name][field_name];
-            }
-            
-            return field_value;
         }
     }
 };

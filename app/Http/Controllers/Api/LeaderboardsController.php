@@ -15,6 +15,7 @@ use App\Leaderboards;
 use App\LeaderboardTypes;
 use App\Releases;
 use App\Modes;
+use App\Characters;
 
 class LeaderboardsController extends Controller {
     /**
@@ -47,15 +48,21 @@ class LeaderboardsController extends Controller {
      */
     public function index(ReadLeaderboards $request) {
         $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;        
+        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $character_id = Characters::getByName($request->character)->character_id;
         
         return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember("leaderboards:steam:{$release_id}:{$mode_id}", 5, function() use($release_id, $mode_id) {
-                return Leaderboards::getNonDailyApiReadQuery(
-                    $release_id,
-                    $mode_id
-                )->get();
-            })
+            Cache::store('opcache')->remember(
+                "leaderboards:steam:{$release_id}:{$mode_id}:{$character_id}", 
+                5, 
+                function() use($release_id, $mode_id, $character_id) {
+                    return Leaderboards::getNonDailyApiReadQuery(
+                        $release_id,
+                        $mode_id,
+                        $character_id
+                    )->get();
+                }
+            )
         );
     }
     
@@ -68,14 +75,20 @@ class LeaderboardsController extends Controller {
     public function scoreIndex(ReadLeaderboards $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $character_id = Characters::getByName($request->character)->character_id;
         
         return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember("leaderboards:steam:score:{$release_id}:{$mode_id}", 5, function() use($release_id, $mode_id) {
-                return Leaderboards::getScoreApiReadQuery(
-                    $release_id,
-                    $mode_id
-                )->get();
-            })
+            Cache::store('opcache')->remember(
+                "leaderboards:steam:score:{$release_id}:{$mode_id}:{$character_id}", 
+                5, 
+                function() use($release_id, $mode_id, $character_id) {
+                    return Leaderboards::getScoreApiReadQuery(
+                        $release_id,
+                        $mode_id,
+                        $character_id
+                    )->get();
+                }
+            )
         );
     }
     
@@ -88,14 +101,20 @@ class LeaderboardsController extends Controller {
     public function speedIndex(ReadLeaderboards $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $character_id = Characters::getByName($request->character)->character_id;
         
         return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember("leaderboards:steam:speed:{$release_id}:{$mode_id}", 5, function() use($release_id, $mode_id) {
-                return Leaderboards::getSpeedApiReadQuery(
-                    $release_id,
-                    $mode_id
-                )->get();
-            })
+            Cache::store('opcache')->remember(
+                "leaderboards:steam:speed:{$release_id}:{$mode_id}:{$character_id}", 
+                5, 
+                function() use($release_id, $mode_id, $character_id) {
+                    return Leaderboards::getSpeedApiReadQuery(
+                        $release_id,
+                        $mode_id,
+                        $character_id
+                    )->get();
+                }
+            )
         );
     }
     
@@ -107,13 +126,19 @@ class LeaderboardsController extends Controller {
      */
     public function deathlessIndex(ReadDeathlessLeaderboards $request) {
         $release_id = Releases::getByName($request->release)->release_id;
+        $character_id = Characters::getByName($request->character)->character_id;
         
         return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember("leaderboards:steam:deathless:{$release_id}", 5, function() use($release_id) {
-                return Leaderboards::getDeathlessApiReadQuery(
-                    $release_id
-                )->get();
-            })
+            Cache::store('opcache')->remember(
+                "leaderboards:steam:deathless:{$release_id}:{$character_id}", 
+                5, 
+                function() use($release_id, $character_id) {
+                    return Leaderboards::getDeathlessApiReadQuery(
+                        $release_id,
+                        $character_id
+                    )->get();
+                }
+            )
         );
     }
 
@@ -170,15 +195,17 @@ class LeaderboardsController extends Controller {
     public function playerIndex($steamid, ReadLeaderboards $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $character_id = Characters::getByName($request->character)->character_id;
         
-        $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:{$mode_id}";
+        $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:{$mode_id}:{$character_id}";
         
         return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id, $mode_id) {
+            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id, $mode_id, $character_id) {
                 return Leaderboards::getPlayerNonDailyApiReadQuery(
                     $steamid,
                     $release_id,
-                    $mode_id
+                    $mode_id,
+                    $character_id
                 )->get();
             })
         );
@@ -193,15 +220,17 @@ class LeaderboardsController extends Controller {
     public function playerScoreIndex($steamid, ReadLeaderboards $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $character_id = Characters::getByName($request->character)->character_id;
         
-        $cache_key = "players:steam:{$steamid}:leaderboards:score:{$release_id}:{$mode_id}";
+        $cache_key = "players:steam:{$steamid}:leaderboards:score:{$release_id}:{$mode_id}:{$character_id}";
         
         return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id, $mode_id) {
+            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id, $mode_id, $character_id) {
                 return Leaderboards::getPlayerScoreApiReadQuery(
                     $steamid,
                     $release_id,
-                    $mode_id
+                    $mode_id,
+                    $character_id
                 )->get();
             })
         );
@@ -216,15 +245,17 @@ class LeaderboardsController extends Controller {
     public function playerSpeedIndex($steamid, ReadLeaderboards $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $character_id = Characters::getByName($request->character)->character_id;
         
-        $cache_key = "players:steam:{$steamid}:leaderboards:speed:{$release_id}:{$mode_id}";
+        $cache_key = "players:steam:{$steamid}:leaderboards:speed:{$release_id}:{$mode_id}:{$character_id}";
         
         return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id, $mode_id) {
+            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id, $mode_id, $character_id) {
                 return Leaderboards::getPlayerSpeedApiReadQuery(
                     $steamid,
                     $release_id,
-                    $mode_id
+                    $mode_id,
+                    $character_id
                 )->get();
             })
         );
@@ -238,14 +269,16 @@ class LeaderboardsController extends Controller {
      */
     public function playerDeathlessIndex($steamid, ReadDeathlessLeaderboards $request) {
         $release_id = Releases::getByName($request->release)->release_id;
+        $character_id = Characters::getByName($request->character)->character_id;
         
-        $cache_key = "players:steam:{$steamid}:leaderboards:speed:{$release_id}";
+        $cache_key = "players:steam:{$steamid}:leaderboards:speed:{$release_id}:{$character_id}";
         
         return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id) {
+            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id, $character_id) {
                 return Leaderboards::getPlayerDeathlessApiReadQuery(
                     $steamid,
-                    $release_id
+                    $release_id,
+                    $character_id
                 )->get();
             })
         );

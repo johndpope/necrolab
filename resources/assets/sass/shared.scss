@@ -12,27 +12,18 @@
 
 
 /*
- * Site filter dropdown style
+ * Dropdown filter style
  */
 
-.nt-site-filter li {
-    border-bottom: 1px solid rgba(112, 128, 144, 0.1);
+.dropdown-filter {
+    cursor: pointer;
 }
 
-.nt-site-filter li:last-child {
-    border-bottom: none;
-}
+/*
+ * Site profile styles
+ */
 
-.nt-site-filter .dropdown-menu li a {
-    padding-top: 0.5em;
-    padding-bottom: 0.5em;
-}
 
-.nt-site-filter .dropdown-menu li a,
-.nt-site-filter .dropdown-toggle .selected-tag {
-    font-size: 1.25em;
-}
-
-.nt-site-filter .selected-tag {
-    position: relative !important;
+.site_profile_link {
+    font-size: 1.7em;
 }

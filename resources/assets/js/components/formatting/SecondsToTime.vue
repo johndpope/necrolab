@@ -11,10 +11,17 @@ import addSeconds from 'date-fns/add_seconds';
 const SecondsToTime = {
     name: 'seconds-to-time',
     props: {
-        seconds: {
-            type: Number
+        unformatted: {
+            type: [
+                Number,
+                String
+            ]
         },
         include_hours: {
+            type: Boolean,
+            default: false
+        },
+        zero_pad_hours: {
             type: Boolean,
             default: false
         }
@@ -23,8 +30,8 @@ const SecondsToTime = {
         time() {
             let parsed_time = '';
 
-            if(this.seconds != null) {
-                let seconds = parseFloat(this.seconds);
+            if(this.unformatted != null) {
+                let seconds = parseFloat(this.unformatted);
                 
                 if(seconds > 0) {
                     //The following solution found at: https://stackoverflow.com/a/49190901
@@ -32,14 +39,18 @@ const SecondsToTime = {
                     
                     if(this.include_hours) {
                         if(seconds >= 3600) {
-                            format_string = 'HH:' + format_string;
+                            format_string = 'hh:' + format_string;
                         }
-                        else {
+                        else if(this.zero_pad_hours) {
                             format_string = '00:' + format_string;
                         }
                     }
                     
-                    let timestamp = addSeconds(new Date(0), seconds);
+                    let start_of_day = new Date();
+                    
+                    start_of_day.setHours(0, 0, 0, 0);
+                    
+                    let timestamp = addSeconds(start_of_day, seconds);
                     
                     parsed_time = format(timestamp, format_string);
                 }

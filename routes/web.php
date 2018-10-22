@@ -25,3 +25,14 @@ Route::get('/players', 'Page\PlayersController@index')->name('players');
 
 // Rankings
 Route::get('/rankings/power', 'Page\RankingsController@powerIndex')->name('power_rankings');
+Route::get('/rankings/score', 'Page\RankingsController@scoreIndex')->name('score_rankings');
+Route::get('/rankings/speed', 'Page\RankingsController@speedIndex')->name('speed_rankings');
+Route::get('/rankings/deathless', 'Page\RankingsController@deathlessIndex')->name('deathless_rankings');
+Route::get('/rankings/character', 'Page\RankingsController@characterIndex')->name('character_rankings');
+Route::get('/rankings/daily', 'Page\RankingsController@dailyIndex')->name('daily_rankings');
+
+// Leaderboards
+Route::get('/leaderboards/score', 'Page\LeaderboardsController@scoreIndex')->name('score_leaderboards');
+Route::get('/leaderboards/speed', 'Page\LeaderboardsController@speedIndex')->name('speed_leaderboards');
+Route::get('/leaderboards/deathless', 'Page\LeaderboardsController@deathlessIndex')->name('deathless_leaderboards');
+Route::get('/leaderboards/daily', 'Page\LeaderboardEntriesController@dailyIndex')->name('daily_leaderboard_entries');

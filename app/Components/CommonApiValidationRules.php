@@ -8,7 +8,7 @@ use App\Modes;
 use App\DailyRankingDayTypes;
 use App\ExternalSites;
 use App\Characters;
-use App\NumberOfDays;
+use App\LeaderboardTypes;
 
 class CommonApiValidationRules {
     protected static $plain_rules = [
@@ -52,8 +52,8 @@ class CommonApiValidationRules {
                         case 'character':
                             $rule = ['required', 'string', new NameExists(Characters::class)];
                             break;
-                        case 'number_of_days':
-                            $rule = ['required', 'integer', new NameExists(DailyRankingDayTypes::class)];
+                        case 'type':
+                            $rule = ['required', 'integer', new NameExists(LeaderboardTypes::class)];
                             break;
                         default:
                             throw new Exception("Specified validation rule '{$rule_name}' is not valid.");

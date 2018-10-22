@@ -25,7 +25,7 @@ use App\Jobs\SteamUsers\Cache as SteamUsersCacheJob;
 use App\Jobs\SteamUserPbs\Cache as SteamUserPbsCacheJob;
 use App\Jobs\Leaderboards\Entries\CacheNonDaily as CacheNonDailyLeadeboardEntriesJob;
 use App\Jobs\Leaderboards\Entries\CacheDaily as CacheDailyLeadeboardEntriesJob;
-use App\Jobs\Leaderboards\Entries\AggregateStats AS AggregateStatsJob;
+use App\Jobs\Leaderboards\Entries\UpdateStats AS UpdateStatsJob;
 
 class SaveToDatabase implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -304,7 +304,7 @@ class SaveToDatabase implements ShouldQueue {
             DailyRankingsGenerateJob::dispatch($this->date);
             SteamUsersCacheJob::dispatch();
             SteamUserPbsCacheJob::dispatch();
-            AggregateStatsJob::dispatch($this->date);
+            UpdateStatsJob::dispatch($this->date);
             CacheNonDailyLeadeboardEntriesJob::dispatch($this->date);
             CacheDailyLeadeboardEntriesJob::dispatch($this->date);
             

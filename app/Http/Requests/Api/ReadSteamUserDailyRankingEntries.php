@@ -24,7 +24,6 @@ class ReadSteamUserDailyRankingEntries extends Core {
     public function rules() {
         return CommonApiValidationRules::getRules([
             'release',
-            'mode',
             'number_of_days',
             'page',
             'limit'

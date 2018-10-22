@@ -12,8 +12,21 @@ class SteamUsersResource extends JsonResource {
      * @return array
      */
     public function toArray($request) {
+        $steamid = (string)$this->steamid;
+    
         $record = [
-            'id' => (string)$this->steamid,
+            'id' => $steamid
+        ];
+        
+        if(!empty($this->necrolab_id)) {
+            $record['necrolab'] = [
+                'id' => $steamid,
+                'username' => $this->necrolab_username
+            ];
+        }
+        
+        $record['steam'] = [
+            'id' => $steamid,
             'username' => $this->steam_username,
             'profile_url' => $this->steam_profile_url
         ];

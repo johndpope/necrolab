@@ -2,8 +2,8 @@
 
 @section('layout')
 <b-navbar toggleable="md" type="dark" variant="primary">
-    <b-navbar-brand href="#">
-        <img src="/images/logo.png" />
+    <b-navbar-brand href="/">
+        <img src="/images/banners/banner_no_background.png" class="img-fluid" />
     </b-navbar-brand>
     <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
     <b-collapse is-nav id="nav_collapse">

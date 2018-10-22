@@ -16,10 +16,15 @@
 
 @section('content')
 <div class="container text-center">
+    <div class="row justify-content-center mb-4">
+        <div class="col-12">
+            <a href="/">
+                <img class="img-fluid" src="/images/banners/banner_background.png" alt="The NecroLab">
+            </a>
+        </div>
+    </div>
     <div class="row justify-content-center">
-        <div class="col-md-3">
-            <!-- <img class="mb-4" src="../../assets/brand/bootstrap-solid.svg" alt="" width="72" height="72"> -->
-            
+        <div class="col-sm-7 col-md-5 col-lg-4 col-xl-4">
             <h5 class="mb-3 font-weight-normal">Welcome to The NecroLab.</h5>
             <h5 class="mb-3 font-weight-normal">Please login below.</h5>
             @if ($error != '')
