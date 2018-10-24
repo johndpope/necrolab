@@ -9,6 +9,14 @@ const ReleaseDropdownFilter = {
             type: String,
             default: '/api/1/releases'
         },
+        storage_mutation_name: {
+            type: String,
+            default: 'setReleases'
+        },
+        storage_getter_name: {
+            type: String,
+            default: 'allReleases'
+        },
         field_name: {
             type: String,
             default: 'release'

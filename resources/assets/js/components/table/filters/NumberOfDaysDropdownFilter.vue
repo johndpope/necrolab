@@ -9,6 +9,14 @@ const NumberOfDaysDropdownFilter = {
             type: String,
             default: '/api/1/rankings/daily/day_types'
         },
+        storage_mutation_name: {
+            type: String,
+            default: 'setNumberOfDays'
+        },
+        storage_getter_name: {
+            type: String,
+            default: 'allNumberOfDays'
+        },
         field_name: {
             type: String,
             default: 'number_of_days'

@@ -9,6 +9,14 @@ const ModeDropdownFilter = {
             type: String,
             default: '/api/1/modes'
         },
+        storage_mutation_name: {
+            type: String,
+            default: 'setModes'
+        },
+        storage_getter_name: {
+            type: String,
+            default: 'allModes'
+        },
         field_name: {
             type: String,
             default: 'mode'

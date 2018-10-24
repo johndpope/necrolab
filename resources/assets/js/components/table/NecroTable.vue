@@ -18,7 +18,7 @@
             <div class="col-12 table-responsive">
                 <table :id="id" class="table necrotable">
                     <thead>
-                        <tr v-if="number_of_columns > 0">
+                        <tr v-if="header_columns != null && number_of_columns > 0">
                             <th 
                                 v-for="(header_column, header_column_index) in header_columns" 
                                 :key="header_column_index" 

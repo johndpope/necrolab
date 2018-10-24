@@ -9,13 +9,6 @@ require('./bootstrap');
 window.Vue = require('vue');
 
 
-/* ---------- Register Vuex with Vue ---------- */
-
-window.Vuex = require('vuex');
-
-Vue.use(Vuex);
-
-
 /* ---------- Import all sitewide components ---------- */
 
 import bNavbar from 'bootstrap-vue/es/components/navbar/navbar';
@@ -44,43 +37,23 @@ Vue.component('b-collapse', bCollapse);
 Vue.component('b-breadcrumb', bBreadcrumb);
 
 
-/* --------- Register all page components ---------- */
+/* ---------- Initialize Vuex---------- */
 
-Vue.component('players-page', require('./components/pages/PlayersPage.vue'));
+//require('./store.js');
 
-Vue.component('power-rankings-page', require('./components/pages/PowerRankingsPage.vue'));
-Vue.component('score-rankings-page', require('./components/pages/ScoreRankingsPage.vue'));
-Vue.component('speed-rankings-page', require('./components/pages/SpeedRankingsPage.vue'));
-Vue.component('deathless-rankings-page', require('./components/pages/DeathlessRankingsPage.vue'));
-Vue.component('character-rankings-page', require('./components/pages/CharacterRankingsPage.vue'));
-Vue.component('daily-rankings-page', require('./components/pages/DailyRankingsPage.vue'));
+import store from './store.js';
 
-Vue.component('score-leaderboards-page', require('./components/pages/ScoreLeaderboardsPage.vue'));
-Vue.component('speed-leaderboards-page', require('./components/pages/SpeedLeaderboardsPage.vue'));
-Vue.component('deathless-leaderboards-page', require('./components/pages/DeathlessLeaderboardsPage.vue'));
+/* ---------- Initialize vue-router ---------- */
 
-Vue.component('daily-leaderboards-page', require('./components/pages/DailyLeaderboardsPage.vue'));
+//require('./router.js');
+
+import router from './router.js';
 
 
 /* ---------- Initialize Vue ---------- */
 
-const store = new Vuex.Store({
-    state: {
-        character: {}
-    },
-    mutations: {
-        setCharacter(state, character) {
-            state.character = character;
-        }
-    },
-    getters: {
-        currentCharacter: state => {
-            return state.character;
-        }
-    }
-});
-
 const app = new Vue({
     el: '#app',
-    store: store
+    store: store,
+    router: router
 });

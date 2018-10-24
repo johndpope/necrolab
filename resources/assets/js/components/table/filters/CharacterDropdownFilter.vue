@@ -10,6 +10,14 @@ const CharacterDropdownFilter = {
             type: String,
             default: '/api/1/characters'
         },
+        storage_mutation_name: {
+            type: String,
+            default: 'setCharacters'
+        },
+        storage_getter_name: {
+            type: String,
+            default: 'allCharacters'
+        },
         field_name: {
             type: String,
             default: 'character'

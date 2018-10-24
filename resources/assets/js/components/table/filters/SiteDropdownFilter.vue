@@ -10,6 +10,14 @@ const SiteDropdownFilter = {
             type: String,
             default: '/api/1/external_sites'
         },
+        storage_mutation_name: {
+            type: String,
+            default: 'setSites'
+        },
+        storage_getter_name: {
+            type: String,
+            default: 'allSites'
+        },
         field_name: {
             type: String,
             default: 'site'
