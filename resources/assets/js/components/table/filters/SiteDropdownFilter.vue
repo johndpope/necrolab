@@ -6,18 +6,6 @@ const SiteDropdownFilter = {
     extends: DropdownFilter,
     name: 'site-dropdown-filter',
     props: {
-        api_endpoint_url: {
-            type: String,
-            default: '/api/1/external_sites'
-        },
-        storage_mutation_name: {
-            type: String,
-            default: 'setSites'
-        },
-        storage_getter_name: {
-            type: String,
-            default: 'allSites'
-        },
         field_name: {
             type: String,
             default: 'site'
@@ -38,7 +26,20 @@ const SiteDropdownFilter = {
             type: Object,
             default: () => SiteIconDisplay
         }
-    } 
+    },
+    methods: {
+        loadOptions(resolve, reject) {
+            this.$store.dispatch('sites/loadAll')
+                .then(() => {                        
+                    this.options = this.$store.getters['sites/getAll'];
+                    
+                    resolve();
+                });
+        },
+        setSelectedState(selected) {
+            this.$store.commit('sites/setSelected', selected);
+        }
+    }
 };
 
 export default SiteDropdownFilter;

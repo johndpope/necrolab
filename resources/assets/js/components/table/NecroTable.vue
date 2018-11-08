@@ -94,6 +94,10 @@ const NecroTable = {
             type: String,
             default: ''
         },
+        default_request_parameters: {
+            type: Object,
+            default: () => {}
+        },
         header_columns: {
             type: Array,
             default: () => []
@@ -138,7 +142,7 @@ const NecroTable = {
         return {
             server_page: this.page || 1,
             internal_page: 1,
-            request_parameters: {},
+            request_parameters: this.default_request_parameters || {},
             response: {},
             number_of_columns: 0,
             total_records: 0,
@@ -179,7 +183,9 @@ const NecroTable = {
     },
     methods: {
         addLoadedFilter(name) {
-            this.loaded_filters.push(name);
+            if(this.loaded_filters.indexOf(name) == -1) {
+                this.loaded_filters.push(name);
+            }
         },
         setRequestParameter(name, value) {
             if(value == null || value.length == 0) {
@@ -192,6 +198,8 @@ const NecroTable = {
             }
         },
         updateFromRequestParameter(name, value) {
+            this.addLoadedFilter(name);
+            
             this.setRequestParameter(name, value);
 
             if(this.loaded_filters.length >= this.filters.length) {

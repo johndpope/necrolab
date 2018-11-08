@@ -9,6 +9,9 @@ use App\DailyRankingDayTypes;
 use App\ExternalSites;
 use App\Characters;
 use App\LeaderboardTypes;
+use App\SeededTypes;
+use App\Soundtracks;
+use App\MultiplayerTypes;
 
 class CommonApiValidationRules {
     protected static $plain_rules = [
@@ -19,9 +22,6 @@ class CommonApiValidationRules {
         'start_date' => 'required|date_format:Y-m-d|before_or_equal:end_date',
         'end_date' => 'required|date_format:Y-m-d|after_or_equal:start_date',
         'lbid' => 'required|integer',
-        'seeded' => 'required|integer|in:0,1',
-        'co_op' => 'required|integer|in:0,1',
-        'custom' => 'required|integer|in:0,1',
         'steamid' => 'required|string'
     ];
 
@@ -54,6 +54,15 @@ class CommonApiValidationRules {
                             break;
                         case 'type':
                             $rule = ['required', 'integer', new NameExists(LeaderboardTypes::class)];
+                            break;
+                        case 'seeded_type':
+                            $rule = ['required', 'string', new NameExists(SeededTypes::class)];
+                            break;
+                        case 'soundtrack':
+                            $rule = ['required', 'string', new NameExists(Soundtracks::class)];
+                            break;
+                        case 'multiplayer_type':
+                            $rule = ['required', 'string', new NameExists(MultiplayerTypes::class)];
                             break;
                         default:
                             throw new Exception("Specified validation rule '{$rule_name}' is not valid.");

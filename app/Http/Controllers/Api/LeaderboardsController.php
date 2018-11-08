@@ -30,6 +30,7 @@ class LeaderboardsController extends Controller {
             'speedIndex',
             'deathlessIndex',
             'dailyIndex',
+            'byUrlName',
             'show',
             'xmlIndex',
             'playerIndex',
@@ -139,6 +140,18 @@ class LeaderboardsController extends Controller {
                     )->get();
                 }
             )
+        );
+    }
+    
+    /**
+     * Display the specified leaderboard by its url_name field.
+     *
+     * @param  string  $url_name
+     * @return \Illuminate\Http\Response
+     */
+    public function byUrlName($url_name) {
+        return new LeaderboardsResource(
+            Leaderboards::getApiUrlShowQuery($url_name)->first()
         );
     }
 

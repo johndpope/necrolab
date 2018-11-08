@@ -19,8 +19,11 @@ const ReplayDownloadLink = {
         }
     },
     computed: {
-        hasUploadedReplay() {
-            return this.record.pb['replay'] != null && record.pb.replay.file_url.length > 0;
+        hasUploadedReplay() {        
+            return 
+                this.record.pb['replay'] != null && 
+                this.record.pb.replay.length > 0 &&
+                this.record.pb.replay.file_url.length > 0;
         }
     }
 };

@@ -67,22 +67,6 @@ const DropdownFilter = {
         'down-arrow': DownArrow
     },
     props: {
-        api_endpoint_url: {
-            type: String,
-            default: ''
-        },
-        api_request_parameters: {
-            type: Object,
-            default: () => {}
-        },
-        storage_mutation_name: {
-            type: String,
-            default: ''
-        },
-        storage_getter_name: {
-            type: String,
-            default: ''
-        },
         field_name: {
             type: String
         },
@@ -191,42 +175,7 @@ const DropdownFilter = {
                 this.options = this.default_options;
             }
             
-            if(this.api_endpoint_url.length > 0) {
-                if(this.storage_getter_name.length > 0) {
-                    this.options = this.$store.getters[this.storage_getter_name];
-                    
-                    if(this.options.length > 0) {
-                        resolve('Loaded from storage cache.');
-                        
-                        return;
-                    }
-                }
-                   
-                axios.get(this.api_endpoint_url, {
-                    params: this.api_request_parameters
-                })
-                .then(response =>{
-                    this.options = response.data.data;
-                    
-                    if(this.storage_mutation_name.length > 0) {
-                        this.$store.commit(this.storage_mutation_name, this.options);
-                    }
-                    
-                    resolve('Loaded with API call.');
-                })
-                .catch(error =>{
-                    console.log(error);
-                    
-                    this.$emit('filterServerResponseFailed', error);
-                });
-            }
-            else {
-                if(this.default_options.length > 0) {
-                    this.options = this.default_options;
-                }
-                
-                resolve('Loaded without API call.');
-            }
+            resolve();
         }
     },
     mounted() {

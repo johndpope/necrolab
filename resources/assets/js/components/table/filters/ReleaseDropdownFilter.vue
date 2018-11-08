@@ -5,18 +5,6 @@ const ReleaseDropdownFilter = {
     extends: DropdownFilter,
     name: 'release-dropdown-filter',
     props: {
-        api_endpoint_url: {
-            type: String,
-            default: '/api/1/releases'
-        },
-        storage_mutation_name: {
-            type: String,
-            default: 'setReleases'
-        },
-        storage_getter_name: {
-            type: String,
-            default: 'allReleases'
-        },
         field_name: {
             type: String,
             default: 'release'
@@ -28,6 +16,19 @@ const ReleaseDropdownFilter = {
         default_selected_value: {
             type: String,
             default: 'amplified_dlc'
+        }
+    },
+    methods: {
+        loadOptions(resolve, reject) {
+            this.$store.dispatch('releases/loadAll')
+                .then(() => {                        
+                    this.options = this.$store.getters['releases/getAll'];
+                    
+                    resolve();
+                });
+        },
+        setSelectedState(selected) {
+            this.$store.commit('releases/setSelected', selected);
         }
     }
 };

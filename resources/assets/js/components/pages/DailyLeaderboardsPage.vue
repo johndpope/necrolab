@@ -7,60 +7,31 @@
         </div>
         <div class="row">
             <div class="col-12 pb-3">
-                <h1>Daily Leaderboards</h1>
+                <h1>
+                    Daily Leaderboards
+                </h1>
             </div>
         </div>
         <div class="row">
             <div class="col-12">
-                <necrotable :api_endpoint_url="api_endpoint_url" :header_columns="header_columns" :has_search="true" :has_action_column="true" :filters="filters">
+                <necrotable 
+                    :api_endpoint_url="api_endpoint_url" 
+                    :header_columns="header_columns" 
+                    :filters="filters"
+                    :has_server_pagination="false"
+                >
                     <template slot="table-row" slot-scope="{ row_index, row }">
                         <td>
-                            {{ row.rank }}
+                            <router-link :to="getEntriesUrl(row.date)">
+                                {{ row.date }}
+                            </router-link>
                         </td>
                         <td>
-                            <player-profile-modal :player="row.player"></player-profile-modal>
+                            {{ row.players }}
                         </td>
                         <td>
-                            {{ row.pb.score }}
-                        </td>
-                        <td>
-                            <seed :record="row"></seed>
-                        </td>
-                    </template>
-                    <template slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
-                        <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
-                    </template>
-                    <template slot="row-details" slot-scope="{ row }">
-                        <template>
-                            <div class="table-responsive">
-                                <table class="table table-sm table-bordered mb-0">
-                                    <thead>
-                                        <tr>
-                                            <th scope="col">Zone</th>
-                                            <th scope="col">Level</th>
-                                            <th scope="col">Win</th>
-                                            <th scope="col">Killed By</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                {{ row.pb.zone }}
-                                            </td>
-                                            <td>
-                                                {{ row.pb.level }}
-                                            </td>
-                                            <td>
-                                                <win :record="row"></win>
-                                            </td>
-                                            <td>
-                                                <killed-by :record="row"></killed-by>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </template>
+                            {{ row.score }}
+                        </td>  
                     </template>
                 </necrotable>
             </div>
@@ -72,22 +43,11 @@
 import NecroTable from '../table/NecroTable.vue';
 import ntDateTimeFilter from '../table/filters/DateTimeFilter.vue';
 import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
-import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
-import PlayerProfileModal from '../player/PlayerProfileModal.vue';
-import Seed from '../leaderboards/Seed.vue';
-import Win from '../leaderboards/Win.vue';
-import KilledBy from '../leaderboards/KilledBy';
-import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
 
-export default {
+const LeaderboardSnapshotsPage = {
     name: 'daily-leaderboards-page',
     components: {
-        'necrotable': NecroTable,
-        'player-profile-modal': PlayerProfileModal,
-        'seed': Seed,
-        'win': Win,
-        'killed-by': KilledBy,
-        'toggle-details': ToggleDetails
+        'necrotable': NecroTable
     },
     data() {
         return {
@@ -97,22 +57,30 @@ export default {
                 },
                 {
                     text: 'Daily',
-                    href: '/leaderboards/daily'
-                }
+                    href: '#/leaderboards/daily'
+                }   
             ],
-            api_endpoint_url: '/api/1/leaderboards/daily/entries',
-            filters: [
-                ntDateTimeFilter,
-                ReleaseDropdownFilter,
-                SiteDropdownFilter
-            ],
+            api_endpoint_url: '/api/1/leaderboards/daily',
             header_columns: [
-                'Rank',
-                'Player',
-                'Score',
-                'Seed'
+                'Date',
+                'Players',
+                'Score'
+            ],
+            filters: [
+                ReleaseDropdownFilter,
+                ntDateTimeFilter
             ]
+        }
+    },
+    computed: {
+        
+    },
+    methods: {
+        getEntriesUrl(date) {
+            return '/leaderboards/daily/' + this.$store.getters['releases/getSelected'] + '/' + date;
         }
     }
 };
-</script>
+
+export default LeaderboardSnapshotsPage;
+</script> 

@@ -25,7 +25,7 @@ class ReadSteamUserPowerRankingEntries extends Core {
         return CommonApiValidationRules::getRules([
             'release',
             'mode',
-            'seeded',
+            'seeded_type',
             'page',
             'limit'
         ]);

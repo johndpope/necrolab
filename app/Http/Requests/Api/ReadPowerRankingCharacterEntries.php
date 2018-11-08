@@ -25,7 +25,7 @@ class ReadPowerRankingCharacterEntries extends Core {
         return CommonApiValidationRules::getRules([
             'release',
             'mode',
-            'seeded',
+            'seeded_type',
             'character',
             'date',
             'site',

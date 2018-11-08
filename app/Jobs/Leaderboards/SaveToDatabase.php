@@ -121,15 +121,16 @@ class SaveToDatabase implements ShouldQueue {
                             'lbid' => $leaderboard->lbid,
                             'name' => $leaderboard->name,
                             'display_name' => $leaderboard->display_name,
+                            'url_name' => Leaderboards::generateUrlName($leaderboard),
                             'url' => $leaderboard->url,
                             'character_id' => $leaderboard->character->character_id,
                             'leaderboard_type_id' => $leaderboard->leaderboard_type->leaderboard_type_id,
                             'release_id' => $leaderboard->release->release_id,
                             'mode_id' => $leaderboard->mode->mode_id,
                             'daily_date' => $leaderboard->daily_date,
-                            'is_custom' => $leaderboard->is_custom,
-                            'is_co_op' => $leaderboard->is_co_op,
-                            'is_seeded' => $leaderboard->is_seeded
+                            'soundtrack_id' => $leaderboard->soundtrack->id,
+                            'multiplayer_type_id' => $leaderboard->multiplayer_type->id,
+                            'seeded_type_id' => $leaderboard->seeded_type->id
                         ]);
                         
                         $ids_by_lbid[$leaderboard->lbid] = $leaderboard_id;

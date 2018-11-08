@@ -9,7 +9,7 @@ trait StoredInCache {
     protected static $cached_records = [];
     
     protected static function getStoredInCacheQuery() {
-        return static::where('1', 1);
+        return static::orderBy('id', 'asc');
     }
 
     protected static function loadAllFromCache() {

@@ -34,7 +34,7 @@ class PowerRankings extends Model {
     
     public static function createTemporaryTable() {    
         DB::statement("
-            CREATE TEMPORARY TABLE power_rankings_temp (
+            CREATE TEMPORARY TABLE " . static::getTempTableName() . " (
                 power_ranking_id integer,
                 created timestamp without time zone,
                 date date,
@@ -42,7 +42,10 @@ class PowerRankings extends Model {
                 release_id smallint,
                 latest_steam_replay_version_id smallint,
                 mode_id smallint,
-                seeded smallint
+                seeded_type_id smallint,
+                players integer,
+                categories bytea,
+                characters bytea
             )
             ON COMMIT DROP;
         ");
@@ -58,7 +61,7 @@ class PowerRankings extends Model {
                 release_id,
                 latest_steam_replay_version_id,
                 mode_id,
-                seeded
+                seeded_type_id
             )
             SELECT 
                 power_ranking_id,
@@ -68,12 +71,24 @@ class PowerRankings extends Model {
                 release_id,
                 latest_steam_replay_version_id,
                 mode_id,
-                seeded
-            FROM power_rankings_temp
+                seeded_type_id
+            FROM " . static::getTempTableName() . "
             ON CONFLICT (power_ranking_id) DO 
             UPDATE 
             SET 
                 updated = excluded.updated
+        ");
+    }
+    
+    public static function updateFromTemp() {    
+        DB::update("
+            UPDATE power_rankings pr
+            SET 
+                players = prt.players,
+                categories = prt.categories,
+                characters = prt.characters
+            FROM " . static::getTempTableName() . " prt
+            WHERE pr.power_ranking_id = prt.power_ranking_id
         ");
     }
     
@@ -83,20 +98,23 @@ class PowerRankings extends Model {
         $rankings_by_id = [];
         
         foreach($query->cursor() as $ranking) {
-            $rankings_by_id[$ranking->release_id][$ranking->mode_id][$ranking->seeded] = $ranking->power_ranking_id;
+            $rankings_by_id[$ranking->release_id][$ranking->mode_id][$ranking->seeded_type_id] = $ranking->power_ranking_id;
         }
         
         return $rankings_by_id;
     }
     
-    public static function getApiReadQuery(int $release_id, int $mode_id, int $seeded) {
+    public static function getApiReadQuery(int $release_id, int $mode_id, int $seeded_type_id) {
         return DB::table('power_rankings')
             ->select([
-                'date'
+                'date',
+                'players',
+                'categories',
+                'characters'
             ])
             ->where('release_id', $release_id)
             ->where('mode_id', $mode_id)
-            ->where('seeded', $seeded)
+            ->where('seeded_type_id', $seeded_type_id)
             ->orderBy('date', 'desc');
     }
 }

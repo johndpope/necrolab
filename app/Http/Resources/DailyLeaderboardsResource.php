@@ -12,6 +12,10 @@ class DailyLeaderboardsResource extends JsonResource {
      * @return array
      */
     public function toArray($request) {
-        return $this->daily_date;
+        return [
+            'date' => $this->daily_date,
+            'players' => $this->players,
+            'score' => $this->score
+        ];
     }
 }

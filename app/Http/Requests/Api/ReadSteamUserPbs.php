@@ -26,9 +26,9 @@ class ReadSteamUserPbs extends Core {
             'character',
             'release',
             'mode',
-            'seeded',
-            'co_op',
-            'custom'
+            'seeded_type',
+            'multiplayer_type',
+            'soundtrack'
         ]);
     }
 }

@@ -26,6 +26,7 @@ use App\RankPoints;
 use App\Releases;
 use App\Modes;
 use App\Characters;
+use App\SeededTypes;
 use App\Jobs\Rankings\Power\Entries\Cache as CacheJob;
 
 class Generate implements ShouldQueue {
@@ -65,7 +66,7 @@ class Generate implements ShouldQueue {
             $redis_transaction->hSetNx(
                 CacheNames::getModes(
                     $leaderboard_entry->release_id, 
-                    $leaderboard_entry->is_seeded
+                    $leaderboard_entry->seeded_type_id
                 ), 
                 $leaderboard_entry->mode_id, 
                 $leaderboard_entry->mode_id
@@ -88,7 +89,7 @@ class Generate implements ShouldQueue {
                 CacheNames::getCharacterPoints(
                     $leaderboard_entry->release_id, 
                     $leaderboard_entry->mode_id, 
-                    $leaderboard_entry->is_seeded, 
+                    $leaderboard_entry->seeded_type_id, 
                     $leaderboard_entry->character_name
                 ), 
                 $rank_points, 
@@ -100,7 +101,7 @@ class Generate implements ShouldQueue {
                 CacheNames::getTotalPoints(
                     $leaderboard_entry->release_id, 
                     $leaderboard_entry->mode_id, 
-                    $leaderboard_entry->is_seeded
+                    $leaderboard_entry->seeded_type_id
                 ), 
                 $rank_points, 
                 $leaderboard_entry->steam_user_id
@@ -113,7 +114,7 @@ class Generate implements ShouldQueue {
                         CacheNames::getSpeedPoints(
                             $leaderboard_entry->release_id, 
                             $leaderboard_entry->mode_id, 
-                            $leaderboard_entry->is_seeded
+                            $leaderboard_entry->seeded_type_id
                         ), 
                         $rank_points, 
                         $leaderboard_entry->steam_user_id
@@ -127,7 +128,7 @@ class Generate implements ShouldQueue {
                         CacheNames::getScorePoints(
                             $leaderboard_entry->release_id, 
                             $leaderboard_entry->mode_id, 
-                            $leaderboard_entry->is_seeded
+                            $leaderboard_entry->seeded_type_id
                         ), 
                         $rank_points, 
                         $leaderboard_entry->steam_user_id
@@ -141,7 +142,7 @@ class Generate implements ShouldQueue {
                         CacheNames::getDeathlessPoints(
                             $leaderboard_entry->release_id, 
                             $leaderboard_entry->mode_id, 
-                            $leaderboard_entry->is_seeded
+                            $leaderboard_entry->seeded_type_id
                         ), 
                         $rank_points, 
                         $leaderboard_entry->steam_user_id
@@ -156,7 +157,7 @@ class Generate implements ShouldQueue {
                 CacheNames::getEntry(
                     $leaderboard_entry->release_id, 
                     $leaderboard_entry->mode_id, 
-                    $leaderboard_entry->is_seeded, 
+                    $leaderboard_entry->seeded_type_id, 
                     $leaderboard_entry->steam_user_id
                 ), 
                 $power_ranking_entry_record
@@ -166,7 +167,7 @@ class Generate implements ShouldQueue {
         $redis_transaction->commit();
     }
     
-    protected function generateRankPoints($points_hash_name, $release_id, $mode_id, $seeded, $rank_name) {
+    protected function generateRankPoints($points_hash_name, $release_id, $mode_id, $seeded_type_id, $rank_name) {
         $points_entries = $this->redis->zRevRange($points_hash_name, 0, -1);
 
         if(!empty($points_entries)) {
@@ -179,7 +180,7 @@ class Generate implements ShouldQueue {
                     CacheNames::getEntry(
                         $release_id, 
                         $mode_id, 
-                        $seeded, 
+                        $seeded_type_id, 
                         $steam_user_id
                     ), 
                     $rank_name, 
@@ -228,11 +229,11 @@ class Generate implements ShouldQueue {
             $rankings_insert_queue = PowerRankings::getTempInsertQueue(8000);
             $entries_insert_queue = PowerRankingEntries::getTempInsertQueue(9000);
             
-            $seeded_flags = Leaderboards::getSeededFlags();
+            $seeded_types = SeededTypes::all();
             
             foreach($releases as $release) {
-                foreach($seeded_flags as $seeded) {
-                    $modes_used = $this->redis->hGetAll(CacheNames::getModes($release->release_id, $seeded));
+                foreach($seeded_types as $seeded_type) {
+                    $modes_used = $this->redis->hGetAll(CacheNames::getModes($release->release_id, $seeded_type->id));
                     
                     if(!empty($modes_used)) {
                         foreach($modes_used as $mode_id) {                             
@@ -245,11 +246,11 @@ class Generate implements ShouldQueue {
                                     CacheNames::getScorePoints(
                                         $release->release_id, 
                                         $mode_id, 
-                                        $seeded
+                                        $seeded_type->id
                                     ),
                                     $release->release_id,
                                     $mode_id,
-                                    $seeded,
+                                    $seeded_type->id,
                                     'score_rank'
                                 );
                                 
@@ -260,11 +261,11 @@ class Generate implements ShouldQueue {
                                     CacheNames::getSpeedPoints(
                                         $release->release_id, 
                                         $mode_id, 
-                                        $seeded
+                                        $seeded_type->id
                                     ),
                                     $release->release_id,
                                     $mode_id,
-                                    $seeded,
+                                    $seeded_type->id,
                                     'speed_rank'
                                 );
                                 
@@ -275,11 +276,11 @@ class Generate implements ShouldQueue {
                                     CacheNames::getDeathlessPoints(
                                         $release->release_id, 
                                         $mode_id, 
-                                        $seeded
+                                        $seeded_type->id
                                     ),
                                     $release->release_id,
                                     $mode_id,
-                                    $seeded,
+                                    $seeded_type->id,
                                     'deathless_rank'
                                 );
                                 
@@ -292,12 +293,12 @@ class Generate implements ShouldQueue {
                                             CacheNames::getCharacterPoints(
                                                 $release->release_id, 
                                                 $mode_id, 
-                                                $seeded,
+                                                $seeded_type->id,
                                                 $character->name
                                             ),
                                             $release->release_id,
                                             $mode_id,
-                                            $seeded,
+                                            $seeded_type->id,
                                             "{$character->name}_rank"
                                         );
                                     }
@@ -310,11 +311,11 @@ class Generate implements ShouldQueue {
                                     CacheNames::getTotalPoints(
                                         $release->release_id, 
                                         $mode_id, 
-                                        $seeded
+                                        $seeded_type->id
                                     ),
                                     $release->release_id,
                                     $mode_id,
-                                    $seeded,
+                                    $seeded_type->id,
                                     'rank'
                                 );
 
@@ -326,20 +327,20 @@ class Generate implements ShouldQueue {
                                     'date' => $this->date->format('Y-m-d'),
                                     'release_id' => $release->release_id,
                                     'mode_id' => $mode->mode_id,
-                                    'seeded' => $seeded,
+                                    'seeded_type_id' => $seeded_type->id,
                                     'created' => date('Y-m-d H:i:s'),
                                     'updated' => NULL
                                 ];
                                 
-                                if(isset($power_ranking_id_by_grouped[$release->release_id][$mode->mode_id][$seeded])) {
-                                    $power_ranking_id = $power_ranking_id_by_grouped[$release->release_id][$mode->mode_id][$seeded];
+                                if(isset($power_ranking_id_by_grouped[$release->release_id][$mode->mode_id][$seeded_type->id])) {
+                                    $power_ranking_id = $power_ranking_id_by_grouped[$release->release_id][$mode->mode_id][$seeded_type->id];
                                     
                                     $ranking_record['updated'] = date('Y-m-d H:i:s');
                                 }
                                 else {
                                     $power_ranking_id = PowerRankings::getNewRecordId();
                                     
-                                    $power_ranking_id_by_grouped[$release->release_id][$mode->mode_id][$seeded] = $power_ranking_id;
+                                    $power_ranking_id_by_grouped[$release->release_id][$mode->mode_id][$seeded_type->id] = $power_ranking_id;
                                 }
                                 
                                 $ranking_record['power_ranking_id'] = $power_ranking_id;
@@ -353,7 +354,7 @@ class Generate implements ShouldQueue {
                                     CacheNames::getTotalPoints(
                                         $release->release_id, 
                                         $mode_id, 
-                                        $seeded
+                                        $seeded_type->id
                                     ),
                                     0, 
                                     -1
@@ -391,7 +392,7 @@ class Generate implements ShouldQueue {
                                     $redis_transaction->addCommitCallback($callback);
         
                                     foreach($total_points_entries as $rank => $steam_user_id) {
-                                        $redis_transaction->hGetAll(CacheNames::getEntry($release->release_id, $mode_id, $seeded, $steam_user_id));
+                                        $redis_transaction->hGetAll(CacheNames::getEntry($release->release_id, $mode_id, $seeded_type->id, $steam_user_id));
                                     }
                                     
                                     $redis_transaction->commit();

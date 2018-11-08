@@ -86,7 +86,7 @@ class LeaderboardEntries extends Model {
                 'lt.name AS leaderboard_type',
                 'l.release_id',
                 'l.mode_id',
-                'l.is_seeded',
+                'l.seeded_type_id',
                 'c.name AS character_name',
                 'le.steam_user_pb_id',
                 'sup.score',
@@ -184,13 +184,14 @@ class LeaderboardEntries extends Model {
             ])
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'ls.leaderboard_id')
             ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->join('multiplayer_types AS mt', 'mt.id', '=', 'l.multiplayer_type_id')
             ->leftJoin('leaderboards_blacklist AS lb', 'lb.leaderboard_id', '=', 'l.leaderboard_id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
             ->leftJoin('users AS u', 'u.steam_user_id', '=', 'su.steam_user_id')
             ->where('ls.date', $date->format('Y-m-d'))
             ->where('lt.name', '=', 'daily')
-            ->where('l.is_co_op', '=', 0)
+            ->where('mt.name', '=', 'single')
             ->whereNull('lb.leaderboards_blacklist_id');
             
         ExternalSites::addSiteIdSelectFields($query);
@@ -258,7 +259,15 @@ class LeaderboardEntries extends Model {
         return $query;
     }
     
-    public static function getSteamUserNonDailyApiQuery(string $steamid, DateTime $date, int $release_id, int $mode_id, int $seeded, int $co_op, int $custom) {
+    public static function getSteamUserNonDailyApiQuery(
+        string $steamid, 
+        DateTime $date, 
+        int $release_id, 
+        int $mode_id, 
+        int $seeded_type_id, 
+        int $multiplayer_type_id,
+        int $soundtrack_id
+    ) {
         $entries_table_name = static::getTableName($date);
     
         $query = DB::table('leaderboards AS l')
@@ -280,9 +289,9 @@ class LeaderboardEntries extends Model {
         
         $query->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
-            ->where('l.is_seeded', $seeded)
-            ->where('l.is_co_op', $co_op)
-            ->where('l.is_custom', $custom)
+            ->where('l.seeded_type_id', $seeded_type_id)
+            ->where('l.multiplayer_type_id', $multiplayer_type_id)
+            ->where('l.soundtrack_id', $soundtrack_id)
             ->where('ls.date', $date->format('Y-m-d'))
             ->where('su.steamid', $steamid)
             ->orderBy('c.sort_order', 'asc')
@@ -291,34 +300,98 @@ class LeaderboardEntries extends Model {
         return $query;
     }
     
-    public static function getSteamUserNonDailyApiReadQuery(string $steamid, DateTime $date, int $release_id, int $mode_id, int $seeded, int $co_op, int $custom) {
-        $query = static::getSteamUserNonDailyApiQuery($steamid, $date, $release_id, $mode_id, $seeded, $co_op, $custom);
+    public static function getSteamUserNonDailyApiReadQuery(
+        string $steamid, 
+        DateTime $date, 
+        int $release_id, 
+        int $mode_id, 
+        int $seeded_type_id, 
+        int $multiplayer_type_id,
+        int $soundtrack_id
+    ) {
+        $query = static::getSteamUserNonDailyApiQuery(
+            $steamid, 
+            $date, 
+            $release_id, 
+            $mode_id, 
+            $seeded_type_id, 
+            $multiplayer_type_id,
+            $soundtrack_id
+        );
         
         $query->where('lt.name', '!=', 'daily');
         
         return $query;
     }
     
-    public static function getSteamUserScoreApiReadQuery(string $steamid, DateTime $date, int $release_id, int $mode_id, int $seeded, int $co_op, int $custom) {
-        $query = static::getSteamUserNonDailyApiQuery($steamid, $date, $release_id, $mode_id, $seeded, $co_op, $custom);
+    public static function getSteamUserScoreApiReadQuery(
+        string $steamid, 
+        DateTime $date, 
+        int $release_id, 
+        int $mode_id, 
+        int $seeded_type_id, 
+        int $multiplayer_type_id,
+        int $soundtrack_id
+    ) {
+        $query = static::getSteamUserNonDailyApiQuery(
+            $steamid, 
+            $date, 
+            $release_id, 
+            $mode_id, 
+            $seeded_type_id, 
+            $multiplayer_type_id,
+            $soundtrack_id
+        );
         
         $query->where('lt.name', 'score');
         
         return $query;
     }
     
-    public static function getSteamUserSpeedApiReadQuery(string $steamid, DateTime $date, int $release_id, int $mode_id, int $seeded, int $co_op, int $custom) {
-        $query = static::getSteamUserNonDailyApiQuery($steamid, $date, $release_id, $mode_id, $seeded, $co_op, $custom);
+    public static function getSteamUserSpeedApiReadQuery(
+        string $steamid, 
+        DateTime $date, 
+        int $release_id, 
+        int $mode_id, 
+        int $seeded_type_id, 
+        int $multiplayer_type_id,
+        int $soundtrack_id
+    ) {
+        $query = static::getSteamUserNonDailyApiQuery(
+            $steamid, 
+            $date, 
+            $release_id, 
+            $mode_id, 
+            $seeded_type_id, 
+            $multiplayer_type_id,
+            $soundtrack_id
+        );
         
         $query->where('lt.name', 'speed');
         
         return $query;
     }
     
-    public static function getSteamUserDeathlessApiReadQuery(string $steamid, DateTime $date, int $release_id, int $seeded, int $co_op, int $custom) {
+    public static function getSteamUserDeathlessApiReadQuery(
+        string $steamid, 
+        DateTime $date, 
+        int $release_id, 
+        int $mode_id, 
+        int $seeded_type_id, 
+        int $multiplayer_type_id,
+        int $soundtrack_id
+    ) {
         $mode_id = Modes::getByName('normal')->mode_id;
     
-        $query = static::getSteamUserNonDailyApiQuery($steamid, $date, $release_id, $mode_id, $seeded, $co_op, $custom);
+        $query = static::getSteamUserNonDailyApiQuery(
+            $steamid, 
+            $date, 
+            $release_id, 
+            $mode_id, 
+            $seeded_type_id, 
+            $multiplayer_type_id,
+            $soundtrack_id
+        );
         
         $query->where('lt.name', 'deathless');
         

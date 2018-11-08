@@ -28,10 +28,19 @@ const NumberOfDaysDropdownFilter = {
         default_selected_value: {
             type: String,
             default: '30'
+        }
+    },
+    methods: {
+        loadOptions(resolve, reject) {
+            this.$store.dispatch('number_of_days/loadAll')
+                .then(() => {                        
+                    this.options = this.$store.getters['number_of_days/getAll'];
+                    
+                    resolve();
+                });
         },
-        option_display_name: {
-            type: String,
-            default: 'name'
+        setSelectedState(selected) {
+            this.$store.commit('number_of_days/setSelected', selected);
         }
     }
 };

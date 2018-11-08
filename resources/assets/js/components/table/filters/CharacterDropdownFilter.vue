@@ -6,18 +6,6 @@ const CharacterDropdownFilter = {
     extends: DropdownFilter,
     name: 'character-dropdown-filter',
     props: {
-        api_endpoint_url: {
-            type: String,
-            default: '/api/1/characters'
-        },
-        storage_mutation_name: {
-            type: String,
-            default: 'setCharacters'
-        },
-        storage_getter_name: {
-            type: String,
-            default: 'allCharacters'
-        },
         field_name: {
             type: String,
             default: 'character'
@@ -36,8 +24,16 @@ const CharacterDropdownFilter = {
         }
     },
     methods: {
+        loadOptions(resolve, reject) {
+            this.$store.dispatch('characters/loadAll')
+                .then(() => {                        
+                    this.options = this.$store.getters['characters/getAll'];
+                    
+                    resolve();
+                });
+        },
         setSelectedState(selected) {
-            this.$store.commit('setCharacter', selected);
+            this.$store.commit('characters/setSelected', selected);
         }
     }
 };

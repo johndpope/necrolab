@@ -38,14 +38,11 @@ Vue.component('b-breadcrumb', bBreadcrumb);
 
 
 /* ---------- Initialize Vuex---------- */
+   
+import Store from './store/Store.js';
 
-//require('./store.js');
-
-import store from './store.js';
 
 /* ---------- Initialize vue-router ---------- */
-
-//require('./router.js');
 
 import router from './router.js';
 
@@ -54,6 +51,6 @@ import router from './router.js';
 
 const app = new Vue({
     el: '#app',
-    store: store,
+    store: Store,
     router: router
 });

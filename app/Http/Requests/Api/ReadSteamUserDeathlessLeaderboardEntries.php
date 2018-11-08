@@ -25,9 +25,9 @@ class ReadSteamUserDeathlessLeaderboardEntries extends Core {
         return CommonApiValidationRules::getRules([
             'date',
             'release',
-            'seeded',
-            'co_op',
-            'custom'
+            'seeded_type',
+            'multiplayer_type',
+            'soundtrack'
         ]);
     }
 }

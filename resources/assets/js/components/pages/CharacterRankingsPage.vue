@@ -1,64 +1,42 @@
 <template>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <b-breadcrumb :items="breadcrumbs"></b-breadcrumb>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12 pb-3">
-                <h1>Character Rankings</h1>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <necrotable :api_endpoint_url="api_endpoint_url" :header_columns="header_columns" :has_search="true" :has_action_column="true" :filters="filters">
-                    <template slot="table-row" slot-scope="{ row_index, row }">
-                        <td>
-                            {{ row.characters[currentCharacter].rank }}
-                        </td>
-                        <td>
-                            <player-profile-modal :player="row.player"></player-profile-modal>
-                        </td>
-                        <td>
-                            <rounded-decimal :original_number="row.characters[currentCharacter].points"></rounded-decimal>
-                        </td>
-                    </template>
-                    <template slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
-                        <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
-                    </template>
-                    <template slot="row-details" slot-scope="{ row }">
-                        <ranking-details-table :record="row.characters[currentCharacter]"></ranking-details-table>
-                    </template>
-                </necrotable>
-            </div>
-        </div>
-    </div>
+    <rankings-overview-page
+        category_name="character"
+        category_display_name="Character"
+        :header_columns="header_columns"
+        :filters="filters"
+        :filter_records="filter_records"
+    >
+        <template slot="table-row" slot-scope="{ row_index, row, getEntriesUrl }">
+            <td>
+                <router-link :to="getEntriesUrl(row.date)">
+                    {{ row.date }}
+                </router-link>
+            </td>
+            <td>
+                {{ getPlayersProperty(row) }}
+            </td>
+        </template>
+        <template slot="row-details" slot-scope="{ row }">
+            <ranking-summary-details-table :record="row.characters[currentCharacter]">
+            </ranking-summary-details-table>
+        </template>
+    </rankings-overview-page>
 </template>
 
 <script>
-import NecroTable from '../table/NecroTable.vue';
-import ntDateTimeFilter from '../table/filters/DateTimeFilter.vue';
+import RankingsOverviewPage from '../rankings/RankingsOverviewPage.vue';
 import CharacterDropdownFilter from '../table/filters/CharacterDropdownFilter.vue';
 import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
 import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
-import SeededDropdownFilter from '../table/filters/SeededDropdownFilter.vue';
-import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
+import SeededTypeDropdownFilter from '../table/filters/SeededTypeDropdownFilter.vue';
 import PlayerProfileModal from '../player/PlayerProfileModal.vue';
-import RoundedDecimal from '../formatting/RoundedDecimal.vue';
-import SecondsToTime from '../formatting/SecondsToTime.vue';
-import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
-import RankingDetailsTable from '../table/RankingDetailsTable.vue';
+import RankingSummaryDetailsTable from '../table/RankingSummaryDetailsTable.vue';
 
 export default {
     name: 'character-rankings-page',
     components: {
-        'necrotable': NecroTable,
-        'player-profile-modal': PlayerProfileModal,
-        'rounded-decimal': RoundedDecimal,
-        'seconds-to-time': SecondsToTime,
-        'toggle-details': ToggleDetails,
-        'ranking-details-table': RankingDetailsTable
+        'rankings-overview-page': RankingsOverviewPage,
+        'ranking-summary-details-table': RankingSummaryDetailsTable
     },
     data() {
         return {
@@ -68,22 +46,37 @@ export default {
                 },
                 {
                     text: 'Character',
-                    href: '/rankings/character'
+                    href: '#/rankings/character'
                 }
             ],
-            api_endpoint_url: '/api/1/rankings/character/entries',
             filters: [
-                ntDateTimeFilter,
                 CharacterDropdownFilter,
                 ReleaseDropdownFilter,
                 ModeDropdownFilter,
-                SeededDropdownFilter,
-                SiteDropdownFilter
+                SeededTypeDropdownFilter
             ],
             header_columns: [
                 'Rank',
-                'Player',
+                'Players',
                 'Points'
+            ],
+            filter_records: [
+                {
+                    name: 'character',
+                    store_name: 'characters'
+                },
+                {
+                    name: 'release',
+                    store_name: 'releases'
+                },
+                {
+                    name: 'mode',
+                    store_name: 'modes'
+                },
+                {
+                    name: 'seeded_type',
+                    store_name: 'seeded_types'
+                }
             ]
         }
     },
@@ -91,13 +84,24 @@ export default {
         currentCharacter() {
             let character_name = 'cadence';
             
-            let character = this.$store.getters.currentCharacter;
+            let character = this.$store.getters['characters/getSelected'];
 
             if(character != null) {
                 character_name = character;
             }
-            
+
             return character_name;
+        }
+    },
+    methods: {
+        getPlayersProperty(record) {
+            let players = 0;
+            
+            if(record['characters'] != null && record['characters'][this.currentCharacter] != null) {
+                players = record['characters'][this.currentCharacter].players;
+            }
+            
+            return players;
         }
     }
 };

@@ -25,12 +25,13 @@ class LeaderboardsResource extends JsonResource {
                 'id' => $this->lbid,
                 'name' => $this->name,
                 'display_name' => $this->display_name,
+                'url_name' => $this->url_name,
                 'character' => $this->character_name,
                 'type' => $this->leaderboard_type_name,
                 'rankings' => $rankings,
-                'seeded' => $this->is_seeded,
-                'co_op' => $this->is_co_op,
-                'custom' => $this->is_custom
+                'seeded_type' => $this->seeded_type,
+                'multiplayer_type' => $this->multiplayer_type,
+                'soundtrack' => $this->soundtrack
             ];
         }
     

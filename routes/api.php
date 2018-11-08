@@ -47,6 +47,15 @@ Route::put('/1/external_sites/{id}', 'Api\ExternalSitesController@update');
 Route::put('/1/external_sites/{id}/enable', 'Api\ExternalSitesController@enable');
 Route::put('/1/external_sites/{id}/disable', 'Api\ExternalSitesController@disable');
 
+// Seeded Types
+Route::get('/1/seeded_types', 'Api\SeededTypesController@index');
+
+// Multiplayer Types
+Route::get('/1/multiplayer_types', 'Api\MultiplayerTypesController@index');
+
+// Soundtracks
+Route::get('/1/soundtracks', 'Api\SoundtracksController@index');
+
 // Steam Players
 Route::get('/1/players/steam', 'Api\SteamUsersController@index');
 Route::get('/1/players/steam/{id}', 'Api\SteamUsersController@show');
@@ -111,6 +120,7 @@ Route::get('/1/leaderboards/speed', 'Api\LeaderboardsController@speedIndex');
 Route::get('/1/leaderboards/deathless', 'Api\LeaderboardsController@deathlessIndex');
 Route::get('/1/leaderboards/daily', 'Api\LeaderboardsController@dailyIndex');
 Route::get('/1/leaderboards/xml', 'Api\LeaderboardsController@xmlIndex');
+Route::get('/1/leaderboards/by_url_name/{url_name}', 'Api\LeaderboardsController@byUrlName');
 Route::get('/1/leaderboards/{lbid}', 'Api\LeaderboardsController@show');
 
 // Steam User Leaderboards

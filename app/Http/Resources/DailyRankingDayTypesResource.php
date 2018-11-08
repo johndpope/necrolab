@@ -16,7 +16,8 @@ class DailyRankingDayTypesResource extends JsonResource {
         
         return [
             'id' => (int)$this->daily_ranking_day_type_id,
-            'name' => $this->name,
+            'name' => (string)$this->name,
+            'display_name' => $this->display_name,
             $this->mergeWhen(!empty($authenticated_user) && $authenticated_user->hasAnyPermission([
                 'permission:daily_ranking_day_types:store',
                 'permission:daily_ranking_day_types:update'

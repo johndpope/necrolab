@@ -14,6 +14,9 @@ use App\Characters;
 use App\Releases;
 use App\Modes;
 use App\LeaderboardTypes;
+use App\SeededTypes;
+use App\MultiplayerTypes;
+use App\Soundtracks;
 
 class SteamUserPbsController extends Controller {
     /**
@@ -45,11 +48,11 @@ class SteamUserPbsController extends Controller {
         $mode_id = Modes::getByName($validated_request['mode'])->mode_id;
         $leaderboard_type_id = $leaderboard_type->leaderboard_type_id;
         
-        $seeded = $validated_request['seeded'];
-        $co_op = $validated_request['co_op'];
-        $custom = $validated_request['custom'];
+        $seeded_type_id = $mode_id = SeededTypes::getByName($validated_request['seeded_type'])->id;
+        $multiplayer_type_id = MultiplayerTypes::getByName($validated_request['multiplayer_type'])->id;
+        $soundtrack_id = Soundtracks::getByName($validated_request['soundtrack'])->id;
         
-        $cache_key = "players:steam:{$steamid}:pbs:{$character_id}:{$release_id}:{$mode_id}:{$leaderboard_type_id}:{$seeded}:{$co_op}:{$custom}";
+        $cache_key = "players:steam:{$steamid}:pbs:{$character_id}:{$release_id}:{$mode_id}:{$leaderboard_type_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}";
         
         return SteamUserPbsResource::collection(
             Cache::store('opcache')->remember($cache_key, 5, function() use(
@@ -58,9 +61,9 @@ class SteamUserPbsController extends Controller {
                 $release_id, 
                 $mode_id, 
                 $leaderboard_type_id, 
-                $seeded,
-                $co_op,
-                $custom
+                $seeded_type_id,
+                $multiplayer_type_id,
+                $soundtrack_id
             ) {            
                 return SteamUserPbs::getPlayerApiReadQuery(
                     $steamid,
@@ -68,9 +71,9 @@ class SteamUserPbsController extends Controller {
                     $release_id,
                     $mode_id,
                     $leaderboard_type_id,
-                    $seeded,
-                    $co_op,
-                    $custom
+                    $seeded_type_id,
+                    $multiplayer_type_id,
+                    $soundtrack_id
                 )->get();
             })
         );

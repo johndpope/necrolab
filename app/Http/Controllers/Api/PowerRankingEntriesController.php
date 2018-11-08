@@ -19,6 +19,7 @@ use App\PowerRankingEntries;
 use App\Releases;
 use App\Modes;
 use App\Characters;
+use App\SeededTypes;
 
 class PowerRankingEntriesController extends Controller {
     /**
@@ -91,12 +92,13 @@ class PowerRankingEntriesController extends Controller {
     public function index(ReadPowerRankingEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         $date = new DateTime($request->date);
     
         return $this->getEntriesResponse(
-            CacheNames::getBase($release_id, $mode_id, $request->seeded),
+            CacheNames::getBase($release_id, $mode_id, $seeded_type_id),
             $request,
-            PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $request->seeded, $date),
+            PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $seeded_type_id, $date),
             function($entry, $key) {
                 return $entry->rank;
             }
@@ -112,12 +114,13 @@ class PowerRankingEntriesController extends Controller {
     public function scoreIndex(ReadPowerRankingEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         $date = new DateTime($request->date);
     
         return $this->getEntriesResponse(
-            CacheNames::getScore($release_id, $mode_id, $request->seeded),
+            CacheNames::getScore($release_id, $mode_id, $seeded_type_id),
             $request,
-            PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $request->seeded, $date),
+            PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $seeded_type_id, $date),
             function($entry, $key) {
                 return $entry->score_rank;
             }
@@ -133,12 +136,13 @@ class PowerRankingEntriesController extends Controller {
     public function speedIndex(ReadPowerRankingEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         $date = new DateTime($request->date);
     
         return $this->getEntriesResponse(
-            CacheNames::getSpeed($release_id, $mode_id, $request->seeded),
+            CacheNames::getSpeed($release_id, $mode_id, $seeded_type_id),
             $request,
-            PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $request->seeded, $date),
+            PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $seeded_type_id, $date),
             function($entry, $key) {
                 return $entry->speed_rank;
             }
@@ -154,12 +158,13 @@ class PowerRankingEntriesController extends Controller {
     public function deathlessIndex(ReadPowerRankingEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         $date = new DateTime($request->date);
     
         return $this->getEntriesResponse(
-            CacheNames::getDeathless($release_id, $mode_id, $request->seeded),
+            CacheNames::getDeathless($release_id, $mode_id, $seeded_type_id),
             $request,
-            PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $request->seeded, $date),
+            PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $seeded_type_id, $date),
             function($entry, $key) {
                 return $entry->deathless_rank;
             }
@@ -178,12 +183,13 @@ class PowerRankingEntriesController extends Controller {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $character_id = Characters::getByName($character_name)->character_id;
+        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         $date = new DateTime($request->date);
         
         return $this->getEntriesResponse(
-            CacheNames::getCharacter($release_id, $mode_id, $request->seeded, $character_id),
+            CacheNames::getCharacter($release_id, $mode_id, $seeded_type_id, $character_id),
             $request,
-            PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $request->seeded, $date),
+            PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $seeded_type_id, $date),
             function($entry, $key) use ($character_name) {
                 return $entry->characters[$character_name]['rank'];
             }
@@ -237,15 +243,16 @@ class PowerRankingEntriesController extends Controller {
     public function playerIndex($steamid, ReadSteamUserPowerRankingEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         
         return $this->getPlayerEntriesResponse(
-            CacheNames::getPlayer($steamid, $release_id, $mode_id, $request->seeded),
+            CacheNames::getPlayer($steamid, $release_id, $mode_id, $seeded_type_id),
             $request,
             PowerRankingEntries::getSteamUserApiReadQuery(
                 $steamid, 
                 $release_id, 
                 $mode_id, 
-                $request->seeded
+                $seeded_type_id
             )
         );
     }
@@ -259,15 +266,16 @@ class PowerRankingEntriesController extends Controller {
     public function playerScoreIndex($steamid, ReadSteamUserPowerRankingEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         
         return $this->getPlayerEntriesResponse(
-            CacheNames::getPlayerScore($steamid, $release_id, $mode_id, $request->seeded),
+            CacheNames::getPlayerScore($steamid, $release_id, $mode_id, $seeded_type_id),
             $request,
             PowerRankingEntries::getSteamUserScoreApiReadQuery(
                 $steamid, 
                 $release_id, 
                 $mode_id, 
-                $request->seeded
+                $seeded_type_id
             )
         );
     }
@@ -281,15 +289,16 @@ class PowerRankingEntriesController extends Controller {
     public function playerSpeedIndex($steamid, ReadSteamUserPowerRankingEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         
         return $this->getPlayerEntriesResponse(
-            CacheNames::getPlayerSpeed($steamid, $release_id, $mode_id, $request->seeded),
+            CacheNames::getPlayerSpeed($steamid, $release_id, $mode_id, $seeded_type_id),
             $request,
             PowerRankingEntries::getSteamUserSpeedApiReadQuery(
                 $steamid, 
                 $release_id, 
                 $mode_id, 
-                $request->seeded
+                $seeded_type_id
             )
         );
     }
@@ -303,15 +312,16 @@ class PowerRankingEntriesController extends Controller {
     public function playerDeathlessIndex($steamid, ReadSteamUserPowerRankingEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         
         return $this->getPlayerEntriesResponse(
-            CacheNames::getPlayerDeathless($steamid, $release_id, $mode_id, $request->seeded),
+            CacheNames::getPlayerDeathless($steamid, $release_id, $mode_id, $seeded_type_id),
             $request,
             PowerRankingEntries::getSteamUserDeathlessApiReadQuery(
                 $steamid, 
                 $release_id, 
                 $mode_id, 
-                $request->seeded
+                $seeded_type_id
             )
         );
     }
@@ -327,15 +337,16 @@ class PowerRankingEntriesController extends Controller {
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $character_name = $request->character;
         $character_id = Characters::getByName($character_name)->character_id;
+        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
 
         return $this->getPlayerEntriesResponse(
-            CacheNames::getPlayerCharacter($steamid, $release_id, $mode_id, $request->seeded, $character_id),
+            CacheNames::getPlayerCharacter($steamid, $release_id, $mode_id, $seeded_type_id, $character_id),
             $request,
             PowerRankingEntries::getSteamUserApiReadQuery(
                 $steamid, 
                 $release_id, 
                 $mode_id, 
-                $request->seeded
+                $seeded_type_id
             ),
             /*
                 Since character data is now stored in a bytea field all power ranking entries for this

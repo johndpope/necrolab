@@ -3,11 +3,12 @@
 namespace App;
 
 use ElcoBvg\Opcache\Model;
+use App\Traits\GetById;
 use App\Traits\GetByName;
 use App\Traits\StoredInCache;
 
 class LeaderboardTypes extends Model {
-    use GetByName, StoredInCache;
+    use GetById, GetByName, StoredInCache;
 
     /**
      * The table associated with the model.

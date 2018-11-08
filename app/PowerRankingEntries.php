@@ -74,7 +74,7 @@ class PowerRankingEntries extends Model {
                     if(isset($entry[$speed_rank])) {
                         $character_data[$character->name]['speed']['pb_id'] = (int)$entry["{$character->name}_speed_pb_id"];
                         $character_data[$character->name]['speed']['rank'] = (int)$entry[$speed_rank];
-                        $character_data[$character->name]['speed']['time'] = (int)$entry["{$character->name}_time"];
+                        $character_data[$character->name]['speed']['time'] = (float)$entry["{$character->name}_time"];
                     }
                     
                     $deathless_rank = "{$character->name}_deathless_rank";
@@ -150,7 +150,7 @@ class PowerRankingEntries extends Model {
                 'pr.date',
                 'pr.release_id',
                 'pr.mode_id',
-                'pr.seeded',
+                'pr.seeded_type_id',
                 'pre.steam_user_id',
                 'pre.rank',
                 'pre.score_rank',
@@ -168,7 +168,25 @@ class PowerRankingEntries extends Model {
         return $query;
     }
     
-    public static function getApiReadQuery(int $release_id, int $mode_id, int $seeded, DateTime $date) {
+    public static function getStatsReadQuery(DateTime $date) {
+        $entries_table_name = static::getTableName($date);
+
+        $query = DB::table("{$entries_table_name} AS pre")
+            ->select([
+                'pre.power_ranking_id',
+                'pre.rank',
+                'pre.score_rank',
+                'pre.deathless_rank',
+                'pre.speed_rank',
+                'pre.characters'
+            ])
+            ->join("power_rankings AS pr", 'pr.power_ranking_id', '=', 'pre.power_ranking_id')
+            ->where('pr.date', $date->format('Y-m-d'));
+        
+        return $query;
+    }
+    
+    public static function getApiReadQuery(int $release_id, int $mode_id, int $seeded_type_id, DateTime $date) {
         $entries_table_name = static::getTableName($date);
     
         $query = DB::table('power_rankings AS pr')
@@ -184,7 +202,7 @@ class PowerRankingEntries extends Model {
             ->where('pr.date', $date->format('Y-m-d'))
             ->where('pr.release_id', $release_id)
             ->where('pr.mode_id', $mode_id)
-            ->where('pr.seeded', $seeded);
+            ->where('pr.seeded_type_id', $seeded_type_id);
         
         SteamUsers::addSelects($query);
         SteamUsers::addLeftJoins($query);
@@ -192,7 +210,7 @@ class PowerRankingEntries extends Model {
         return $query;
     }
     
-    public static function getSteamUserApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded, callable $additional_criteria = NULL) {
+    public static function getSteamUserApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded_type_id, callable $additional_criteria = NULL) {
         $release = Releases::getById($release_id);
         
         $start_date = new DateTime($release['start_date']);
@@ -222,7 +240,7 @@ class PowerRankingEntries extends Model {
                     ])
                     ->where('pr.release_id', $release_id)
                     ->where('pr.mode_id', $mode_id)
-                    ->where('pr.seeded', $seeded);
+                    ->where('pr.seeded_type_id', $seeded_type_id);
                 
                 if(!empty($additional_criteria)) {
                     call_user_func_array($additional_criteria, [
@@ -242,27 +260,27 @@ class PowerRankingEntries extends Model {
         return $query;
     }
     
-    public static function getSteamUserScoreApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded) { 
+    public static function getSteamUserScoreApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded_type_id) { 
         $additional_criteria = function(Builder $query) {
             $query->whereNotNull('pre.score_rank');
         };
     
-        return static::getSteamUserApiReadQuery($steamid, $release_id, $mode_id, $seeded, $additional_criteria);
+        return static::getSteamUserApiReadQuery($steamid, $release_id, $mode_id, $seeded_type_id, $additional_criteria);
     }
     
-    public static function getSteamUserSpeedApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded) { 
+    public static function getSteamUserSpeedApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded_type_id) { 
         $additional_criteria = function(Builder $query) {
             $query->whereNotNull('pre.speed_rank');
         };
     
-        return static::getSteamUserApiReadQuery($steamid, $release_id, $mode_id, $seeded, $additional_criteria);
+        return static::getSteamUserApiReadQuery($steamid, $release_id, $mode_id, $seeded_type_id, $additional_criteria);
     }
     
-    public static function getSteamUserDeathlessApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded) { 
+    public static function getSteamUserDeathlessApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded_type_id) { 
         $additional_criteria = function(Builder $query) {
             $query->whereNotNull('pre.deathless_rank');
         };
     
-        return static::getSteamUserApiReadQuery($steamid, $release_id, $mode_id, $seeded, $additional_criteria);
+        return static::getSteamUserApiReadQuery($steamid, $release_id, $mode_id, $seeded_type_id, $additional_criteria);
     }
 }

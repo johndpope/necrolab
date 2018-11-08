@@ -72,7 +72,7 @@ class Cache implements ShouldQueue {
             ExternalSites::addToSiteIdIndexes(
                 $indexes, 
                 $entry, 
-                CacheNames::getBase($entry->release_id, $entry->mode_id, $entry->seeded), 
+                CacheNames::getBase($entry->release_id, $entry->mode_id, $entry->seeded_type_id), 
                 $steam_user_id, 
                 (int)$entry->rank
             );
@@ -84,7 +84,7 @@ class Cache implements ShouldQueue {
                 ExternalSites::addToSiteIdIndexes(
                     $indexes, 
                     $entry, 
-                    CacheNames::getScore($entry->release_id, $entry->mode_id, $entry->seeded),
+                    CacheNames::getScore($entry->release_id, $entry->mode_id, $entry->seeded_type_id),
                     $steam_user_id, 
                     (int)$entry->score_rank
                 );
@@ -97,7 +97,7 @@ class Cache implements ShouldQueue {
                 ExternalSites::addToSiteIdIndexes(
                     $indexes, 
                     $entry, 
-                    CacheNames::getSpeed($entry->release_id, $entry->mode_id, $entry->seeded),
+                    CacheNames::getSpeed($entry->release_id, $entry->mode_id, $entry->seeded_type_id),
                     $steam_user_id, 
                     (int)$entry->speed_rank
                 );
@@ -110,7 +110,7 @@ class Cache implements ShouldQueue {
                 ExternalSites::addToSiteIdIndexes(
                     $indexes, 
                     $entry, 
-                    CacheNames::getDeathless($entry->release_id, $entry->mode_id, $entry->seeded),
+                    CacheNames::getDeathless($entry->release_id, $entry->mode_id, $entry->seeded_type_id),
                     $steam_user_id, 
                     (int)$entry->deathless_rank
                 );
@@ -126,7 +126,7 @@ class Cache implements ShouldQueue {
                     ExternalSites::addToSiteIdIndexes(
                         $indexes, 
                         $entry, 
-                        CacheNames::getCharacter($entry->release_id, $entry->mode_id, $entry->seeded, $characters[$character_name]->character_id),
+                        CacheNames::getCharacter($entry->release_id, $entry->mode_id, $entry->seeded_type_id, $characters[$character_name]->character_id),
                         $steam_user_id, 
                         (int)$character_rank['rank']
                     );

@@ -2,32 +2,39 @@
     <div class="container-fluid">
         <div class="row">
             <div class="col-12">
-                <b-breadcrumb :items="breadcrumbs"></b-breadcrumb>
+                <b-breadcrumb v-if="leaderboard['id'] != null" :items="breadcrumbs"></b-breadcrumb>
             </div>
         </div>
         <div class="row">
             <div class="col-12 pb-3">
-                <h1>{{ display_name }} Leaderboards</h1>
+                <h1 v-if="leaderboard['id'] != null">
+                    {{ leaderboard.display_name }}
+                </h1>
             </div>
         </div>
         <div class="row">
             <div class="col-12">
                 <necrotable 
-                    :api_endpoint_url="api_endpoint_url" 
+                    v-if="leaderboard['id'] != null"
+                    :api_endpoint_url="apiEndpointUrl" 
                     :header_columns="header_columns" 
-                    :has_pagination="false" 
-                    :filters="filters" 
-                    :data_processor="data_processor"
+                    :filters="filters"
+                    :has_server_pagination="false"
                 >
                     <template slot="table-row" slot-scope="{ row_index, row }">
                         <td>
-                            {{ row.name }}
+                            <router-link :to="getEntriesUrl(row.date)">
+                                {{ row.date }}
+                            </router-link>
                         </td>
                         <td>
-                            <a v-if="row['leaderboard'] != null" :href="'/leaderboards/' + row.leaderboard.id + '/snapshots'" class="h3">
-                                <right-arrow></right-arrow>
-                            </a>
+                            {{ row.players }}
                         </td>
+                        <td>
+                            <slot name="details-column" :row="row">
+                                {{ row[details_column_name] }}
+                            </slot>
+                        </td>  
                     </template>
                 </necrotable>
             </div>
@@ -37,6 +44,7 @@
 
 <script>
 import NecroTable from '../table/NecroTable.vue';
+import ntDateTimeFilter from '../table/filters/DateTimeFilter.vue';
 
 const LeaderboardSnapshotsPage = {
     name: 'leaderboard-snapshots-page',
@@ -52,29 +60,63 @@ const LeaderboardSnapshotsPage = {
             type: String,
             default: ''
         },
-        has_seeded: {
-            type: Boolean,
-            default: true
+        details_column_name: {
+            type: String,
+            default: ''
+        },
+        details_column_display_name: {
+            type: String,
+            default: ''
         }
     },
     data() {
         return {
-            breadcrumbs: [
+            leaderboard: {},
+            header_columns: [
+                'Date',
+                'Players',
+                this.details_column_display_name
+            ],
+            filters: [
+                ntDateTimeFilter
+            ]
+        }
+    },
+    computed: {
+        apiEndpointUrl() {            
+            return '/api/1/leaderboards/' + this.leaderboard.id + '/snapshots';
+        },
+        breadcrumbs() {
+            return [
                 {
                     text: 'Leaderboards'
                 },
                 {
                     text: this.display_name,
-                    href: '/leaderboards/' + this.name
+                    href: '#/leaderboards/' + this.name
+                },
+                {
+                    text: this.leaderboard.display_name
+                },
+                {
+                    text: 'Snapshots',
+                    href: '#/leaderboards/' + this.name + '/' + this.$route.params.url_name + '/snapshots'
                 }
-            ],
-            api_endpoint_url: '/api/1/leaderboards/' + this.name,
-            filters: [
-                CharacterDropdownFilter,
-                ReleaseDropdownFilter,
-                ModeDropdownFilter
             ]
         }
+    },
+    methods: {
+        getEntriesUrl(date) {
+            return '/leaderboards/' + this.name + '/' + this.leaderboard.url_name + '/snapshots/' + date;
+        }
+    },
+    created() {
+        let url_name = this.$route.params.url_name;
+        
+        this.$store.dispatch('leaderboards/load', url_name)
+            .then(() => {                        
+                this.leaderboard = this.$store.getters['leaderboards/getRecord'](url_name);
+            });
     }
 };
 

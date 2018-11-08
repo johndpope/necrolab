@@ -2,7 +2,9 @@
 
 namespace App\Http\Resources;
 
+use stdClass;
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\Components\Encoder;
 
 class PowerRankingsResource extends JsonResource {
     /**
@@ -11,7 +13,25 @@ class PowerRankingsResource extends JsonResource {
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request) {    
-        return $this->date;
+    public function toArray($request) {
+        $record = [
+            'date' => $this->date,
+            'players' => $this->players
+        ];
+        
+        if(!empty($this->categories)) {
+            foreach($this->categories as $category_name => $category) {
+                $record[$category_name] = $category;
+            }
+        }
+        
+        if(!empty($this->characters)) {
+            $record['characters'] = $this->characters;
+        }
+        else {
+            $record['characters'] = new stdClass();
+        }
+    
+        return $record;
     }
 }

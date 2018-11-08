@@ -1,6 +1,6 @@
 <template>
     <div class="table-responsive">
-        <table class="table table-sm table-bordered">
+        <table class="table table-sm table-bordered mb-0">
             <thead>
                 <tr>
                     <th scope="col"></th>

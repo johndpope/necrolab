@@ -242,9 +242,9 @@ class SteamUserPbs extends Model {
         int $release_id, 
         int $mode_id,
         int $leaderboard_type_id,
-        int $seeded, 
-        int $co_op, 
-        int $custom
+        int $seeded_type_id, 
+        int $multiplayer_type_id, 
+        int $soundtrack_id
     ) {
     
         $query = DB::table('steam_user_pbs AS sup')
@@ -268,9 +268,9 @@ class SteamUserPbs extends Model {
             ->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
             ->where('l.leaderboard_type_id', $leaderboard_type_id)
-            ->where('l.is_seeded', $seeded)
-            ->where('l.is_co_op', $co_op)
-            ->where('l.is_custom', $custom)
+            ->where('l.seeded_type_id', $seeded_type_id)
+            ->where('l.multiplayer_type_id', $multiplayer_type_id)
+            ->where('l.soundtrack_id', $soundtrack_id)
             ->orderBy('ls.date', 'desc')
             ->orderBy('sup.steam_user_pb_id', 'desc');
         
