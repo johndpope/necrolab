@@ -108,21 +108,35 @@ const DropdownFilter = {
                 return this.all_options;
             },
             set(options) {
+                let options_length = options.length;
+                
                 if(this.has_blank_option) {
-                    let blank_option = {};
+                    let contains_blank_option = false;
                     
-                    blank_option[this.option_value_name] = '';
-                    blank_option[this.option_display_name] = this.blank_option_display;
+                    for(let options_index = 0; options_index < options_length; options_index++) {
+                        let option = options[options_index];
+                        
+                        if(option[this.option_value_name] == '') {
+                            contains_blank_option = true;
+                            
+                            break;
+                        }
+                    }
                     
-                    options.unshift(blank_option);
+                    if(!contains_blank_option) {
+                        let blank_option = {};
+                        
+                        blank_option[this.option_value_name] = '';
+                        blank_option[this.option_display_name] = this.blank_option_display;
+                        
+                        options.unshift(blank_option);
+                    }
                 }
                 
                 this.all_options = options;
                 
                 if(this.default_selected_value != null) {
-                    let options_length = options.length;
-                    
-                    for(var options_index = 0; options_index < options_length; options_index++) {
+                    for(let options_index = 0; options_index < options_length; options_index++) {
                         let option = options[options_index];
                         
                         if(option[this.option_value_name] == this.default_selected_value) {
