@@ -9,10 +9,10 @@
                     <th scope="col">Top 20</th>
                     <th scope="col">Top 50</th>
                     <th scope="col">Top 100</th>
-                    <th v-if="show_calculated" scope="col">Points Per Day</th>
+                    <th scope="col">Points Per Day</th>
                     <th scope="col">Attempts</th>
                     <th scope="col">Wins</th>
-                    <th v-if="show_calculated" scope="col">Average Rank</th>
+                    <th scope="col">Average Rank</th>
                 </tr>
             </thead>
             <tbody>
@@ -35,7 +35,7 @@
                     <td>
                         {{ record.top_100_ranks }}
                     </td>
-                    <td v-if="show_calculated">
+                    <td>
                         <rounded-decimal :original_number="record.points_per_day"></rounded-decimal>
                     </td>
                     <td>
@@ -44,7 +44,7 @@
                     <td>
                         {{ record.total_wins }}
                     </td>
-                    <td v-if="show_calculated">
+                    <td>
                         <rounded-decimal :original_number="record.average_rank"></rounded-decimal>
                     </td>
                 </tr>
@@ -65,10 +65,6 @@ const DailyRankingDetailsTable = {
         record: {
             type: Object,
             default: () => {}
-        },
-        show_calculated: {
-            type: Boolean,
-            default: true
         }
     }
 };

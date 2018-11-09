@@ -21,15 +21,15 @@
             </td>
         </template>
         <template slot="row-details" slot-scope="{ row }">
-            <daily-ranking-details-table :record="row" :show_calculated="false">
-            </daily-ranking-details-table>
+            <daily-ranking-summary-details-table :record="row" :show_calculated="false">
+            </daily-ranking-summary-details-table>
         </template>
     </rankings-overview-page>
 </template>
 
 <script>
 import RankingsOverviewPage from '../rankings/RankingsOverviewPage.vue';
-import DailyRankingDetailsTable from '../table/DailyRankingDetailsTable.vue';
+import DailyRankingSummaryDetailsTable from '../table/DailyRankingSummaryDetailsTable.vue';
 import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
 import NumberOfDaysDropdownFilter from '../table/filters/NumberOfDaysDropdownFilter.vue';
 
@@ -37,7 +37,7 @@ export default {
     name: 'daily-rankings-page',
     components: {
         'rankings-overview-page': RankingsOverviewPage,
-        'daily-ranking-details-table': DailyRankingDetailsTable
+        'daily-ranking-summary-details-table': DailyRankingSummaryDetailsTable
     },
     data() {
         return {

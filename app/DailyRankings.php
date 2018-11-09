@@ -95,16 +95,8 @@ class DailyRankings extends Model {
                 SELECT 
                     dr.daily_ranking_id,
                     COUNT(dre.steam_user_id) AS players,
-                    SUM(dre.first_place_ranks) AS first_place_ranks,
-                    SUM(dre.top_5_ranks) AS top_5_ranks,
-                    SUM(dre.top_10_ranks) AS top_10_ranks,
-                    SUM(dre.top_20_ranks) AS top_20_ranks,
-                    SUM(dre.top_50_ranks) AS top_50_ranks,
-                    SUM(dre.top_100_ranks) AS top_100_ranks,
-                    SUM(dre.total_points) AS total_points,
                     SUM(dre.total_dailies) AS total_dailies,
                     SUM(dre.total_wins) AS total_wins,
-                    SUM(dre.sum_of_ranks) AS sum_of_ranks,
                     SUM(dre.total_score) AS total_score
                 FROM daily_rankings dr
                 JOIN {$table_name} dre ON dre.daily_ranking_id = dr.daily_ranking_id
@@ -114,16 +106,8 @@ class DailyRankings extends Model {
             UPDATE daily_rankings dr
             SET 
                 players = drs.players,
-                first_place_ranks = drs.first_place_ranks,
-                top_5_ranks = drs.top_5_ranks,
-                top_10_ranks = drs.top_10_ranks,
-                top_20_ranks = drs.top_20_ranks,
-                top_50_ranks = drs.top_50_ranks,
-                top_100_ranks = drs.top_100_ranks,
-                total_points = drs.total_points,
                 total_dailies = drs.total_dailies,
                 total_wins = drs.total_wins,
-                sum_of_ranks = drs.sum_of_ranks,
                 total_score = drs.total_score
             FROM daily_ranking_stats drs
             WHERE drs.daily_ranking_id = dr.daily_ranking_id
@@ -137,16 +121,8 @@ class DailyRankings extends Model {
             ->select([
                 'date',
                 'players',
-                'first_place_ranks',
-                'top_5_ranks',
-                'top_10_ranks',
-                'top_20_ranks',
-                'top_50_ranks',
-                'top_100_ranks',
-                'total_points',
                 'total_dailies',
                 'total_wins',
-                'sum_of_ranks',
                 'total_score'
             ])
             ->where('release_id', $release_id)
