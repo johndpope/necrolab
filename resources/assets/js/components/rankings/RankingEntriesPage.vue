@@ -1,46 +1,36 @@
 <template>
-    <div class="container-fluid">
-        <div class="row">
-            <div v-if="properties_loaded" class="col-12">
-                <b-breadcrumb :items="breadcrumbs"></b-breadcrumb>
-            </div>
-        </div>
-        <div class="row">
-            <div v-if="properties_loaded" class="col-12 pb-3">
-                <h1>{{ category_display_name }} Rankings {{ getDisplayName() }}</h1>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <necrotable 
-                v-if="properties_loaded"
-                :api_endpoint_url="api_endpoint_url"
-                :default_request_parameters="api_request_parameters"
-                :header_columns="header_columns" 
-                :has_search="true" 
-                :has_action_column="true" 
-                :filters="filters"
-            >
-                    <template slot="table-row" slot-scope="{ row_index, row }">
-                        <slot name="table-row" :row="row" :row_index="row_index">
-                            Override the "table-row" slot to customize the table row.
-                        </slot>
-                    </template>
-                    <template slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
-                        <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
-                    </template>
-                    <template slot="row-details" slot-scope="{ row }">
-                        <slot name="row-details"  :row="row">
-                            Override the "row-details" slot to customize row details.
-                        </slot>
-                    </template>
-                </necrotable>
-            </div>
-        </div>
-    </div>
+    <with-nav-layout 
+        :breadcrumbs="breadcrumbs"
+        :title="title"
+        :show_body="properties_loaded"
+    >
+        <necrotable 
+            :api_endpoint_url="api_endpoint_url"
+            :default_request_parameters="api_request_parameters"
+            :header_columns="header_columns" 
+            :has_search="true" 
+            :has_action_column="true" 
+            :filters="filters"
+        >
+            <template slot="table-row" slot-scope="{ row_index, row }">
+                <slot name="table-row" :row="row" :row_index="row_index">
+                    Override the "table-row" slot to customize the table row.
+                </slot>
+            </template>
+            <template slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
+                <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
+            </template>
+            <template slot="row-details" slot-scope="{ row }">
+                <slot name="row-details"  :row="row">
+                    Override the "row-details" slot to customize row details.
+                </slot>
+            </template>
+        </necrotable>
+    </with-nav-layout>
 </template>
 
 <script>
+import WithNavLayout from '../layouts/WithNavLayout.vue';
 import NecroTable from '../table/NecroTable.vue';
 import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
 import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
@@ -48,6 +38,7 @@ import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
 const RankingEntriesPage = {
     name: 'ranking-entries-page',
     components: {
+        'with-nav-layout': WithNavLayout,
         'necrotable': NecroTable,
         'toggle-details': ToggleDetails
     },
@@ -97,6 +88,7 @@ const RankingEntriesPage = {
             seeded_type: {},
             filter_record_values: {},
             properties_loaded: false,
+            title: '',
             api_request_parameters: {},
             filters: [
                 SiteDropdownFilter
@@ -168,6 +160,8 @@ const RankingEntriesPage = {
                 }
                 
                 this.api_request_parameters['date'] = this.$route.params.date;
+                
+                this.title = this.category_display_name + ' Rankings ' +  this.getDisplayName();
                 
                 this.properties_loaded = true;
             });

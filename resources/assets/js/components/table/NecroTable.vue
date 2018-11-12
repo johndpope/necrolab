@@ -277,7 +277,9 @@ const NecroTable = {
             }
         }
         
-        this.initial_load = false;
+        if(this.filters.length == 0) {
+            this.updateFromServer();
+        }
     },
     watch: {
         response() {

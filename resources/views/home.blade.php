@@ -1,8 +1,8 @@
-@extends('layouts.with_nav')
+@extends('layouts.app')
 
 @section('title', 'Home Page')
 
-@section('content')
+@section('layout')
 <transition name="fade">
     <router-view></router-view>
 </transition>

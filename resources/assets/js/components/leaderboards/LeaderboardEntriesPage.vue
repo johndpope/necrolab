@@ -1,62 +1,50 @@
 <template>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <b-breadcrumb v-if="leaderboard['id'] != null" :items="breadcrumbs"></b-breadcrumb>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12 pb-3">
-                <h1 v-if="leaderboard['id'] != null">
-                    {{ date }} - {{ leaderboard.display_name }}
-                </h1>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <necrotable 
-                    v-if="leaderboard['id'] != null"
-                    api_endpoint_url="/api/1/leaderboards/entries" 
-                    :header_columns="headerColumns" 
-                    :has_search="true" 
-                    :has_action_column="has_details_row"
-                    :default_request_parameters="apiRequestParameters"
-                    :filters="filters"
-                >
-                    <template slot="table-row" slot-scope="{ row_index, row }">
-                        <td>
-                            {{ row.rank }}
-                        </td>
-                        <td>
-                            <player-profile-modal :player="row.player"></player-profile-modal>
-                        </td>
-                        <td>
-                            <slot name="entry-details" :row="row">
-                                Override this slot to specify entry details.
-                            </slot>
-                        </td>
-                        <td v-if="has_seed">
-                            <seed :record="row"></seed>
-                        </td>
-                        <td v-if="has_replay">
-                            <replay-download-link :record="row"></replay-download-link>
-                        </td>
-                    </template>
-                    <template v-if="has_details_row" slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
-                        <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
-                    </template>
-                    <template v-if="has_details_row" slot="row-details" slot-scope="{ row }">
-                        <slot name="row-details" :row="row">
-                            Override this slot to specify a details row.
-                        </slot>
-                    </template>
-                </necrotable>
-            </div>
-        </div>
-    </div>
+    <with-nav-layout 
+        :breadcrumbs="breadcrumbs"
+        :title="leaderboard_display_name"
+        :show_body="leaderboard['id'] != null"
+    >
+        <necrotable 
+            :api_endpoint_url="api_endpoint_url"
+            :header_columns="headerColumns" 
+            :has_search="true" 
+            :has_action_column="has_details_row"
+            :default_request_parameters="apiRequestParameters"
+            :filters="filters"
+        >
+            <template slot="table-row" slot-scope="{ row_index, row }">
+                <td>
+                    {{ row.rank }}
+                </td>
+                <td>
+                    <player-profile-modal :player="row.player"></player-profile-modal>
+                </td>
+                <td>
+                    <slot name="entry-details" :row="row">
+                        Override this slot to specify entry details.
+                    </slot>
+                </td>
+                <td v-if="has_seed">
+                    <seed :record="row"></seed>
+                </td>
+                <td v-if="has_replay">
+                    <replay-download-link :record="row"></replay-download-link>
+                </td>
+            </template>
+            <template v-if="has_details_row" slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
+                <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
+            </template>
+            <template v-if="has_details_row" slot="row-details" slot-scope="{ row }">
+                <slot name="row-details" :row="row">
+                    Override this slot to specify a details row.
+                </slot>
+            </template>
+        </necrotable>
+    </with-nav-layout>
 </template>
 
 <script>
+import WithNavLayout from '../layouts/WithNavLayout.vue';
 import NecroTable from '../table/NecroTable.vue';
 import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
 import PlayerProfileModal from '../player/PlayerProfileModal.vue';
@@ -67,6 +55,7 @@ import ReplayDownloadLink from '../leaderboards/ReplayDownloadLink.vue';
 const LeaderboardEntriesPage = {
     name: 'leaderboard-snapshots-page',
     components: {
+        'with-nav-layout': WithNavLayout,
         'necrotable': NecroTable,
         'player-profile-modal': PlayerProfileModal,
         'seed': Seed,
@@ -102,7 +91,9 @@ const LeaderboardEntriesPage = {
     data() {
         return {
             leaderboard: {},
+            leaderboard_display_name: '',
             date: '',
+            api_endpoint_url: '/api/1/leaderboards/entries',
             filters: [
                 SiteDropdownFilter
             ]
@@ -165,6 +156,8 @@ const LeaderboardEntriesPage = {
         this.$store.dispatch('leaderboards/load', url_name)
             .then(() => {                        
                 this.leaderboard = this.$store.getters['leaderboards/getRecord'](url_name);
+                
+                this.leaderboard_display_name = this.date + ' - ' + leaderboard.display_name;
             });
     }
 };

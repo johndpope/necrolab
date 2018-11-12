@@ -15,8 +15,10 @@
         @stack('css')
     </head>
     <body @yield('body_attributes')>
-        <div id="app" class="w-100">
-            @yield('layout')
+        <div id="app" class="w-100 h-100">
+            <transition name="fade">
+                <router-view></router-view>
+            </transition>
         </div>
         
         <script type="text/javascript" src="{{ mix('/js/app.js') }}"></script>

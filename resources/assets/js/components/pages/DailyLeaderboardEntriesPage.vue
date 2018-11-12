@@ -1,53 +1,44 @@
 <template>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <b-breadcrumb v-if="release['id'] != null" :items="breadcrumbs"></b-breadcrumb>
-            </div>
-        </div>
-        <div class="row">
-            <div v-if="release['id'] != null" class="col-12 pb-3">
-                <h1>{{ release.display_name }} Daily Leaderboard - {{ $route.params.date }}</h1>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <necrotable 
-                    :api_endpoint_url="api_endpoint_url" 
-                    :header_columns="header_columns" 
-                    :has_search="true" 
-                    :has_action_column="true" 
-                    :filters="filters"
-                    :default_request_parameters="apiRequestParameters"
-                >
-                    <template slot="table-row" slot-scope="{ row_index, row }">
-                        <td>
-                            {{ row.rank }}
-                        </td>
-                        <td>
-                            <player-profile-modal :player="row.player"></player-profile-modal>
-                        </td>
-                        <td>
-                            {{ row.pb.score }}
-                        </td>
-                        <td>
-                            <seed :record="row"></seed>
-                        </td>
-                    </template>
-                    <template slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
-                        <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
-                    </template>
-                    <template slot="row-details" slot-scope="{ row }">
-                        <leaderboard-score-entry-details-table :record="row">
-                        </leaderboard-score-entry-details-table>
-                    </template>
-                </necrotable>
-            </div>
-        </div>
-    </div>
+    <with-nav-layout 
+        :breadcrumbs="breadcrumbs"
+        :title="title"
+        :show_body="release['id'] != null"
+    >
+        <necrotable 
+            :api_endpoint_url="api_endpoint_url" 
+            :header_columns="header_columns" 
+            :has_search="true" 
+            :has_action_column="true" 
+            :filters="filters"
+            :default_request_parameters="apiRequestParameters"
+        >
+            <template slot="table-row" slot-scope="{ row_index, row }">
+                <td>
+                    {{ row.rank }}
+                </td>
+                <td>
+                    <player-profile-modal :player="row.player"></player-profile-modal>
+                </td>
+                <td>
+                    {{ row.pb.score }}
+                </td>
+                <td>
+                    <seed :record="row"></seed>
+                </td>
+            </template>
+            <template slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
+                <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
+            </template>
+            <template slot="row-details" slot-scope="{ row }">
+                <leaderboard-score-entry-details-table :record="row">
+                </leaderboard-score-entry-details-table>
+            </template>
+        </necrotable>
+    </with-nav-layout>
 </template>
 
 <script>
+import WithNavLayout from '../layouts/WithNavLayout.vue';
 import NecroTable from '../table/NecroTable.vue';
 import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
 import PlayerProfileModal from '../player/PlayerProfileModal.vue';
@@ -58,6 +49,7 @@ import LeaderboardScoreEntryDetailsTable from '../table/LeaderboardScoreEntryDet
 export default {
     name: 'daily-leaderboard-entries-page',
     components: {
+        'with-nav-layout': WithNavLayout,
         'necrotable': NecroTable,
         'player-profile-modal': PlayerProfileModal,
         'seed': Seed,
@@ -67,6 +59,7 @@ export default {
     data() {
         return {
             release: {},
+            title: '',
             api_endpoint_url: '/api/1/leaderboards/daily/entries',
             filters: [
                 SiteDropdownFilter
@@ -115,6 +108,8 @@ export default {
         this.$store.dispatch('releases/loadAll')
             .then(() => {                        
                 this.release = this.$store.getters['releases/getByField']('name', this.$route.params.release);
+                
+                this.title = this.release.display_name + ' Daily Leaderboard - ' + this.$route.params.date;
             });
     }
 };

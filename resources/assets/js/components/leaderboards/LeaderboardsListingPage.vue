@@ -1,45 +1,35 @@
 <template>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <b-breadcrumb :items="breadcrumbs"></b-breadcrumb>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12 pb-3">
-                <h1>{{ display_name }} Leaderboards</h1>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <necrotable 
-                    :api_endpoint_url="api_endpoint_url" 
-                    :has_pagination="false" 
-                    :filters="filters" 
-                    :data_processor="dataProcessor"
-                >
-                    <template slot="table-row" slot-scope="{ row_index, row }">
-                        <td>
-                            {{ row.name }}
-                        </td>
-                        <td>
-                            <a 
-                                v-if="row['leaderboard'] != null" 
-                                :href="getSnapshotsUrl(row.leaderboard)" 
-                                class="h3" 
-                                @click="$store.commit('leaderboards/setRecord', row.leaderboard)"
-                            >
-                                <right-arrow></right-arrow>
-                            </a>
-                        </td>
-                    </template>
-                </necrotable>
-            </div>
-        </div>
-    </div>
+    <with-nav-layout 
+        :breadcrumbs="breadcrumbs"
+        :title="display_name + ' Leaderboards'"
+    >
+        <necrotable 
+            :api_endpoint_url="api_endpoint_url" 
+            :has_pagination="false" 
+            :filters="filters" 
+            :data_processor="dataProcessor"
+        >
+            <template slot="table-row" slot-scope="{ row_index, row }">
+                <td>
+                    {{ row.name }}
+                </td>
+                <td>
+                    <a 
+                        v-if="row['leaderboard'] != null" 
+                        :href="getSnapshotsUrl(row.leaderboard)" 
+                        class="h3" 
+                        @click="$store.commit('leaderboards/setRecord', row.leaderboard)"
+                    >
+                        <right-arrow></right-arrow>
+                    </a>
+                </td>
+            </template>
+        </necrotable>
+    </with-nav-layout>
 </template>
 
 <script>
+import WithNavLayout from '../layouts/WithNavLayout.vue';
 import NecroTable from '../table/NecroTable.vue';
 import CharacterDropdownFilter from '../table/filters/CharacterDropdownFilter.vue';
 import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
@@ -49,6 +39,7 @@ import RightArrow from '../formatting/RightArrow.vue';
 const LeaderboardsListingPage = {
     name: 'leaderboards-listing-page',
     components: {
+        'with-nav-layout': WithNavLayout,
         'necrotable': NecroTable,
         'right-arrow': RightArrow
     },

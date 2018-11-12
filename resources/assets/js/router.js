@@ -9,6 +9,8 @@ Vue.use(VueRouter);
 
 import HomePage from './components/pages/HomePage.vue';
 
+import LoginPage from  './components/pages/LoginPage.vue';
+
 import PlayersPage from './components/pages/PlayersPage.vue';
 
 import PowerRankingsPage from './components/pages/PowerRankingsPage.vue';
@@ -46,6 +48,10 @@ const routes = [
     {
         path: '/', 
         component: HomePage 
+    },
+    {
+        path: '/login', 
+        component: LoginPage 
     },
     {
         path: '/players', 

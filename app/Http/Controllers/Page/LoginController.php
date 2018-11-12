@@ -27,24 +27,12 @@ class LoginController extends Controller {
     }
     
     /**
-     * Show the login page.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request) {
-        return view('login', [
-            'error' => $request->error
-        ]);
-    }
-    
-    /**
      * Initializes the login process by redirection the user to Steam.
      *
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function loginSteam(Request $request) {
+    public function loginSteam(Request $request) {    
         return Socialite::driver('steam')->redirect();
     }
     
@@ -66,9 +54,7 @@ class LoginController extends Controller {
         
         if(empty($steam_user)) {
             /* ---------- Redirect back to the login page indicating that the user cannot be found ---------- */
-            redirect()->route('login', [
-                'error' => 'steam_not_exists'
-            ]);
+            redirect('/#login?error=steam_not_exists');
         }
         
         /* ---------- Save this user's profile data ---------- */

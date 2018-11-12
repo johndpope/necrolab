@@ -1,54 +1,41 @@
 <template>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <b-breadcrumb v-if="leaderboard['id'] != null" :items="breadcrumbs"></b-breadcrumb>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12 pb-3">
-                <h1 v-if="leaderboard['id'] != null">
-                    {{ leaderboard.display_name }}
-                </h1>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <necrotable 
-                    v-if="leaderboard['id'] != null"
-                    :api_endpoint_url="apiEndpointUrl" 
-                    :header_columns="header_columns" 
-                    :filters="filters"
-                    :has_server_pagination="false"
-                >
-                    <template slot="table-row" slot-scope="{ row_index, row }">
-                        <td>
-                            <router-link :to="getEntriesUrl(row.date)">
-                                {{ row.date }}
-                            </router-link>
-                        </td>
-                        <td>
-                            {{ row.players }}
-                        </td>
-                        <td>
-                            <slot name="details-column" :row="row">
-                                {{ row[details_column_name] }}
-                            </slot>
-                        </td>  
-                    </template>
-                </necrotable>
-            </div>
-        </div>
-    </div>
+    <with-nav-layout 
+        :breadcrumbs="breadcrumbs"
+        :title="leaderboard_display_name"
+        :show_body="leaderboard['id'] != null"
+    >
+        <necrotable
+            :api_endpoint_url="apiEndpointUrl" 
+            :header_columns="header_columns" 
+            :has_server_pagination="false"
+        >
+            <template slot="table-row" slot-scope="{ row_index, row }">
+                <td>
+                    <router-link :to="getEntriesUrl(row.date)">
+                        {{ row.date }}
+                    </router-link>
+                </td>
+                <td>
+                    {{ row.players }}
+                </td>
+                <td>
+                    <slot name="details-column" :row="row">
+                        {{ row[details_column_name] }}
+                    </slot>
+                </td>  
+            </template>
+        </necrotable>
+    </with-nav-layout>
 </template>
 
 <script>
+import WithNavLayout from '../layouts/WithNavLayout.vue';
 import NecroTable from '../table/NecroTable.vue';
-import ntDateTimeFilter from '../table/filters/DateTimeFilter.vue';
 
 const LeaderboardSnapshotsPage = {
     name: 'leaderboard-snapshots-page',
     components: {
+        'with-nav-layout': WithNavLayout,
         'necrotable': NecroTable
     },
     props: {
@@ -72,13 +59,11 @@ const LeaderboardSnapshotsPage = {
     data() {
         return {
             leaderboard: {},
+            leaderboard_display_name: '',
             header_columns: [
                 'Date',
                 'Players',
                 this.details_column_display_name
-            ],
-            filters: [
-                ntDateTimeFilter
             ]
         }
     },
@@ -116,6 +101,8 @@ const LeaderboardSnapshotsPage = {
         this.$store.dispatch('leaderboards/load', url_name)
             .then(() => {                        
                 this.leaderboard = this.$store.getters['leaderboards/getRecord'](url_name);
+                
+                this.leaderboard_display_name = this.leaderboard.display_name;
             });
     }
 };

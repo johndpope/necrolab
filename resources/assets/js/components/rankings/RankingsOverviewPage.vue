@@ -1,50 +1,39 @@
 <template>
-    <div class="container-fluid">
-        <div class="row">
-            <div class="col-12">
-                <b-breadcrumb :items="breadcrumbs"></b-breadcrumb>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12 pb-3">
-                <h1>{{ category_display_name }} Rankings</h1>
-            </div>
-        </div>
-        <div class="row">
-            <div class="col-12">
-                <necrotable 
-                    :api_endpoint_url="api_endpoint_url" 
-                    :header_columns="header_columns" 
-                    :has_action_column="true" 
-                    :filters="filters"
+    <with-nav-layout 
+        :breadcrumbs="breadcrumbs"
+        :title="title"
+    >
+        <necrotable 
+            :api_endpoint_url="api_endpoint_url" 
+            :header_columns="header_columns" 
+            :has_action_column="true" 
+            :filters="filters"
+        >
+            <template slot="table-row" slot-scope="{ row_index, row }">
+                <slot 
+                    name="table-row" 
+                    :row="row" 
+                    :getEntriesUrl="getEntriesUrl"
+                    :getCategoryField="getCategoryField"
                 >
-                    <template slot="table-row" slot-scope="{ row_index, row }">
-                        <slot 
-                            name="table-row" 
-                            :row="row" 
-                            :getEntriesUrl="getEntriesUrl"
-                            :getCategoryField="getCategoryField"
-                        >
-                            Override the "table-row" slot to replace this text.
-                        </slot>
-                    </template>
-                    <template slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
-                        <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
-                    </template>
-                    <template slot="row-details" slot-scope="{ row }">
-                        <slot name="row-details" :row="row">
-                            Override the "row-details" slot to replace this text.
-                        </slot>
-                    </template>
-                </necrotable>
-            </div>
-        </div>
-    </div>
+                    Override the "table-row" slot to replace this text.
+                </slot>
+            </template>
+            <template slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
+                <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
+            </template>
+            <template slot="row-details" slot-scope="{ row }">
+                <slot name="row-details" :row="row">
+                    Override the "row-details" slot to replace this text.
+                </slot>
+            </template>
+        </necrotable>
+    </with-nav-layout>
 </template>
 
 <script>
+import WithNavLayout from '../layouts/WithNavLayout.vue';
 import NecroTable from '../table/NecroTable.vue';
-import ntDateTimeFilter from '../table/filters/DateTimeFilter.vue';
 import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
 import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
 import SeededTypeDropdownFilter from '../table/filters/SeededTypeDropdownFilter.vue';
@@ -53,6 +42,7 @@ import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
 const RankingsOverviewPage = {
     name: 'rankings-overview-page',
     components: {
+        'with-nav-layout': WithNavLayout,
         'necrotable': NecroTable,
         'toggle-details': ToggleDetails,
     },
@@ -79,7 +69,6 @@ const RankingsOverviewPage = {
             type: Array,
             default: () => {
                 return [
-                    ntDateTimeFilter,
                     ReleaseDropdownFilter,
                     ModeDropdownFilter,
                     SeededTypeDropdownFilter
@@ -108,6 +97,7 @@ const RankingsOverviewPage = {
     },
     data() {
         return {
+            title: this.category_display_name + ' Rankings',
             breadcrumbs: [
                 {
                     text: 'Rankings'
