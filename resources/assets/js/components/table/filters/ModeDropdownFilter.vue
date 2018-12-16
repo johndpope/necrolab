@@ -19,13 +19,26 @@ const ModeDropdownFilter = {
         }
     },
     methods: {
+        getDefaultOptions() {
+            return this.$store.getters['modes/getFiltered'];
+        },
         loadOptions(resolve, reject) {
-            this.$store.dispatch('modes/loadAll')
-                .then(() => {                        
-                    this.options = this.$store.getters['modes/getAll'];
-                    
-                    resolve();
-                });
+            resolve();
+        
+            /*let filter_stores = [
+                'releases',
+            ];
+        
+            let promises = [
+                this.$store.dispatch('modes/loadDependencies', {
+                    filter_stores: filter_stores
+                }),
+                this.$store.dispatch('modes/loadAll')
+            ];
+            
+            Promise.all(promises).then(() => {                
+                resolve();
+            });*/
         },
         setSelectedState(selected) {
             this.$store.commit('modes/setSelected', selected);

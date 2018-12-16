@@ -1,11 +1,12 @@
 <template>
     <rankings-overview-page
+        v-if="loaded"
         category_name="daily"
         category_display_name="Daily"
         :api_endpoint_url="api_endpoint_url"
         :header_columns="header_columns"
         :filters="filters"
-        :filter_records="filter_records"
+        :url_segment_stores="url_segment_stores"
     >
         <template slot="table-row" slot-scope="{ row_index, row, getEntriesUrl }">
             <td>
@@ -28,12 +29,15 @@
 </template>
 
 <script>
+import BasePage from './BasePage.vue';
 import RankingsOverviewPage from '../rankings/RankingsOverviewPage.vue';
 import DailyRankingSummaryDetailsTable from '../table/DailyRankingSummaryDetailsTable.vue';
 import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
+import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
 import NumberOfDaysDropdownFilter from '../table/filters/NumberOfDaysDropdownFilter.vue';
 
 export default {
+    extends: BasePage,
     name: 'daily-rankings-page',
     components: {
         'rankings-overview-page': RankingsOverviewPage,
@@ -49,18 +53,42 @@ export default {
             ],
             filters: [
                 ReleaseDropdownFilter,
+                ModeDropdownFilter,
                 NumberOfDaysDropdownFilter
             ],
-            filter_records: [
-                {
-                    name: 'release',
-                    store_name: 'releases'
-                },
-                {
-                    name: 'number_of_days',
-                    store_name: 'number_of_days'
-                }
+            url_segment_stores: [
+                'releases',
+                'modes',
+                'number_of_days'
             ]
+        }
+    },
+    methods: {
+        loadState() {
+            let promise = this.$store.dispatch('page/loadModules', [
+                'leaderboard_sources',
+                'leaderboard_types',
+                'releases',
+                'modes',
+                'number_of_days'
+            ]);
+
+            promise.then(() => {
+                this.$store.commit('releases/setFilterStores', [
+                    'leaderboard_sources'
+                ]);
+                
+                this.$store.commit('modes/setFilterStores', [
+                    'leaderboard_types',
+                    'releases'
+                ]);
+                
+                this.$store.commit('leaderboard_sources/setSelected', this.$route.params.leaderboard_source);
+                
+                this.$store.commit('leaderboard_types/setSelected', 'daily');
+                
+                this.loaded = true;
+            });
         }
     }
 };

@@ -19,13 +19,11 @@ const ReleaseDropdownFilter = {
         }
     },
     methods: {
+        getDefaultOptions() {
+            return this.$store.getters['releases/getFiltered'];
+        },
         loadOptions(resolve, reject) {
-            this.$store.dispatch('releases/loadAll')
-                .then(() => {                        
-                    this.options = this.$store.getters['releases/getAll'];
-                    
-                    resolve();
-                });
+            resolve();
         },
         setSelectedState(selected) {
             this.$store.commit('releases/setSelected', selected);

@@ -1,9 +1,7 @@
 <template>
     <div class="h-100 d-flex align-items-center site-icon-display">
         <span class="h3 mr-4 mb-0">
-            <steam-icon v-if="name == ''"></steam-icon>
-            <steam-icon v-else-if="name == 'steam'"></steam-icon>
-            <discord-icon v-else-if="name == 'discord'"></discord-icon>
+            <discord-icon v-if="name == 'discord'"></discord-icon>
             <mixer-icon v-else-if="name == 'mixer'"></mixer-icon>
             <patreon-icon v-else-if="name == 'patreon'"></patreon-icon>
             <reddit-icon v-else-if="name == 'reddit'"></reddit-icon>
@@ -16,7 +14,7 @@
                 {{ display_name }}
             </template>
             <template v-else>
-                Steam
+                All
             </template>
         </span>
     </div>

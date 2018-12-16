@@ -1,5 +1,6 @@
 <template>
     <ranking-entries-page
+        v-if="loaded"
         category_name="character"
         category_display_name="Character"
         :api_endpoint_url="api_endpoint_url"
@@ -18,30 +19,40 @@
             </td>
         </template>
         <template slot="row-details" slot-scope="{ row }">
-            <daily-ranking-details-table :record="row">
-            </daily-ranking-details-table>
+            <ranking-summary-details-table 
+                :leaderboard_types="$store.getters['leaderboard_types/getFiltered']"
+                :record="row"
+                :rows="details_table_rows"
+            >
+            </ranking-summary-details-table>
         </template>
     </ranking-entries-page>
 </template>
 
 <script>
+import BasePage from './BasePage.vue';
 import RankingEntriesPage from '../rankings/RankingEntriesPage.vue';
 import PlayerProfileModal from '../player/PlayerProfileModal.vue';
 import RoundedDecimal from '../formatting/RoundedDecimal.vue';
-import RankingDetailsTable from '../table/RankingDetailsTable.vue';
+import RankingSummaryDetailsTable from '../table/RankingSummaryDetailsTable.vue';
 
 export default {
+    extends: BasePage,
     name: 'character-ranking-entries-page',
     components: {
         'ranking-entries-page': RankingEntriesPage,
         'player-profile-modal': PlayerProfileModal,
         'rounded-decimal': RoundedDecimal,
-        'daily-ranking-details-table': RankingDetailsTable
+        'ranking-summary-details-table': RankingSummaryDetailsTable
     },
     data() {
         return {
             api_endpoint_url: '/api/1/rankings/character/entries',
             filter_records: [
+                {
+                    name: 'leaderboard_source',
+                    store_name: 'leaderboard_sources'
+                },
                 {
                     name: 'character',
                     store_name: 'characters'
@@ -63,12 +74,51 @@ export default {
                 'Rank',
                 'Player',
                 'Points'
+            ],
+            details_table_rows: [
+                {
+                    name: 'rank',
+                    display_name: 'Rank'
+                },
+                {
+                    name: 'points',
+                    display_name: 'Points',
+                    rounded: true
+                },
             ]
         }
     },
     computed: {
         currentCharacter() {
             return this.$route.params.character;
+        }
+    },
+    methods: {
+        loadState(route_params) {
+            let promise = this.$store.dispatch('page/loadModules', [
+                'leaderboard_sources',
+                'characters',
+                'releases',
+                'modes',
+                'seeded_types',
+                'leaderboard_types',
+                'leaderboard_details_columns',
+                'data_types'
+            ]);
+
+            promise.then(() => {
+                this.$store.commit('leaderboard_types/setFilterStores', [
+                    'modes'
+                ]);
+                
+                this.$store.commit('leaderboard_sources/setSelected', route_params.leaderboard_source);
+                this.$store.commit('characters/setSelected', route_params.character);
+                this.$store.commit('releases/setSelected', route_params.release);
+                this.$store.commit('modes/setSelected', route_params.mode);
+                this.$store.commit('seeded_types/setSelected', route_params.seeded_type);
+                
+                this.loaded = true;
+            });
         }
     }
 };

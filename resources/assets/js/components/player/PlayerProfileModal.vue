@@ -1,60 +1,63 @@
 <template>
      <div>
-        <b-button @click="modal_show = !modal_show" variant="primary">
-            {{ username }}
-        </b-button>
-        <b-modal v-model="modal_show" :centered="true">
-            <div class="container-fluid">
-                <div class="row">
-                    <div class="col-3">
-                        Avatar
-                    </div>
-                    <div class="col-7 pl-0">
-                        <span class="h4 align-middle font-weight-bold">
-                            {{ username }}
-                        </span>
-                    </div>
-                    <div class="col-2 text-right">
-                        <span class="h3 align-middle">
-                            <a :href="'/players/' + player.id">
-                                <profile-icon></profile-icon>
-                            </a>
-                        </span>
-                    </div>
-                </div>
-                <!-- <div class="row">
-                    <div class="col-6">
-                    </div>
-                </div> -->
-            </div>
-            <div slot="modal-footer" class="w-100">
-                <div class="container-fluid pl-0 pr-0 ml-0 mr-0">
+        <template v-if="player['necrolab'] != null">
+            <b-button @click="modal_show = !modal_show" variant="primary">
+                {{ username }}
+            </b-button>
+            <b-modal v-model="modal_show" :centered="true">
+                <div class="container-fluid">
                     <div class="row">
-                        <div v-if="player['steam'] != null" class="col-12">
-                            <steam-profile-link :profile_data="player.steam"></steam-profile-link>
+                        <div class="col-3">
+                            Avatar
                         </div>
-                        <div v-if="player['discord'] != null" class="col-12 mt-2">
-                            <discord-profile-link :profile_data="player.discord"></discord-profile-link>
+                        <div class="col-7 pl-0">
+                            <span class="h4 align-middle font-weight-bold">
+                                {{ username }}
+                            </span>
                         </div>
-                        <div v-if="player['mixer'] != null" class="col-12 mt-2">
-                            <mixer-profile-link :profile_data="player.mixer"></mixer-profile-link>
-                        </div>
-                        <div v-if="player['reddit'] != null" class="col-12 mt-2">
-                            <reddit-profile-link :profile_data="player.reddit"></reddit-profile-link>
-                        </div>
-                        <div v-if="player['twitch'] != null" class="col-12 mt-2">
-                            <twitch-profile-link :profile_data="player.twitch"></twitch-profile-link>
-                        </div>
-                        <div v-if="player['twitter'] != null" class="col-12 mt-2">
-                            <twitter-profile-link :profile_data="player.twitter"></twitter-profile-link>
-                        </div>
-                        <div v-if="player['youtube'] != null" class="col-12 mt-2">
-                            <youtube-profile-link :profile_data="player.youtube"></youtube-profile-link>
+                        <div class="col-2 text-right">
+                            <span class="h3 align-middle">
+                                <a :href="'/players/' + player.necrolab.id">
+                                    <profile-icon></profile-icon>
+                                </a>
+                            </span>
                         </div>
                     </div>
                 </div>
-            </div>
-        </b-modal>
+                <div slot="modal-footer" class="w-100">
+                    <div class="container-fluid pl-0 pr-0 ml-0 mr-0">
+                        <div class="row">
+                            <div v-if="player['steam'] != null" class="col-12">
+                                <steam-profile-link :profile_data="player.steam"></steam-profile-link>
+                            </div>
+                            <div v-if="player['discord'] != null" class="col-12 mt-2">
+                                <discord-profile-link :profile_data="player.discord"></discord-profile-link>
+                            </div>
+                            <div v-if="player['mixer'] != null" class="col-12 mt-2">
+                                <mixer-profile-link :profile_data="player.mixer"></mixer-profile-link>
+                            </div>
+                            <div v-if="player['reddit'] != null" class="col-12 mt-2">
+                                <reddit-profile-link :profile_data="player.reddit"></reddit-profile-link>
+                            </div>
+                            <div v-if="player['twitch'] != null" class="col-12 mt-2">
+                                <twitch-profile-link :profile_data="player.twitch"></twitch-profile-link>
+                            </div>
+                            <div v-if="player['twitter'] != null" class="col-12 mt-2">
+                                <twitter-profile-link :profile_data="player.twitter"></twitter-profile-link>
+                            </div>
+                            <div v-if="player['youtube'] != null" class="col-12 mt-2">
+                                <youtube-profile-link :profile_data="player.youtube"></youtube-profile-link>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </b-modal>
+        </template>
+        <template v-else>
+            <router-link :to="'/players/steam/' + player.steam.id">
+                {{ player.steam.username }}
+            </router-link>
+        </template>
     </div>
 </template>
 
@@ -87,7 +90,9 @@ const PlayerProfileModal = {
     props: {
         player: {
             type: Object,
-            default: () => {}
+            default: () => {
+                return {};
+            }
         }
     },
     data() {
@@ -99,7 +104,11 @@ const PlayerProfileModal = {
         username() {
             let username = '';
             
-            if(this.player['necrolab'] != null && this.player.necrolab.username.length > 0) {
+            if(
+                this.player['necrolab'] != null && 
+                this.player.necrolab['username'] != null &&
+                this.player.necrolab.username.length > 0
+            ) {
                 username = this.player.necrolab.username;
             }
             else {

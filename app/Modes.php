@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Illuminate\Support\Facades\DB;
 use ElcoBvg\Opcache\Model;
 use App\Traits\GetByName;
 use App\Traits\GetById;
@@ -40,7 +41,45 @@ class Modes extends Model {
     }
     
     public static function getStoredInCacheQuery() {
-        return static::orderBy('sort_order', 'asc');
+        $leaderboard_types_query = DB::table('leaderboard_type_modes AS ltm')
+            ->select([
+                'ltm.mode_id',
+                DB::raw('string_agg(lt.name, \',\' ORDER BY lt.leaderboard_type_id) AS leaderboard_types')
+            ])
+            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'ltm.leaderboard_type_id')
+            ->groupBy('ltm.mode_id');
+    
+        $characters_query = DB::table('mode_characters AS mc')
+            ->select([
+                'mc.mode_id',
+                DB::raw('string_agg(c.name, \',\' ORDER BY c.sort_order) AS characters')
+            ])
+            ->join('characters AS c', 'c.character_id', '=', 'mc.character_id')
+            ->groupBy('mc.mode_id');
+    
+        return static::select([
+            'm.mode_id',
+            'm.name',
+            'm.display_name',
+            'leaderboard_types',
+            'mode_leaderboard_types.leaderboard_types',
+            'mode_characters.characters'
+        ])
+            ->from('modes AS m')
+            ->leftJoinSub($leaderboard_types_query, 'mode_leaderboard_types', function($join) {
+                $join->on('mode_leaderboard_types.mode_id', '=', 'm.mode_id');
+            })
+            ->leftJoinSub($characters_query, 'mode_characters', function($join) {
+                $join->on('mode_characters.mode_id', '=', 'm.mode_id');
+            })
+            ->groupBy([
+                'm.mode_id',
+                'm.name',
+                'm.display_name',
+                'mode_leaderboard_types.leaderboard_types',
+                'mode_characters.characters'
+            ])
+            ->orderBy('m.sort_order', 'asc');
     }
     
     public static function getModeFromString($string) {

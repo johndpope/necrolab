@@ -24,13 +24,11 @@ const CharacterDropdownFilter = {
         }
     },
     methods: {
+        getDefaultOptions() {            
+            return this.$store.getters['characters/getFiltered'];
+        },
         loadOptions(resolve, reject) {
-            this.$store.dispatch('characters/loadAll')
-                .then(() => {                        
-                    this.options = this.$store.getters['characters/getAll'];
-                    
-                    resolve();
-                });
+            resolve();
         },
         setSelectedState(selected) {
             this.$store.commit('characters/setSelected', selected);

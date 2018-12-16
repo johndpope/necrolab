@@ -4,287 +4,53 @@
             <thead>
                 <tr>
                     <th scope="col"></th>
-                    <th scope="col">
-                        <cadence-icon></cadence-icon>
+                    <th 
+                        v-for="(character, character_index) in characters"
+                        :key="character_index"
+                        scope="col"
+                    >
+                        <character-icon-selector :name="character.name"></character-icon-selector>
                     </th>
-                    <th scope="col">
-                        <bard-icon></bard-icon>
-                    </th>
-                    <th scope="col">
-                        <monk-icon></monk-icon>
-                    </th>
-                    <th scope="col">
-                        <aria-icon></aria-icon>
-                    </th>
-                    <th scope="col">
-                        <bolt-icon></bolt-icon>
-                    </th>
-                    <th scope="col">
-                        <dove-icon></dove-icon>
-                    </th>
-                    <th scope="col">
-                        <eli-icon></eli-icon>
-                    </th>
-                    <th scope="col">
-                        <melody-icon></melody-icon>
-                    </th>
-                    <th scope="col">
-                        <dorian-icon></dorian-icon>
-                    </th>
-                    <th scope="col">
-                        <coda-icon></coda-icon>
-                    </th>
-                    <template v-if="show_amplified_characters">
-                        <th scope="col">
-                            <nocturna-icon></nocturna-icon>
-                        </th>
-                        <th scope="col">
-                            <diamond-icon></diamond-icon>
-                        </th>
-                        <th scope="col">
-                            <mary-icon></mary-icon>
-                        </th>
-                        <th scope="col">
-                            <tempo-icon></tempo-icon>
-                        </th>
-                    </template>
-                    <template v-if="show_multi_characters">
-                        <th scope="col">
-                            <story-icon></story-icon>
-                        </th>
-                        <th scope="col">
-                            <all-icon></all-icon>
-                        </th>
-                        <template v-if="show_amplified_characters">
-                            <th scope="col">
-                                <all-dlc-icon></all-dlc-icon>
-                            </th>
-                        </template>
-                    </template>
                 </tr>
             </thead>
             <tbody>
-                <tr>
-                    <th scope="row">Players</th>
-                    <td>
-                        {{ getCharacterProperty('cadence', 'players') }}
-                    </td>
-                    <td>
-                        {{ getCharacterProperty('bard', 'players') }}
-                    </td>
-                    <td>
-                        {{ getCharacterProperty('monk', 'players') }}
-                    </td>
-                    <td>
-                        {{ getCharacterProperty('aria', 'players') }}
-                    </td>
-                    <td>
-                        {{ getCharacterProperty('bolt', 'players') }}
-                    </td>
-                    <td>
-                        {{ getCharacterProperty('dove', 'players') }}
-                    </td>
-                    <td>
-                        {{ getCharacterProperty('eli', 'players') }}
-                    </td>
-                    <td>
-                        {{ getCharacterProperty('melody', 'players') }}
-                    </td>
-                    <td>
-                        {{ getCharacterProperty('dorian', 'players') }}
-                    </td>
-                    <td>
-                        {{ getCharacterProperty('coda', 'players') }}
-                    </td>
-                    <template v-if="show_amplified_characters">
-                        <td>
-                            {{ getCharacterProperty('nocturna', 'players') }}
-                        </td>
-                        <td>
-                            {{ getCharacterProperty('diamond', 'players') }}
-                        </td>
-                        <td>
-                            {{ getCharacterProperty('mary', 'players') }}
-                        </td>
-                        <td>
-                            {{ getCharacterProperty('tempo', 'players') }}
-                        </td>
-                    </template>
-                    <template v-if="show_multi_characters">
-                        <td>
-                            {{ getCharacterProperty('story', 'players') }}
-                        </td>
-                        <td>
-                            {{ getCharacterProperty('all', 'players') }}
-                        </td>
-                        <template v-if="show_amplified_characters">
-                            <td>
-                                {{ getCharacterProperty('all_dlc', 'players') }}
-                            </td>
+                <tr
+                    v-for="(row, row_index) in rows"
+                >
+                    <th scope="row">
+                        {{ row.display_name }}
+                    </th>
+                    <td
+                        v-for="(character, character_index) in characters"
+                        :key="character_index"
+                    >
+                        <template v-if="row['rounded'] != null && row.rounded">
+                            <rounded-decimal :original_number="getCharacterProperty(character.name, row.name)"></rounded-decimal>
                         </template>
-                    </template>
+                        <template v-else>
+                            {{ getCharacterProperty(character.name, row.name) }}
+                        </template>
+                    </td>
                 </tr>
                 <tr>
                     <th scope="row">{{ category_display_name }}</th>
-                    <td>
-                        <template v-if="hasDetailsFormatter()">
-                            <component :is="details_formatter_component" :unformatted="getCharacterProperty('cadence', details_property)" :include_hours="true">
-                            </component>
+                    <td
+                        v-for="(character, character_index) in characters"
+                        :key="character_index"
+                        scope="col"
+                    >
+                        <template v-if="details_data_type == 'seconds'">
+                            <seconds-to-time 
+                                :unformatted="getCharacterProperty(character.name, details_property)" 
+                                :include_hours="true" 
+                                :zero_pad_hours="true"
+                            >
+                            </seconds-to-time>
                         </template>
                         <template v-else>
-                            {{ getCharacterProperty('cadence', details_property) }}
+                            {{ getCharacterProperty(character.name, details_property) }}
                         </template>
                     </td>
-                    <td>
-                        <template v-if="hasDetailsFormatter()">
-                            <component :is="details_formatter_component" :unformatted="getCharacterProperty('bard', details_property)" :include_hours="true">
-                            </component>
-                        </template>
-                        <template v-else>
-                            {{ getCharacterProperty('bard', details_property) }}
-                        </template>
-                    </td>
-                    <td>
-                        <template v-if="hasDetailsFormatter()">
-                            <component :is="details_formatter_component" :unformatted="getCharacterProperty('monk', details_property)" :include_hours="true">
-                            </component>
-                        </template>
-                        <template v-else>
-                            {{ getCharacterProperty('monk', details_property) }}
-                        </template>
-                    </td>
-                    <td>
-                        <template v-if="hasDetailsFormatter()">
-                            <component :is="details_formatter_component" :unformatted="getCharacterProperty('aria', details_property)" :include_hours="true">
-                            </component>
-                        </template>
-                        <template v-else>
-                            {{ getCharacterProperty('aria', details_property) }}
-                        </template>
-                    </td>
-                    <td>
-                        <template v-if="hasDetailsFormatter()">
-                            <component :is="details_formatter_component" :unformatted="getCharacterProperty('bolt', details_property)" :include_hours="true">
-                            </component>
-                        </template>
-                        <template v-else>
-                            {{ getCharacterProperty('bolt', details_property) }}
-                        </template>
-                    </td>
-                    <td>
-                        <template v-if="hasDetailsFormatter()">
-                            <component :is="details_formatter_component" :unformatted="getCharacterProperty('dove', details_property)" :include_hours="true">
-                            </component>
-                        </template>
-                        <template v-else>
-                            {{ getCharacterProperty('dove', details_property) }}
-                        </template>
-                    </td>
-                    <td>
-                        <template v-if="hasDetailsFormatter()">
-                            <component :is="details_formatter_component" :unformatted="getCharacterProperty('eli', details_property)" :include_hours="true">
-                            </component>
-                        </template>
-                        <template v-else>
-                            {{ getCharacterProperty('eli', details_property) }}
-                        </template>
-                    </td>
-                    <td>
-                        <template v-if="hasDetailsFormatter()">
-                            <component :is="details_formatter_component" :unformatted="getCharacterProperty('melody', details_property)" :include_hours="true">
-                            </component>
-                        </template>
-                        <template v-else>
-                            {{ getCharacterProperty('melody', details_property) }}
-                        </template>
-                    </td>
-                    <td>
-                        <template v-if="hasDetailsFormatter()">
-                            <component :is="details_formatter_component" :unformatted="getCharacterProperty('dorian', details_property)" :include_hours="true">
-                            </component>
-                        </template>
-                        <template v-else>
-                            {{ getCharacterProperty('dorian', details_property) }}
-                        </template>
-                    </td>
-                    <td>
-                        <template v-if="details_formatter_component != null && hasDetailsFormatter()">
-                            <component :is="details_formatter_component" :unformatted="getCharacterProperty('coda', details_property)" :include_hours="true">
-                            </component>
-                        </template>
-                        <template v-else>
-                            {{ getCharacterProperty('coda', details_property) }}
-                        </template>
-                    </td>
-                    <template v-if="show_amplified_characters">
-                        <td>
-                            <template v-if="hasDetailsFormatter()">
-                                <component :is="details_formatter_component" :unformatted="getCharacterProperty('nocturna', details_property)" :include_hours="true">
-                                </component>
-                            </template>
-                            <template v-else>
-                                {{ getCharacterProperty('nocturna', details_property) }}
-                            </template>
-                        </td>
-                        <td>
-                            <template v-if="hasDetailsFormatter()">
-                                <component :is="details_formatter_component" :unformatted="getCharacterProperty('diamond', details_property)" :include_hours="true">
-                                </component>
-                            </template>
-                            <template v-else>
-                                {{ getCharacterProperty('diamond', details_property) }}
-                            </template>
-                        </td>
-                        <td>
-                            <template v-if="hasDetailsFormatter()">
-                                <component :is="details_formatter_component" :unformatted="getCharacterProperty('mary', details_property)" :include_hours="true">
-                                </component>
-                            </template>
-                            <template v-else>
-                                {{ getCharacterProperty('mary', details_property) }}
-                            </template>
-                        </td>
-                        <td>
-                            <template v-if="hasDetailsFormatter()">
-                                <component :is="details_formatter_component" :unformatted="getCharacterProperty('tempo', details_property)" :include_hours="true">
-                                </component>
-                            </template>
-                            <template v-else>
-                                {{ getCharacterProperty('tempo', details_property) }}
-                            </template>
-                        </td>
-                    </template>
-                    <template v-if="show_multi_characters">
-                        <td>
-                            <template v-if="hasDetailsFormatter()">
-                                <component :is="details_formatter_component" :unformatted="getCharacterProperty('story', details_property)" :include_hours="true">
-                                </component>
-                            </template>
-                            <template v-else>
-                                {{ getCharacterProperty('story', details_property) }}
-                            </template>
-                        </td>
-                        <td>
-                            <template v-if="hasDetailsFormatter()">
-                                <component :is="details_formatter_component" :unformatted="getCharacterProperty('all', details_property)" :include_hours="true">
-                                </component>
-                            </template>
-                            <template v-else>
-                                {{ getCharacterProperty('all', details_property) }}
-                            </template>
-                        </td>
-                        <template v-if="show_amplified_characters">
-                            <td>
-                                <template v-if="hasDetailsFormatter()">
-                                    <component :is="details_formatter_component" :unformatted="getCharacterProperty('all_dlc', details_property)" :include_hours="true">
-                                    </component>
-                                </template>
-                                <template v-else>
-                                    {{ getCharacterProperty('all_dlc', details_property) }}
-                                </template>
-                            </td>
-                        </template>
-                    </template>
                 </tr> 
             </tbody>
         </table>
@@ -292,49 +58,22 @@
 </template>
 
 <script>
+import SecondsToTime from '../formatting/SecondsToTime.vue';
 import RoundedDecimal from '../formatting/RoundedDecimal.vue';
+import CharacterIconSelector from '../characters/CharacterIconSelector.vue';
 
-import CadenceIcon from '../characters/CadenceIcon.vue';
-import BardIcon from '../characters/BardIcon.vue';
-import MonkIcon from '../characters/MonkIcon.vue';
-import AriaIcon from '../characters/AriaIcon.vue';
-import BoltIcon from '../characters/BoltIcon.vue';
-import DoveIcon from '../characters/DoveIcon.vue';
-import EliIcon from '../characters/EliIcon.vue';
-import MelodyIcon from '../characters/MelodyIcon.vue';
-import DorianIcon from '../characters/DorianIcon.vue';
-import CodaIcon from '../characters/CodaIcon.vue';
-import NocturnaIcon from '../characters/NocturnaIcon.vue';
-import DiamondIcon from '../characters/DiamondIcon.vue';
-import MaryIcon from '../characters/MaryIcon.vue';
-import TempoIcon from '../characters/TempoIcon.vue';
-import StoryIcon from '../characters/StoryIcon.vue';
-import AllIcon from '../characters/AllIcon.vue';
-import AllDlcIcon from '../characters/AllDlcIcon.vue';
-
-const RankingCategoryDetailsTable = {
+const RankingCategorySummaryDetailsTable = {
     name: 'ranking-category-details-table',
     components: {
+        'seconds-to-time': SecondsToTime,
         'rounded-decimal': RoundedDecimal,
-        'cadence-icon': CadenceIcon,
-        'bard-icon': BardIcon,
-        'monk-icon': MonkIcon,
-        'aria-icon': AriaIcon,
-        'bolt-icon': BoltIcon,
-        'dove-icon': DoveIcon,
-        'eli-icon': EliIcon,
-        'melody-icon': MelodyIcon,
-        'dorian-icon': DorianIcon,
-        'coda-icon': CodaIcon,
-        'nocturna-icon': NocturnaIcon,
-        'diamond-icon': DiamondIcon,
-        'mary-icon': MaryIcon,
-        'tempo-icon': TempoIcon,
-        'story-icon': StoryIcon,
-        'all-icon': AllIcon,
-        'all-dlc-icon': AllDlcIcon
+        'character-icon-selector': CharacterIconSelector
     },
     props: {
+        characters: {
+            type: Array,
+            default: () => []
+        },
         record: {
             type: Object,
             default: () => {}
@@ -351,17 +90,13 @@ const RankingCategoryDetailsTable = {
             type: String,
             default: ''
         },
-        details_formatter_component: {
-            type: Object,
-            default: () => {}
+        details_data_type: {
+            type: String,
+            default: ''
         },
-        show_amplified_characters: {
-            type: Boolean,
-            default: true
-        },
-        show_multi_characters: {
-            type: Boolean,
-            default: true
+        rows: {
+            type: Array,
+            default: () => []
         }
     },
     methods: {
@@ -377,12 +112,9 @@ const RankingCategoryDetailsTable = {
             }
             
             return property_value;
-        },
-        hasDetailsFormatter() {
-            return this.details_formatter_component != null && this.details_formatter_component['props'] != null;
         }
     }
 };
 
-export default RankingCategoryDetailsTable;
+export default RankingCategorySummaryDetailsTable;
 </script>

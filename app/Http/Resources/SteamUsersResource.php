@@ -14,13 +14,11 @@ class SteamUsersResource extends JsonResource {
     public function toArray($request) {
         $steamid = (string)$this->steamid;
     
-        $record = [
-            'id' => $steamid
-        ];
+        $record = [];
         
         if(!empty($this->necrolab_id)) {
             $record['necrolab'] = [
-                'id' => $steamid,
+                'id' => $this->necrolab_id,
                 'username' => $this->necrolab_username
             ];
         }

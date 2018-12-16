@@ -1,57 +1,59 @@
 <template>
-    <div class="dropdown-filter">
-        <div class="form-control form-control-lg" :class="{ 'pt-1 pb-1 pl-3 pr-3': hasOptionFormatter }" @click="modal_show = !modal_show">
-            <div class="container-fluid h-100">
-                <div class="row h-100">
-                    <div class="col-10 h-100 pl-0 pr-0">
-                        <slot name="selected-option" :selected="selected">
-                            <template v-if="hasOptionFormatter">
-                                <component :is="option_formatter" :name="selected[option_value_name]" :display_name="selected[option_display_name]">
-                                </component>
-                            </template>
-                            <template v-else>
-                                {{ selected[option_display_name] }}
-                            </template>
-                        </slot>
-                    </div>
-                    <div class="col-2 text-right d-flex align-items-center pr-0">
-                        <div class="w-100 text-right">
-                        <down-arrow></down-arrow>
+    <div class="col-sm-12 col-md-6 col-lg-4 pt-2" :class="{ 'd-none': hidden }">
+        <div class="dropdown-filter">
+            <div class="form-control form-control-lg" :class="{ 'pt-1 pb-1 pl-3 pr-3': hasOptionFormatter }" @click="modal_show = !modal_show">
+                <div class="container-fluid h-100">
+                    <div class="row h-100">
+                        <div class="col-10 h-100 pl-0 pr-0">
+                            <slot name="selected-option" :selected="selected">
+                                <template v-if="hasOptionFormatter">
+                                    <component :is="option_formatter" :name="selected[option_value_name]" :display_name="selected[option_display_name]">
+                                    </component>
+                                </template>
+                                <template v-else>
+                                    {{ selected[option_display_name] }}
+                                </template>
+                            </slot>
+                        </div>
+                        <div class="col-2 text-right d-flex align-items-center pr-0">
+                            <div class="w-100 text-right">
+                            <down-arrow></down-arrow>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
+            <b-modal v-model="modal_show" :centered="true" :hide-footer="true">
+                <div slot="modal-header" class="w-100">
+                    <span class="h4">
+                        {{ label }}
+                    </span>
+                </div>
+                <div 
+                    v-for="(option, option_index) in options" 
+                    :key="option_index" 
+                    class="border-top" 
+                    :class="{ 'bg-secondary': option[option_value_name] == selected[option_value_name], 'bg-info': optionIsHighlighted(option_index) }"
+                    @mouseover="highlighted_option_index = option_index"
+                    @mouseout="highlighted_option_index = null"
+                    @click="optionSelected(option)"
+                >
+                    <slot name="option" :option="option" :option_index="option_index">
+                        <div class="pt-4 pb-4 pl-2 pr-2">
+                            <template v-if="hasOptionFormatter">
+                                <component :is="option_formatter" :name="option[option_value_name]" :display_name="option[option_display_name]">
+                                </component>
+                            </template>
+                            <template v-else>
+                                <span class="h5">
+                                    {{ option[option_display_name] }}
+                                </span>
+                            </template>
+                        </div>
+                    </slot>
+                </div>
+            </b-modal>
         </div>
-        <b-modal v-model="modal_show" :centered="true" :hide-footer="true">
-            <div slot="modal-header" class="w-100">
-                <span class="h4">
-                    {{ label }}
-                </span>
-            </div>
-            <div 
-                v-for="(option, option_index) in options" 
-                :key="option_index" 
-                class="border-top" 
-                :class="{ 'bg-secondary': option[option_value_name] == selected[option_value_name], 'bg-info': optionIsHighlighted(option_index) }"
-                @mouseover="highlighted_option_index = option_index"
-                @mouseout="highlighted_option_index = null"
-                @click="optionSelected(options[option_index])"
-            >
-                <slot name="option" :option="option" :option_index="option_index">
-                    <div class="pt-4 pb-4 pl-2 pr-2">
-                        <template v-if="hasOptionFormatter">
-                            <component :is="option_formatter" :name="option[option_value_name]" :display_name="option[option_display_name]">
-                            </component>
-                        </template>
-                        <template v-else>
-                            <span class="h5">
-                                {{ option[option_display_name] }}
-                            </span>
-                        </template>
-                    </div>
-                </slot>
-            </div>
-        </b-modal>
     </div>
 </template>
 
@@ -67,6 +69,10 @@ const DropdownFilter = {
         'down-arrow': DownArrow
     },
     props: {
+        initialize: {
+            type: Boolean,
+            default: false
+        },
         field_name: {
             type: String
         },
@@ -103,50 +109,72 @@ const DropdownFilter = {
         }
     },
     computed: {
-        options: {
-            get() {
-                return this.all_options;
-            },
-            set(options) {
-                let options_length = options.length;
+        options() {
+            let options = this.getDefaultOptions();  
+
+            let options_length = options.length;
                 
-                if(this.has_blank_option) {
-                    let contains_blank_option = false;
+            if(this.has_blank_option) {
+                let contains_blank_option = false;
+                
+                for(let options_index = 0; options_index < options_length; options_index++) {
+                    let option = options[options_index];
                     
-                    for(let options_index = 0; options_index < options_length; options_index++) {
-                        let option = options[options_index];
+                    if(option[this.option_value_name] == '') {
+                        contains_blank_option = true;
                         
-                        if(option[this.option_value_name] == '') {
-                            contains_blank_option = true;
-                            
-                            break;
-                        }
-                    }
-                    
-                    if(!contains_blank_option) {
-                        let blank_option = {};
-                        
-                        blank_option[this.option_value_name] = '';
-                        blank_option[this.option_display_name] = this.blank_option_display;
-                        
-                        options.unshift(blank_option);
+                        break;
                     }
                 }
                 
-                this.all_options = options;
-                
-                if(this.default_selected_value != null) {
-                    for(let options_index = 0; options_index < options_length; options_index++) {
-                        let option = options[options_index];
+                if(!contains_blank_option) {
+                    let blank_option = {};
+                    
+                    blank_option[this.option_value_name] = '';
+                    blank_option[this.option_display_name] = this.blank_option_display;
+                    
+                    options.unshift(blank_option);
+                }
+            }
+            
+            options_length = options.length;
+            
+            if(!this.options_initialized && this.default_selected_value != null) {
+                for(let options_index = 0; options_index < options_length; options_index++) {
+                    let option = options[options_index];
+
+                    if(option[this.option_value_name] == this.default_selected_value) {
+                        this.selected = option;
                         
-                        if(option[this.option_value_name] == this.default_selected_value) {
-                            this.selected = option;
-                            
-                            break;
-                        }
+                        break;
                     }
                 }
             }
+            
+            if(!this.options_initialized) {
+                this.options_initialized = true;
+            }
+            
+            if(options_length <= 1) {
+                this.hidden = true;
+            }
+            else {
+                this.hidden = false;
+            }
+            
+            let selected_option = this.selected;
+            
+            if(selected_option[this.option_value_name] != null) {
+                let selected_in_options = options.find(option => option[this.option_value_name] === selected_option[this.option_value_name]);
+                
+                if(selected_in_options == null) {
+                    if(options_length > 0) {                        
+                        this.selected = options[0];
+                    }
+                }
+            }
+            
+            return options;
         },
         selected: {
             get() {
@@ -154,8 +182,12 @@ const DropdownFilter = {
             },
             set(selected_option) {
                 this.selected_option = selected_option;
+
+                let selected = null;
                 
-                let selected = this.selected_option[this.option_value_name];
+                if(this.selected_option[this.option_value_name] != null) {
+                    selected = this.selected_option[this.option_value_name];
+                }
                 
                 this.$emit("selectedValueChanged", this.field_name, selected);
                 
@@ -170,7 +202,8 @@ const DropdownFilter = {
         return {
             modal_show: false,
             highlighted_option_index: null,
-            all_options: [],
+            options_initialized: false,
+            hidden: false,
             selected_option: {}
         };
     },
@@ -184,12 +217,11 @@ const DropdownFilter = {
             
             this.modal_show = false;
         },
-        loadOptions(resolve, reject) {
-            if(this.default_options.length > 0) {
-                this.options = this.default_options;
-            }
-            
+        loadOptions(resolve, reject) {            
             resolve();
+        },
+        getDefaultOptions() {
+            return this.default_options;
         }
     },
     mounted() {

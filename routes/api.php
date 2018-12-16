@@ -23,29 +23,15 @@ Route::fallback(function(){
 
 // Releases
 Route::get('/1/releases', 'Api\ReleasesController@index');
-Route::post('/1/releases', 'Api\ReleasesController@store');
-Route::get('/1/releases/{id}', 'Api\ReleasesController@show');
-Route::put('/1/releases/{id}', 'Api\ReleasesController@update');
 
 // Modes
 Route::get('/1/modes', 'Api\ModesController@index');
-Route::post('/1/modes', 'Api\ModesController@store');
-Route::get('/1/modes/{id}', 'Api\ModesController@show');
-Route::put('/1/modes/{id}', 'Api\ModesController@update');
 
 // Characters
 Route::get('/1/characters', 'Api\CharactersController@index');
-Route::post('/1/characters', 'Api\CharactersController@store');
-Route::get('/1/characters/{id}', 'Api\CharactersController@show');
-Route::put('/1/characters/{id}', 'Api\CharactersController@update');
 
 // External Sites
 Route::get('/1/external_sites', 'Api\ExternalSitesController@index');
-Route::post('/1/external_sites', 'Api\ExternalSitesController@store');
-Route::get('/1/external_sites/{id}', 'Api\ExternalSitesController@show');
-Route::put('/1/external_sites/{id}', 'Api\ExternalSitesController@update');
-Route::put('/1/external_sites/{id}/enable', 'Api\ExternalSitesController@enable');
-Route::put('/1/external_sites/{id}/disable', 'Api\ExternalSitesController@disable');
 
 // Seeded Types
 Route::get('/1/seeded_types', 'Api\SeededTypesController@index');
@@ -55,6 +41,9 @@ Route::get('/1/multiplayer_types', 'Api\MultiplayerTypesController@index');
 
 // Soundtracks
 Route::get('/1/soundtracks', 'Api\SoundtracksController@index');
+
+// Data Types
+Route::get('/1/data_types', 'Api\DataTypesController@index');
 
 // Steam Players
 Route::get('/1/players/steam', 'Api\SteamUsersController@index');
@@ -112,6 +101,12 @@ Route::get('/1/players/steam/{steamid}/leaderboards/daily/entries', 'Api\Leaderb
 
 // Leaderboard Types
 Route::get('/1/leaderboards/types', 'Api\LeaderboardTypesController@index');
+
+// Leaderboard Details Columns
+Route::get('/1/leaderboards/details_columns', 'Api\LeaderboardDetailsColumnsController@index');
+
+// Leaderboard Sources
+Route::get('/1/leaderboards/sources', 'Api\LeaderboardSourcesController@index');
 
 // Leaderboards
 Route::get('/1/leaderboards', 'Api\LeaderboardsController@index');

@@ -53,7 +53,7 @@ import Seed from '../leaderboards/Seed.vue';
 import ReplayDownloadLink from '../leaderboards/ReplayDownloadLink.vue';
 
 const LeaderboardEntriesPage = {
-    name: 'leaderboard-snapshots-page',
+    name: 'leaderboard-entries-page',
     components: {
         'with-nav-layout': WithNavLayout,
         'necrotable': NecroTable,

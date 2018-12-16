@@ -11,19 +11,25 @@ class ModesResource extends JsonResource {
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request) {        
-        $authenticated_user = $request->user();
+    public function toArray($request) {
+        $leaderboard_types = [];
+        
+        if(!empty($this->leaderboard_types)) {
+            $leaderboard_types = explode(',', $this->leaderboard_types);
+        }
+    
+        $characters = [];
+        
+        if(!empty($this->characters)) {
+            $characters = explode(',', $this->characters);
+        }
     
         return [
             'id' => (int)$this->mode_id,
             'name' => $this->name,
             'display_name' => $this->display_name,
-            $this->mergeWhen(!empty($authenticated_user) && $authenticated_user->hasAnyPermission([
-                'permission:modes:store',
-                'permission:modes:update'
-            ]), [
-                'sort_order' => $this->sort_order
-            ])
+            'leaderboard_types' => $leaderboard_types,
+            'characters' => $characters
         ];
     }
 }

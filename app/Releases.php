@@ -3,6 +3,7 @@
 namespace App;
 
 use DateTime;
+use Illuminate\Support\Facades\DB;
 use ElcoBvg\Opcache\Model;
 use App\Traits\GetByName;
 use App\Traits\GetById;
@@ -32,17 +33,49 @@ class Releases extends Model {
      */
     public $timestamps = false;
     
-    public static function getValidationRules() {
-        return [
-            'name' => 'required|max:100|unique:releases',
-            'display_name' => 'required|max:100',
-            'start_date' => 'required|date_format:Y-m-d',
-            'end_date' => 'nullable|date_format:Y-m-d'
-        ];
-    }
-    
     public static function getStoredInCacheQuery() {
-        return static::orderBy('start_date', 'asc');
+        $modes_query = DB::table('release_modes AS rm')
+            ->select([
+                'rm.release_id',
+                DB::raw('string_agg(m.name, \',\' ORDER BY m.sort_order) AS modes'),
+            ])
+            ->join('modes AS m', 'm.mode_id', '=', 'rm.mode_id')
+            ->groupBy('rm.release_id');
+        
+        $characters_query = DB::table('release_characters AS rc')
+            ->select([
+                'rc.release_id',
+                DB::raw('string_agg(c.name, \',\' ORDER BY c.sort_order) AS characters')
+            ])
+            ->join('characters AS c', 'c.character_id', '=', 'rc.character_id')
+            ->groupBy('rc.release_id');
+    
+        return static::select([
+            'r.release_id',
+            'r.name',
+            'r.display_name',
+            'r.start_date',
+            'r.end_date',
+            'release_modes.modes',
+            'release_characters.characters'
+        ])
+            ->from('releases AS r')
+            ->leftJoinSub($modes_query, 'release_modes', function($join) {
+                $join->on('release_modes.release_id', '=', 'r.release_id');
+            })
+            ->leftJoinSub($characters_query, 'release_characters', function($join) {
+                $join->on('release_characters.release_id', '=', 'r.release_id');
+            })
+            ->groupBy([
+                'r.release_id',
+                'r.name',
+                'r.display_name',
+                'r.start_date',
+                'r.end_date',
+                'release_modes.modes',
+                'release_characters.characters'
+            ])
+            ->orderBy('r.start_date', 'asc');
     }
     
     public static function getEarliestStartDate(array $releases) {

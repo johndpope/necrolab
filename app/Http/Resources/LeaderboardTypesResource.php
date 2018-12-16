@@ -11,13 +11,26 @@ class LeaderboardTypesResource extends JsonResource {
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request) {        
-        $authenticated_user = $request->user();
+    public function toArray($request) {
+        $modes = [];
+        
+        if(!empty($this->modes)) {
+            $modes = explode(',', $this->modes);
+        }
+    
+        $characters = [];
+        
+        if(!empty($this->characters)) {
+            $characters = explode(',', $this->characters);
+        }
     
         return [
             'id' => (int)$this->leaderboard_type_id,
             'name' => $this->name,
-            'display_name' => $this->display_name
+            'display_name' => $this->display_name,
+            'details_column_name' => $this->details_column,
+            'modes' => $modes,
+            'characters' => $characters
         ];
     }
 }

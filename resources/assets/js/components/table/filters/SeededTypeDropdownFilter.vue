@@ -15,13 +15,13 @@ const SeededTypeDropdownFilter = {
         }
     },
     methods: {
-        loadOptions(resolve, reject) {
-            this.$store.dispatch('seeded_types/loadAll')
-                .then(() => {                        
-                    this.options = this.$store.getters['seeded_types/getAll'];
-                    
-                    resolve();
-                });
+        getDefaultOptions() {
+            return this.$store.getters['seeded_types/getAll'];
+        },
+        loadOptions(resolve, reject) {            
+            this.$store.dispatch('seeded_types/loadAll').then(() => {                
+                resolve();
+            });
         },
         setSelectedState(selected) {
             this.$store.commit('seeded_types/setSelected', selected);

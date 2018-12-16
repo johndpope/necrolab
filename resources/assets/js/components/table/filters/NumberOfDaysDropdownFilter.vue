@@ -5,18 +5,6 @@ const NumberOfDaysDropdownFilter = {
     extends: DropdownFilter,
     name: 'number-of-days-dropdown-filter',
     props: {
-        api_endpoint_url: {
-            type: String,
-            default: '/api/1/rankings/daily/day_types'
-        },
-        storage_mutation_name: {
-            type: String,
-            default: 'setNumberOfDays'
-        },
-        storage_getter_name: {
-            type: String,
-            default: 'allNumberOfDays'
-        },
         field_name: {
             type: String,
             default: 'number_of_days'
@@ -31,13 +19,11 @@ const NumberOfDaysDropdownFilter = {
         }
     },
     methods: {
+        getDefaultOptions() {
+            return this.$store.getters['number_of_days/getAll'];
+        },
         loadOptions(resolve, reject) {
-            this.$store.dispatch('number_of_days/loadAll')
-                .then(() => {                        
-                    this.options = this.$store.getters['number_of_days/getAll'];
-                    
-                    resolve();
-                });
+            resolve();
         },
         setSelectedState(selected) {
             this.$store.commit('number_of_days/setSelected', selected);

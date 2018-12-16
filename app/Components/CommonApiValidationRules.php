@@ -9,6 +9,7 @@ use App\DailyRankingDayTypes;
 use App\ExternalSites;
 use App\Characters;
 use App\LeaderboardTypes;
+use App\LeaderboardSources;
 use App\SeededTypes;
 use App\Soundtracks;
 use App\MultiplayerTypes;
@@ -52,8 +53,11 @@ class CommonApiValidationRules {
                         case 'character':
                             $rule = ['required', 'string', new NameExists(Characters::class)];
                             break;
-                        case 'type':
-                            $rule = ['required', 'integer', new NameExists(LeaderboardTypes::class)];
+                        case 'leaderboard_source':
+                            $rule = ['required', 'string', new NameExists(LeaderboardSources::class)];
+                            break;
+                        case 'leaderboard_type':
+                            $rule = ['required', 'string', new NameExists(LeaderboardTypes::class)];
                             break;
                         case 'seeded_type':
                             $rule = ['required', 'string', new NameExists(SeededTypes::class)];

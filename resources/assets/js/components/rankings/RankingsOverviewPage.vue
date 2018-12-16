@@ -75,22 +75,13 @@ const RankingsOverviewPage = {
                 ];
             }
         },
-        filter_records: {
+        url_segment_stores: {
             type: Array,
             default: () => {
                 return [
-                    {
-                        name: 'release',
-                        store_name: 'releases'
-                    },
-                    {
-                        name: 'mode',
-                        store_name: 'modes'
-                    },
-                    {
-                        name: 'seeded_type',
-                        store_name: 'seeded_types'
-                    }
+                    'releases',
+                    'modes',
+                    'seeded_types'
                 ];
             }
         }
@@ -111,19 +102,23 @@ const RankingsOverviewPage = {
     },
     methods: {
         getEntriesUrl(date) {
-            let filter_records_length = this.filter_records.length;
+            let url_segment_stores_length = this.url_segment_stores.length;
             
             let url_segments = [];
             
-            for(let index = 0; index < filter_records_length; index++) {
-                let filter_record = this.filter_records[index];
+            for(let index = 0; index < url_segment_stores_length; index++) {
+                let url_segment_store = this.url_segment_stores[index];
                 
-                let getter_name = filter_record.store_name + '/getSelected';
+                let selected = this.$store.getters[url_segment_store + '/getSelected'];
                 
-                url_segments.push(this.$store.getters[getter_name]);
+                if(typeof selected !== 'string') {
+                    selected = selected.name;
+                }
+                
+                url_segments.push(selected);
             }
             
-            return '/rankings/' + this.category_name + '/' + url_segments.join('/') + '/' + date;
+            return '/rankings/' + this.category_name + '/' + this.$route.params.leaderboard_source + '/' + url_segments.join('/') + '/' + date;
         },
         getCategoryField(record, category_name, field_name) {
             let field_value = '';

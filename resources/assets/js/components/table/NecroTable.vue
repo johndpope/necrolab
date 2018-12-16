@@ -1,10 +1,14 @@
 <template>
     <div class="container-fluid mr-0 ml-0 pl-0 pr-0">
         <div v-if="filters.length > 0" class="row pb-2">
-            <div v-for="(filter, filter_index) in filters" :key="filter_index" class="col-sm-12 col-md-6 col-lg-4 pt-2">
-                <component :is="filter" :key="filter.name" @loaded="addLoadedFilter" @selectedValueChanged="updateFromRequestParameter">
-                </component>
-            </div>
+            <component 
+                v-for="(filter, filter_index) in filters" 
+                :is="filter" 
+                :key="filter.name" 
+                @loaded="addLoadedFilter" 
+                @selectedValueChanged="updateFromRequestParameter" 
+            >
+            </component>
         </div>
         <div class="row">
             <div v-if="has_search" class="col-sm-12 col-md-6 pb-2">
@@ -148,6 +152,7 @@ const NecroTable = {
             total_records: 0,
             display_data: [],
             loaded_filters: [],
+            hidden_filters: {},
             opened_details_rows: []
         };
     },
@@ -182,6 +187,14 @@ const NecroTable = {
         }
     },
     methods: {
+        resetState() {
+            this.server_page = this.page || 1;
+            this.internal_page = 1;
+            this.response = {};
+            this.total_records = 0;
+            this.display_data = [];
+            this.opened_details_rows = [];
+        },
         addLoadedFilter(name) {
             if(this.loaded_filters.indexOf(name) == -1) {
                 this.loaded_filters.push(name);
@@ -198,12 +211,14 @@ const NecroTable = {
             }
         },
         updateFromRequestParameter(name, value) {
-            this.addLoadedFilter(name);
-            
-            this.setRequestParameter(name, value);
+            if(this.request_parameters[name] != value) {
+                this.addLoadedFilter(name);
+                
+                this.setRequestParameter(name, value);
 
-            if(this.loaded_filters.length >= this.filters.length) {
-                this.updateFromServer();
+                if(this.loaded_filters.length >= this.filters.length) {
+                    this.updateFromServer();
+                }
             }
         },
         updateFromServer() {
@@ -282,6 +297,11 @@ const NecroTable = {
         }
     },
     watch: {
+        api_endpoint_url() {
+            this.resetState();
+            
+            this.updateFromServer();
+        },
         response() {
             /* ---------- Set response metadata ---------- */
             

@@ -266,7 +266,7 @@ class LeaderboardEntriesController extends Controller {
         $validated_request = $request->validated();
  
         $release_id = Releases::getByName($validated_request['release'])->release_id;
-        $mode_id = Modes::getByName($validated_request['mode'])->mode_id;
+        $mode_id = Modes::getByName('normal')->mode_id;
         $date = new DateTime($validated_request['date']);
         
         $seeded_type_id = SeededTypes::getByName($validated_request['seeded_type'])->id;
@@ -285,7 +285,7 @@ class LeaderboardEntriesController extends Controller {
                 $multiplayer_type_id,
                 $soundtrack_id
             ) {
-                return LeaderboardEntries::getSteamUserdDeathlessApiReadQuery(
+                return LeaderboardEntries::getSteamUserDeathlessApiReadQuery(
                     $steamid,
                     $date,
                     $release_id,

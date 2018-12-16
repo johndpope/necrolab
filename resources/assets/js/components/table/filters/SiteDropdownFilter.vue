@@ -20,7 +20,7 @@ const SiteDropdownFilter = {
         },
         blank_option_display: {
             type: String,
-            default: 'Steam'
+            default: 'All'
         },
         option_formatter: {
             type: Object,
@@ -28,13 +28,15 @@ const SiteDropdownFilter = {
         }
     },
     methods: {
+        getDefaultOptions() {
+            return this.$store.getters['sites/getAll'];
+        },
         loadOptions(resolve, reject) {
-            this.$store.dispatch('sites/loadAll')
-                .then(() => {                        
-                    this.options = this.$store.getters['sites/getAll'];
-                    
-                    resolve();
-                });
+            let promise = this.$store.dispatch('sites/loadAll');
+        
+            promise.then(() => {
+                resolve();
+            });
         },
         setSelectedState(selected) {
             this.$store.commit('sites/setSelected', selected);

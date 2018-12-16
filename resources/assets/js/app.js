@@ -19,6 +19,16 @@ import bButton from 'bootstrap-vue/es/components/button/button';
 Vue.component('b-button', bButton);
 
 
+/* ---------- Import all sitewide directives ---------- */
+
+import vBToggle from 'bootstrap-vue/es/directives/toggle/toggle';
+
+
+/* ---------- Register all sitewide directives ---------- */
+
+Vue.directive('b-toggle', vBToggle);
+
+
 /* ---------- Initialize Vuex---------- */
    
 import Store from './store/Store.js';

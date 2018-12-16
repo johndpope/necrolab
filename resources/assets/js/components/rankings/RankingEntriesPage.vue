@@ -2,6 +2,7 @@
     <with-nav-layout 
         :breadcrumbs="breadcrumbs"
         :title="title"
+        :sub_title="sub_title"
         :show_body="properties_loaded"
     >
         <necrotable 
@@ -66,6 +67,10 @@ const RankingEntriesPage = {
             default: () => {
                 return [
                     {
+                        name: 'leaderboard_source',
+                        store_name: 'leaderboard_sources'
+                    },
+                    {
                         name: 'release',
                         store_name: 'releases'
                     },
@@ -85,10 +90,10 @@ const RankingEntriesPage = {
         return {
             release: {},
             mode: {},
-            seeded_type: {},
             filter_record_values: {},
             properties_loaded: false,
             title: '',
+            sub_title: '',
             api_request_parameters: {},
             filters: [
                 SiteDropdownFilter
@@ -109,7 +114,7 @@ const RankingEntriesPage = {
                         href: '#/rankings/' + this.category_name
                     },
                     {
-                        text: this.getDisplayName(),
+                        text: 'Entries, ' + this.getDisplayName(),
                         href: this.$route.path
                     }
                 ]
@@ -130,7 +135,7 @@ const RankingEntriesPage = {
                 display_name_segments.push(this.filter_record_values[filter_record.name].display_name);
             }
             
-            return '(' + display_name_segments.join(' ') + ') - ' + this.$route.params.date;
+            return display_name_segments.join(' ') + ', ' + this.$route.params.date;
         }
     },
     created() {
@@ -151,17 +156,19 @@ const RankingEntriesPage = {
                 for(let index = 0; index < filter_records_length; index++) {
                     let filter_record = this.filter_records[index];
                     
-                    let getter_name = filter_record.store_name + '/getByField';
+                    let getter_name = filter_record.store_name + '/getByName';
                     let route_parameter_value = this.$route.params[filter_record.name];
                     
-                    this.filter_record_values[filter_record.name] = this.$store.getters[getter_name]('name', route_parameter_value);
+                    this.filter_record_values[filter_record.name] = this.$store.getters[getter_name](route_parameter_value);
                     
                     this.api_request_parameters[filter_record.name] = route_parameter_value;
                 }
                 
                 this.api_request_parameters['date'] = this.$route.params.date;
                 
-                this.title = this.category_display_name + ' Rankings ' +  this.getDisplayName();
+                this.title = this.category_display_name + ' Ranking Entries';
+                
+                this.sub_title = this.getDisplayName();
                 
                 this.properties_loaded = true;
             });
