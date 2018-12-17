@@ -227,7 +227,7 @@ class LeaderboardEntries extends Model {
         return $query;
     }
     
-    public static function getDailyApiReadQuery(int $release_id, DateTime $date) {    
+    public static function getDailyApiReadQuery(int $release_id, int $mode_id, DateTime $date) {    
         $entries_table_name = static::getTableName($date);
     
         $query = DB::table('leaderboards AS l')
@@ -253,6 +253,7 @@ class LeaderboardEntries extends Model {
         SteamUserPbs::addLeftJoins($query);
         
         $query->where('l.release_id', $release_id)
+            ->where('l.mode_id', $mode_id)
             ->where('lt.name', 'daily')
             ->where('l.daily_date', $date->format('Y-m-d'));
         
@@ -380,9 +381,7 @@ class LeaderboardEntries extends Model {
         int $seeded_type_id, 
         int $multiplayer_type_id,
         int $soundtrack_id
-    ) {
-        $mode_id = Modes::getByName('normal')->mode_id;
-    
+    ) {    
         $query = static::getSteamUserNonDailyApiQuery(
             $steamid, 
             $date, 
@@ -398,7 +397,7 @@ class LeaderboardEntries extends Model {
         return $query;
     }
     
-    public static function getSteamUserDailyApiReadQuery(string $steamid, int $release_id) {            
+    public static function getSteamUserDailyApiReadQuery(string $steamid, int $release_id, int $mode_id) {            
         $query = DB::table('steam_user_pbs AS sup')
             ->select([
                 'l.daily_date AS first_snapshot_date',
@@ -415,6 +414,7 @@ class LeaderboardEntries extends Model {
         
         $query->where('su.steamid', $steamid)
             ->where('l.release_id', $release_id)
+            ->where('l.mode_id', $mode_id)
             ->where('lt.name', 'daily')
             ->orderBy('l.daily_date', 'desc');
         

@@ -388,9 +388,7 @@ class Leaderboards extends Model {
             ->where('lt.name', '=', 'speed');
     }
     
-    public static function getDeathlessApiReadQuery(int $release_id, int $character_id) {
-        $mode_id = Modes::getByName('normal')->mode_id;
-    
+    public static function getDeathlessApiReadQuery(int $release_id, int $mode_id, int $character_id) {    
         return static::getApiReadQuery()
             ->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
@@ -408,9 +406,7 @@ class Leaderboards extends Model {
             ->where('l.url_name', $url_name);
     }
     
-    public static function getDailyApiReadQuery(int $release_id) {
-        $mode_id = Modes::getByName('normal')->mode_id;
-    
+    public static function getDailyApiReadQuery(int $release_id, int $mode_id) {    
         return DB::table('leaderboards AS l')
             ->select([
                 'l.daily_date',
@@ -491,9 +487,7 @@ class Leaderboards extends Model {
             ->where('lt.name', '=', 'speed');
     }
     
-    public static function getPlayerDeathlessApiReadQuery(string $steamid, int $release_id, int $character_id) {
-        $mode_id = Modes::getByName('normal')->mode_id;
-    
+    public static function getPlayerDeathlessApiReadQuery(string $steamid, int $release_id, int $mode_id, int $character_id) {    
         return static::getPlayerApiReadQuery($steamid)
             ->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
@@ -501,9 +495,7 @@ class Leaderboards extends Model {
             ->where('lt.name', '=', 'deathless');
     }
     
-    public static function getPlayerDailyApiReadQuery(string $steamid, int $release_id) {
-        $mode_id = Modes::getByName('normal')->mode_id;
-    
+    public static function getPlayerDailyApiReadQuery(string $steamid, int $release_id, int $mode_id) {    
         return DB::table('steam_user_pbs AS sup')
             ->select([
                 'l.leaderboard_id',

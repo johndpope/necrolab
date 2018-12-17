@@ -23,7 +23,8 @@ class ReadDailyLeaderboards extends Core {
      */
     public function rules() {
         return CommonApiValidationRules::getRules([
-            'release'
+            'release',
+            'mode'
         ]);
     }
 }

@@ -10,7 +10,6 @@ use App\Http\Resources\LeaderboardEntriesResource;
 use App\Http\Requests\Api\ReadLeaderboardEntries;
 use App\Http\Requests\Api\ReadDailyLeaderboardEntries;
 use App\Http\Requests\Api\ReadSteamUserLeaderboardEntries;
-use App\Http\Requests\Api\ReadSteamUserDeathlessLeaderboardEntries;
 use App\Http\Requests\Api\ReadSteamUserDailyLeaderboardEntries;
 use App\Components\CacheNames\Leaderboards\Steam as CacheNames;
 use App\Components\Dataset\Dataset;
@@ -88,7 +87,7 @@ class LeaderboardEntriesController extends Controller {
      */
     public function dailyIndex(ReadDailyLeaderboardEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName('normal')->mode_id;
+        $mode_id = Modes::getByName($request->mode)->mode_id;
         $date = new DateTime($request->date);
         
         $index_name = CacheNames::getDailyIndex($date, [
@@ -99,7 +98,7 @@ class LeaderboardEntriesController extends Controller {
         
         /* ---------- Data Provider ---------- */
         
-        $data_provider = new SqlDataProvider(LeaderboardEntries::getDailyApiReadQuery($release_id, $date));
+        $data_provider = new SqlDataProvider(LeaderboardEntries::getDailyApiReadQuery($release_id, $mode_id, $date));
         
         
         /* ---------- Index ---------- */
@@ -262,11 +261,11 @@ class LeaderboardEntriesController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerDeathlessIndex($steamid, ReadSteamUserDeathlessLeaderboardEntries $request) {
+    public function playerDeathlessIndex($steamid, ReadSteamUserLeaderboardEntries $request) {
         $validated_request = $request->validated();
  
         $release_id = Releases::getByName($validated_request['release'])->release_id;
-        $mode_id = Modes::getByName('normal')->mode_id;
+        $mode_id = Modes::getByName($request->mode)->mode_id;
         $date = new DateTime($validated_request['date']);
         
         $seeded_type_id = SeededTypes::getByName($validated_request['seeded_type'])->id;
@@ -306,16 +305,17 @@ class LeaderboardEntriesController extends Controller {
      */
     public function playerDailyIndex($steamid, ReadSteamUserDailyLeaderboardEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
+        $mode_id = Modes::getByName($request->mode)->mode_id;
         
         
         /* ---------- Data Provider ---------- */
         
-        $data_provider = new SqlDataProvider(LeaderboardEntries::getSteamUserDailyApiReadQuery($steamid, $release_id));
+        $data_provider = new SqlDataProvider(LeaderboardEntries::getSteamUserDailyApiReadQuery($steamid, $release_id, $mode_id));
         
         
         /* ---------- Dataset ---------- */
         
-        $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:daily:entries";
+        $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:{$mode_id}:daily:entries";
         
         $dataset = new Dataset($cache_key, $data_provider);
         

@@ -24,6 +24,7 @@ class ReadDailyLeaderboardEntries extends Core {
     public function rules() {
         return CommonApiValidationRules::getRules([
             'release',
+            'mode',
             'date',
             'site',
             'search',
