@@ -25,17 +25,13 @@ class LeaderboardsController extends Controller {
     public function __construct() {
         $this->middleware('auth:api')->except([
             'index',
-            'scoreIndex',
-            'speedIndex',
-            'deathlessIndex',
+            'categoryIndex',
             'dailyIndex',
             'byUrlName',
             'show',
             'xmlIndex',
             'playerIndex',
-            'playerScoreIndex',
-            'playerSpeedIndex',
-            'playerDeathlessIndex',
+            'playerCategoryIndex',
             'playerDailyIndex'
         ]);
     }
@@ -72,69 +68,19 @@ class LeaderboardsController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function scoreIndex(ReadLeaderboards $request) {
+    public function categoryIndex(ReadCategoryLeaderboards $request) {
+        $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->leaderboard_type_id;
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $character_id = Characters::getByName($request->character)->character_id;
         
         return LeaderboardsResource::collection(
             Cache::store('opcache')->remember(
-                "leaderboards:steam:score:{$release_id}:{$mode_id}:{$character_id}", 
+                "leaderboards:steam:category:{$leaderboard_type_id}:{$release_id}:{$mode_id}:{$character_id}", 
                 5, 
-                function() use($release_id, $mode_id, $character_id) {
-                    return Leaderboards::getScoreApiReadQuery(
-                        $release_id,
-                        $mode_id,
-                        $character_id
-                    )->get();
-                }
-            )
-        );
-    }
-    
-    /**
-     * Display a listing of all speed leaderboards.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function speedIndex(ReadLeaderboards $request) {
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
-        $character_id = Characters::getByName($request->character)->character_id;
-        
-        return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember(
-                "leaderboards:steam:speed:{$release_id}:{$mode_id}:{$character_id}", 
-                5, 
-                function() use($release_id, $mode_id, $character_id) {
-                    return Leaderboards::getSpeedApiReadQuery(
-                        $release_id,
-                        $mode_id,
-                        $character_id
-                    )->get();
-                }
-            )
-        );
-    }
-    
-    /**
-     * Display a listing of all deathless leaderboards.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function deathlessIndex(ReadLeaderboards $request) {
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
-        $character_id = Characters::getByName($request->character)->character_id;
-        
-        return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember(
-                "leaderboards:steam:deathless:{$release_id}:{$mode_id}:{$character_id}", 
-                5, 
-                function() use($release_id, $mode_id, $character_id) {
-                    return Leaderboards::getDeathlessApiReadQuery(
+                function() use($leaderboard_type_id, $release_id, $mode_id, $character_id) {
+                    return Leaderboards::getCategoryApiReadQuery(
+                        $leaderboard_type_id,
                         $release_id,
                         $mode_id,
                         $character_id
@@ -233,67 +179,19 @@ class LeaderboardsController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerScoreIndex($steamid, ReadLeaderboards $request) {
+    public function playerCategoryIndex($steamid, ReadCategoryLeaderboards $request) {
+        $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type_id)->leaderboard_type_id;
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $character_id = Characters::getByName($request->character)->character_id;
         
-        $cache_key = "players:steam:{$steamid}:leaderboards:score:{$release_id}:{$mode_id}:{$character_id}";
+        $cache_key = "players:steam:{$steamid}:leaderboards:category:{$leaderboard_type_id}:{$release_id}:{$mode_id}:{$character_id}";
         
         return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id, $mode_id, $character_id) {
-                return Leaderboards::getPlayerScoreApiReadQuery(
+            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $leaderboard_type_id, $release_id, $mode_id, $character_id) {
+                return Leaderboards::getPlayerCategoryApiReadQuery(
                     $steamid,
-                    $release_id,
-                    $mode_id,
-                    $character_id
-                )->get();
-            })
-        );
-    }
-    
-    /**
-     * Display a listing of the speed leaderboards a player has an entry in.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function playerSpeedIndex($steamid, ReadLeaderboards $request) {
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
-        $character_id = Characters::getByName($request->character)->character_id;
-        
-        $cache_key = "players:steam:{$steamid}:leaderboards:speed:{$release_id}:{$mode_id}:{$character_id}";
-        
-        return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id, $mode_id, $character_id) {
-                return Leaderboards::getPlayerSpeedApiReadQuery(
-                    $steamid,
-                    $release_id,
-                    $mode_id,
-                    $character_id
-                )->get();
-            })
-        );
-    }
-    
-    /**
-     * Display a listing of the deathless leaderboards a player has an entry in.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function playerDeathlessIndex($steamid, ReadLeaderboards $request) {
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
-        $character_id = Characters::getByName($request->character)->character_id;
-        
-        $cache_key = "players:steam:{$steamid}:leaderboards:speed:{$release_id}:{$mode_id}:{$character_id}";
-        
-        return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id, $mode_id, $character_id) {
-                return Leaderboards::getPlayerDeathlessApiReadQuery(
-                    $steamid,
+                    $leaderboard_type_id,
                     $release_id,
                     $mode_id,
                     $character_id

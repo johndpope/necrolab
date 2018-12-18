@@ -3,19 +3,23 @@
 namespace App\Http\Controllers\Api;
 
 use DateTime;
+use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Database\Query\Builder;
 use App\Http\Controllers\Controller;
 use App\Http\Resources\PowerRankingEntriesResource;
 use App\Http\Requests\Api\ReadPowerRankingEntries;
+use App\Http\Requests\Api\ReadCategoryRankingEntries;
 use App\Http\Requests\Api\ReadPowerRankingCharacterEntries;
 use App\Http\Requests\Api\ReadSteamUserPowerRankingEntries;
+use App\Http\Requests\Api\ReadSteamUserCategoryRankingEntries;
 use App\Http\Requests\Api\ReadSteamUserCharacterRankingEntries;
 use App\Components\CacheNames\Rankings\Power as CacheNames;
 use App\Components\Dataset\Dataset;
 use App\Components\Dataset\Indexes\Sql as SqlIndex;
 use App\Components\Dataset\DataProviders\Sql as SqlDataProvider;
 use App\PowerRankingEntries;
+use App\LeaderboardTypes;
 use App\Releases;
 use App\Modes;
 use App\Characters;
@@ -30,14 +34,10 @@ class PowerRankingEntriesController extends Controller {
     public function __construct() {
         $this->middleware('auth:api')->except([
             'index',
-            'scoreIndex',
-            'speedIndex',
-            'deathlessIndex',
+            'categoryIndex',
             'characterIndex',
             'playerIndex',
-            'playerScoreIndex',
-            'playerSpeedIndex',
-            'playerDeathlessIndex',
+            'playerCategoryIndex',
             'playerCharacterIndex',
         ]);
     }
@@ -111,62 +111,27 @@ class PowerRankingEntriesController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function scoreIndex(ReadPowerRankingEntries $request) {
+    public function categoryIndex(ReadCategoryRankingEntries $request) {
+        $leaderboard_type = LeaderboardTypes::getByName($request->leaderboard_type);
+        
+        $leaderboard_type_id = $leaderboard_type->leaderboard_type_id;
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         $date = new DateTime($request->date);
     
         return $this->getEntriesResponse(
-            CacheNames::getScore($release_id, $mode_id, $seeded_type_id),
+            CacheNames::getCategory($leaderboard_type_id, $release_id, $mode_id, $seeded_type_id),
             $request,
             PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $seeded_type_id, $date),
-            function($entry, $key) {
-                return $entry->score_rank;
-            }
-        );
-    }
-    
-    /**
-     * Display a listing of speed ranking entries.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function speedIndex(ReadPowerRankingEntries $request) {
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
-        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
-        $date = new DateTime($request->date);
-    
-        return $this->getEntriesResponse(
-            CacheNames::getSpeed($release_id, $mode_id, $seeded_type_id),
-            $request,
-            PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $seeded_type_id, $date),
-            function($entry, $key) {
-                return $entry->speed_rank;
-            }
-        );
-    }
-    
-    /**
-     * Display a listing of deathless ranking entries.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function deathlessIndex(ReadPowerRankingEntries $request) {
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
-        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
-        $date = new DateTime($request->date);
-    
-        return $this->getEntriesResponse(
-            CacheNames::getDeathless($release_id, $mode_id, $seeded_type_id),
-            $request,
-            PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $seeded_type_id, $date),
-            function($entry, $key) {
-                return $entry->deathless_rank;
+            function($entry, $key) use ($leaderboard_type) {
+                $rank_name = "{$leaderboard_type->name}_rank";
+                
+                if(!isset($entry->$rank_name)) {
+                    throw new Exception("Leaderboard type '{$leaderboard_type->name}' is not supported in power rankings.");
+                }
+            
+                return $entry->$rank_name;
             }
         );
     }
@@ -263,62 +228,20 @@ class PowerRankingEntriesController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerScoreIndex($steamid, ReadSteamUserPowerRankingEntries $request) {
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
-        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
-        
-        return $this->getPlayerEntriesResponse(
-            CacheNames::getPlayerScore($steamid, $release_id, $mode_id, $seeded_type_id),
-            $request,
-            PowerRankingEntries::getSteamUserScoreApiReadQuery(
-                $steamid, 
-                $release_id, 
-                $mode_id, 
-                $seeded_type_id
-            )
-        );
-    }
+    public function playerCategoryIndex($steamid, ReadSteamUserCategoryRankingEntries $request) {
+        $leaderboard_type = LeaderboardTypes::getByName($request->leaderboard_type);
     
-    /**
-     * Display a listing of speed ranking entries for the specified player.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function playerSpeedIndex($steamid, ReadSteamUserPowerRankingEntries $request) {
+        $leaderboard_type_id = $leaderboard_type->leaderboard_type_id;
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         
         return $this->getPlayerEntriesResponse(
-            CacheNames::getPlayerSpeed($steamid, $release_id, $mode_id, $seeded_type_id),
+            CacheNames::getPlayerCategory($steamid, $leaderboard_type_id, $release_id, $mode_id, $seeded_type_id),
             $request,
-            PowerRankingEntries::getSteamUserSpeedApiReadQuery(
-                $steamid, 
-                $release_id, 
-                $mode_id, 
-                $seeded_type_id
-            )
-        );
-    }
-    
-    /**
-     * Display a listing of deathless ranking entries for the specified player.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function playerDeathlessIndex($steamid, ReadSteamUserPowerRankingEntries $request) {
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
-        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
-        
-        return $this->getPlayerEntriesResponse(
-            CacheNames::getPlayerDeathless($steamid, $release_id, $mode_id, $seeded_type_id),
-            $request,
-            PowerRankingEntries::getSteamUserDeathlessApiReadQuery(
-                $steamid, 
+            PowerRankingEntries::getSteamUserCategoryApiReadQuery(
+                $steamid,
+                $leaderboard_type,
                 $release_id, 
                 $mode_id, 
                 $seeded_type_id

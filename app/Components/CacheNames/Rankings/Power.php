@@ -35,40 +35,16 @@ extends Core {
         return static::getBase($release_id, $mode_id, $seeded) . ':' . static::TOTAL_POINTS;
     }
     
-    public static function getScore($release_id, $mode_id, $seeded) {
-        return static::getBase($release_id, $mode_id, $seeded) . ':' . static::SCORE;
+    public static function getCategory($leaderboard_type_id, $release_id, $mode_id, $seeded) {
+        return static::getBase($release_id, $mode_id, $seeded) . ":{$leaderboard_type_id}";
     }
     
-    public static function getPlayerScore($player_id, $release_id, $mode_id, $seeded) {
-        return PlayerCacheNames::getPlayer($player_id) . ':' . static::getScore($release_id, $mode_id, $seeded);
+    public static function getPlayerCategory($player_id, $leaderboard_type_id, $release_id, $mode_id, $seeded) {
+        return PlayerCacheNames::getPlayer($player_id) . ':' . static::getCategory($release_id, $mode_id, $seeded);
     }
     
-    public static function getScorePoints($release_id, $mode_id, $seeded) {
-        return static::getScore($release_id, $mode_id, $seeded) . ':' . static::TOTAL_POINTS;
-    }
-    
-    public static function getSpeed($release_id, $mode_id, $seeded) {
-        return static::getBase($release_id, $mode_id, $seeded) . ':' . static::SPEED;
-    }
-    
-    public static function getPlayerSpeed($player_id, $release_id, $mode_id, $seeded) {
-        return PlayerCacheNames::getPlayer($player_id) . ':' . static::getSpeed($release_id, $mode_id, $seeded);
-    }
-    
-    public static function getSpeedPoints($release_id, $mode_id, $seeded) {
-        return static::getSpeed($release_id, $mode_id, $seeded) . ':' . static::TOTAL_POINTS;
-    }
-    
-    public static function getDeathless($release_id, $mode_id, $seeded) {
-        return static::getBase($release_id, $mode_id, $seeded) . ':' . static::DEATHLESS;
-    }
-    
-    public static function getPlayerDeathless($player_id, $release_id, $mode_id, $seeded) {
-        return PlayerCacheNames::getPlayer($player_id) . ':' . static::getDeathless($release_id, $mode_id, $seeded);
-    }
-    
-    public static function getDeathlessPoints($release_id, $mode_id, $seeded) {
-        return static::getDeathless($release_id, $mode_id, $seeded) . ':' . static::TOTAL_POINTS;
+    public static function getCategoryPoints($release_id, $mode_id, $seeded) {
+        return static::getCategory($leaderboard_type_id, $release_id, $mode_id, $seeded) . ':' . static::TOTAL_POINTS;
     }
     
     public static function getCharacter($release_id, $mode_id, $seeded, $character_name) {

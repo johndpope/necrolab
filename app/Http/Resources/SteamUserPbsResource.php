@@ -22,10 +22,6 @@ class SteamUserPbsResource extends JsonResource {
             $record['character'] = $this->character_name;
         }
         
-        if(!empty($this->leaderboard_type)) {
-            $record['type'] = $this->leaderboard_type;
-        }
-        
         if(!empty($this->first_snapshot_date)) {
             $record['date'] = $this->first_snapshot_date;
         }
@@ -38,20 +34,23 @@ class SteamUserPbsResource extends JsonResource {
         $record['zone'] = $this->zone;
         $record['level'] = $this->level;
         $record['win'] = $this->is_win;
-        $record['score'] = $this->score;
         
-        switch($this->leaderboard_type) {
-            case 'speed':
-                $record['time'] = (float)$this->time;
-                break;
-            case 'deathless':
-                $record['win_count'] = (int)$this->win_count;
-                break;
+        $details_column = $this->details_column;
+        
+        $details_column_value = $this->$details_column;
+        
+        if($this->details_column_data_type == 'seconds') {
+            $details_column_value = (float)$details_column_value;
         }
+        else {
+            $details_column_value = (int)$details_column_value;
+        }
+        
+        $record[$this->details_column] = $details_column_value;
         
         $replay = [];
         
-        if(!empty($this->ugcid) && !empty($this->downloaded) && $this->leaderboard_type != 'deathless') {
+        if(!empty($this->ugcid) && !empty($this->downloaded)) {
             $replay = [
                 'ugcid' => $this->ugcid,
                 'version' => $this->version,

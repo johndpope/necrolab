@@ -13,6 +13,7 @@ use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
 use App\Releases;
 use App\SteamUsers;
+use App\LeaderboardTypes;
 
 class PowerRankingEntries extends Model {
     use HasPartitions, HasTempTable;
@@ -210,7 +211,7 @@ class PowerRankingEntries extends Model {
         return $query;
     }
     
-    public static function getSteamUserApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded_type_id, callable $additional_criteria = NULL) {
+    public static function getSteamUserApiReadQuery(string $steamid, int $leaderboard_type_id, int $release_id, int $mode_id,  int $seeded_type_id, callable $additional_criteria = NULL) {
         $release = Releases::getById($release_id);
         
         $start_date = new DateTime($release['start_date']);
@@ -260,25 +261,11 @@ class PowerRankingEntries extends Model {
         return $query;
     }
     
-    public static function getSteamUserScoreApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded_type_id) { 
-        $additional_criteria = function(Builder $query) {
-            $query->whereNotNull('pre.score_rank');
-        };
-    
-        return static::getSteamUserApiReadQuery($steamid, $release_id, $mode_id, $seeded_type_id, $additional_criteria);
-    }
-    
-    public static function getSteamUserSpeedApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded_type_id) { 
-        $additional_criteria = function(Builder $query) {
-            $query->whereNotNull('pre.speed_rank');
-        };
-    
-        return static::getSteamUserApiReadQuery($steamid, $release_id, $mode_id, $seeded_type_id, $additional_criteria);
-    }
-    
-    public static function getSteamUserDeathlessApiReadQuery(string $steamid, int $release_id, int $mode_id,  int $seeded_type_id) { 
-        $additional_criteria = function(Builder $query) {
-            $query->whereNotNull('pre.deathless_rank');
+    public static function getSteamUserCategoryApiReadQuery(string $steamid, LeaderboardTypes $leaderboard_type, int $release_id, int $mode_id,  int $seeded_type_id) { 
+        $additional_criteria = function(Builder $query) use ($leaderboard_type) {
+            $rank_name = "{$leaderboard_type->name}_rank";
+        
+            $query->whereNotNull("pre.{$rank_name}");
         };
     
         return static::getSteamUserApiReadQuery($steamid, $release_id, $mode_id, $seeded_type_id, $additional_criteria);

@@ -26,31 +26,26 @@ class SteamUserPbsController extends Controller {
      */
     public function __construct() {
         $this->middleware('auth:api')->except([
-            'playerScoreIndex',
-            'playerSpeedIndex',
-            'playerDeathlessIndex'
+            'playerIndex'
         ]);
     }
     
     /**
      * Shared method for player pb endpoints in this controller.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @param \App\LeaderboardTypes $leaderboard_type
+     * @param  \App\Http\Requests\Api\ReadSteamUserPbs  $request
      * @return \Illuminate\Http\Response
      */
-    protected function getPlayerResponse(Request $request, LeaderboardTypes $leaderboard_type) {
-        $validated_request = $request->validated();
-        
+    public function playerIndex(ReadSteamUserPbs $request) {        
+        $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->leaderboard_type_id;
         $steamid = $request->steamid;
-        $character_id = Characters::getByName($validated_request['character'])->character_id;
-        $release_id = Releases::getByName($validated_request['release'])->release_id;
-        $mode_id = Modes::getByName($validated_request['mode'])->mode_id;
-        $leaderboard_type_id = $leaderboard_type->leaderboard_type_id;
+        $character_id = Characters::getByName($request->character)->character_id;
+        $release_id = Releases::getByName($request->release)->release_id;
+        $mode_id = Modes::getByName($request->mode)->mode_id;
         
-        $seeded_type_id = $mode_id = SeededTypes::getByName($validated_request['seeded_type'])->id;
-        $multiplayer_type_id = MultiplayerTypes::getByName($validated_request['multiplayer_type'])->id;
-        $soundtrack_id = Soundtracks::getByName($validated_request['soundtrack'])->id;
+        $seeded_type_id = $mode_id = SeededTypes::getByName($request->seeded_type)->id;
+        $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
+        $soundtrack_id = Soundtracks::getByName($request->soundtrack)->id;
         
         $cache_key = "players:steam:{$steamid}:pbs:{$character_id}:{$release_id}:{$mode_id}:{$leaderboard_type_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}";
         
@@ -76,45 +71,6 @@ class SteamUserPbsController extends Controller {
                     $soundtrack_id
                 )->get();
             })
-        );
-    }
-
-    /**
-     * Display a listing of a player's score pbs.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function playerScoreIndex(ReadSteamUserPbs $request) {
-        return $this->getPlayerResponse(
-            $request,
-            LeaderboardTypes::getByName('score')
-        );
-    }
-    
-    /**
-     * Display a listing of a player's speed pbs.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function playerSpeedIndex(ReadSteamUserPbs $request) {
-        return $this->getPlayerResponse(
-            $request,
-            LeaderboardTypes::getByName('speed')
-        );
-    }
-    
-    /**
-     * Display a listing of a player's deathless pbs.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function playerDeathlessIndex(ReadSteamUserPbs $request) {
-        return $this->getPlayerResponse(
-            $request,
-            LeaderboardTypes::getByName('deathless')
         );
     }
 }

@@ -23,6 +23,7 @@ class ReadSteamUserPbs extends Core {
      */
     public function rules() {
         return CommonApiValidationRules::getRules([
+            'leaderboard_type',
             'character',
             'release',
             'mode',

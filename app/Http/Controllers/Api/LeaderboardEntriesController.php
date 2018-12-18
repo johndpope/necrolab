@@ -16,6 +16,7 @@ use App\Components\Dataset\Dataset;
 use App\Components\Dataset\Indexes\Sql as SqlIndex;
 use App\Components\Dataset\DataProviders\Sql as SqlDataProvider;
 use App\LeaderboardEntries;
+use App\LeaderboardTypes;
 use App\Releases;
 use App\Modes;
 use App\SeededTypes;
@@ -33,9 +34,7 @@ class LeaderboardEntriesController extends Controller {
             'nonDailyIndex',
             'dailyIndex',
             'playerNonDailyIndex',
-            'playerScoreIndex',
-            'playerSpeedIndex',
-            'playerDeathlessIndex',
+            'playerCategoryIndex',
             'playerDailyIndex'
         ]);
     }
@@ -169,124 +168,41 @@ class LeaderboardEntriesController extends Controller {
     }
     
     /**
-     * Display a listing of all score leaderboard entries for a specific player.
+     * Display a listing of all leaderboard entries of a particular category for a specific player.
      *
      * @param string $steamid
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerScoreIndex($steamid, ReadSteamUserLeaderboardEntries $request) {        
+    public function playerCategoryIndex($steamid, ReadSteamUserLeaderboardEntries $request) {        
         $validated_request = $request->validated();
  
-        $release_id = Releases::getByName($validated_request['release'])->release_id;
-        $mode_id = Modes::getByName($validated_request['mode'])->mode_id;
-        $date = new DateTime($validated_request['date']);
-        
-        $seeded_type_id = SeededTypes::getByName($validated_request['seeded_type'])->id;
-        $multiplayer_type_id = MultiplayerTypes::getByName($validated_request['multiplayer_type'])->id;
-        $soundtrack_id = Soundtracks::getByName($validated_request['soundtrack'])->id;
-        
-        $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:{$mode_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}:score:entries:{$date->format('Y-m-d')}";
-        
-        return LeaderboardEntriesResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use(
-                $steamid,
-                $date,
-                $release_id, 
-                $mode_id,
-                $seeded_type_id,
-                $multiplayer_type_id,
-                $soundtrack_id
-            ) {
-                return LeaderboardEntries::getSteamUserScoreApiReadQuery(
-                    $steamid,
-                    $date,
-                    $release_id,
-                    $mode_id,
-                    $seeded_type_id,
-                    $multiplayer_type_id,
-                    $soundtrack_id
-                )->get();
-            })
-        );
-    }
-    
-    /**
-     * Display a listing of all speed leaderboard entries for a specific player.
-     *
-     * @param string $steamid
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function playerSpeedIndex($steamid, ReadSteamUserLeaderboardEntries $request) {
-        $validated_request = $request->validated();
- 
-        $release_id = Releases::getByName($validated_request['release'])->release_id;
-        $mode_id = Modes::getByName($validated_request['mode'])->mode_id;
-        $date = new DateTime($validated_request['date']);
-        
-        $seeded_type_id = SeededTypes::getByName($validated_request['seeded_type'])->id;
-        $multiplayer_type_id = MultiplayerTypes::getByName($validated_request['multiplayer_type'])->id;
-        $soundtrack_id = Soundtracks::getByName($validated_request['soundtrack'])->id;
-        
-        $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:{$mode_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}:speed:entries:{$date->format('Y-m-d')}";
-        
-        return LeaderboardEntriesResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use(
-                $steamid,
-                $date,
-                $release_id, 
-                $mode_id,
-                $seeded_type_id,
-                $multiplayer_type_id,
-                $soundtrack_id
-            ) {
-                return LeaderboardEntries::getSteamUserSpeedApiReadQuery(
-                    $steamid,
-                    $date,
-                    $release_id,
-                    $mode_id,
-                    $seeded_type_id,
-                    $multiplayer_type_id,
-                    $soundtrack_id
-                )->get();
-            })
-        );
-    }
-    
-    /**
-     * Display a listing of all deathless leaderboard entries for a specific player.
-     *
-     * @param string $steamid
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function playerDeathlessIndex($steamid, ReadSteamUserLeaderboardEntries $request) {
-        $validated_request = $request->validated();
- 
-        $release_id = Releases::getByName($validated_request['release'])->release_id;
+        $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->leaderboard_type_id;
+        $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
-        $date = new DateTime($validated_request['date']);
+        $date = new DateTime($request->date);
         
-        $seeded_type_id = SeededTypes::getByName($validated_request['seeded_type'])->id;
-        $multiplayer_type_id = MultiplayerTypes::getByName($validated_request['multiplayer_type'])->id;
-        $soundtrack_id = Soundtracks::getByName($validated_request['soundtrack'])->id;
+        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
+        $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
+        $soundtrack_id = Soundtracks::getByName($request->soundtrack)->id;
         
-        $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:{$mode_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}:deathless:entries:{$date->format('Y-m-d')}";
+        $cache_key = "players:steam:{$steamid}:leaderboards:{$leaderboard_type_id}:{$release_id}:{$mode_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}:score:entries:{$date->format('Y-m-d')}";
         
         return LeaderboardEntriesResource::collection(
             Cache::store('opcache')->remember($cache_key, 5, function() use(
                 $steamid,
                 $date,
+                $leaderboard_type_id,
                 $release_id, 
                 $mode_id,
                 $seeded_type_id,
                 $multiplayer_type_id,
                 $soundtrack_id
             ) {
-                return LeaderboardEntries::getSteamUserDeathlessApiReadQuery(
+                return LeaderboardEntries::getSteamUserCategoryApiReadQuery(
                     $steamid,
                     $date,
+                    $leaderboard_type_id,
                     $release_id,
                     $mode_id,
                     $seeded_type_id,

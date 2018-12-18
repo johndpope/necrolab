@@ -372,28 +372,12 @@ class Leaderboards extends Model {
             ->where('lt.name', '!=', 'daily');
     }
     
-    public static function getScoreApiReadQuery(int $release_id, int $mode_id, int $character_id) {
+    public static function getCategoryApiReadQuery(int $leaderboard_type_id, int $release_id, int $mode_id, int $character_id) {
         return static::getApiReadQuery()
             ->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
             ->where('l.character_id', $character_id)
-            ->where('lt.name', '=', 'score');
-    }
-    
-    public static function getSpeedApiReadQuery(int $release_id, int $mode_id, int $character_id) {
-        return static::getApiReadQuery()
-            ->where('l.release_id', $release_id)
-            ->where('l.mode_id', $mode_id)
-            ->where('l.character_id', $character_id)
-            ->where('lt.name', '=', 'speed');
-    }
-    
-    public static function getDeathlessApiReadQuery(int $release_id, int $mode_id, int $character_id) {    
-        return static::getApiReadQuery()
-            ->where('l.release_id', $release_id)
-            ->where('l.mode_id', $mode_id)
-            ->where('l.character_id', $character_id)
-            ->where('lt.name', '=', 'deathless');
+            ->where('l.leaderboard_type_id', $leaderboard_type_id);
     }
     
     public static function getApiShowQuery(string $lbid) {
@@ -471,28 +455,12 @@ class Leaderboards extends Model {
             ->where('lt.name', '!=', 'daily');
     }
     
-    public static function getPlayerScoreApiReadQuery(string $steamid, int $release_id, int $mode_id, int $character_id) {
+    public static function getPlayerCategoryApiReadQuery(string $steamid, int $leaderboard_type_id, int $release_id, int $mode_id, int $character_id) {
         return static::getPlayerApiReadQuery($steamid)
             ->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
             ->where('l.character_id', $character_id)
-            ->where('lt.name', '=', 'score');
-    }
-    
-    public static function getPlayerSpeedApiReadQuery(string $steamid, int $release_id, int $mode_id, int $character_id) {
-        return static::getPlayerApiReadQuery($steamid)
-            ->where('l.release_id', $release_id)
-            ->where('l.mode_id', $mode_id)
-            ->where('l.character_id', $character_id)
-            ->where('lt.name', '=', 'speed');
-    }
-    
-    public static function getPlayerDeathlessApiReadQuery(string $steamid, int $release_id, int $mode_id, int $character_id) {    
-        return static::getPlayerApiReadQuery($steamid)
-            ->where('l.release_id', $release_id)
-            ->where('l.mode_id', $mode_id)
-            ->where('l.character_id', $character_id)
-            ->where('lt.name', '=', 'deathless');
+            ->where('l.leaderboard_type_id', $leaderboard_type_id);
     }
     
     public static function getPlayerDailyApiReadQuery(string $steamid, int $release_id, int $mode_id) {    

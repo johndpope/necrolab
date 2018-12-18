@@ -325,9 +325,10 @@ class LeaderboardEntries extends Model {
         return $query;
     }
     
-    public static function getSteamUserScoreApiReadQuery(
+    public static function getSteamUserCategoryApiReadQuery(
         string $steamid, 
         DateTime $date, 
+        int $leaderboard_type_id,
         int $release_id, 
         int $mode_id, 
         int $seeded_type_id, 
@@ -344,55 +345,7 @@ class LeaderboardEntries extends Model {
             $soundtrack_id
         );
         
-        $query->where('lt.name', 'score');
-        
-        return $query;
-    }
-    
-    public static function getSteamUserSpeedApiReadQuery(
-        string $steamid, 
-        DateTime $date, 
-        int $release_id, 
-        int $mode_id, 
-        int $seeded_type_id, 
-        int $multiplayer_type_id,
-        int $soundtrack_id
-    ) {
-        $query = static::getSteamUserNonDailyApiQuery(
-            $steamid, 
-            $date, 
-            $release_id, 
-            $mode_id, 
-            $seeded_type_id, 
-            $multiplayer_type_id,
-            $soundtrack_id
-        );
-        
-        $query->where('lt.name', 'speed');
-        
-        return $query;
-    }
-    
-    public static function getSteamUserDeathlessApiReadQuery(
-        string $steamid, 
-        DateTime $date, 
-        int $release_id, 
-        int $mode_id, 
-        int $seeded_type_id, 
-        int $multiplayer_type_id,
-        int $soundtrack_id
-    ) {    
-        $query = static::getSteamUserNonDailyApiQuery(
-            $steamid, 
-            $date, 
-            $release_id, 
-            $mode_id, 
-            $seeded_type_id, 
-            $multiplayer_type_id,
-            $soundtrack_id
-        );
-        
-        $query->where('lt.name', 'deathless');
+        $query->where('l.leaderboard_type_id', $leaderboard_type_id);
         
         return $query;
     }
