@@ -198,12 +198,17 @@ class SteamUserPbs extends Model {
             'sr.downloaded',
             'sr.uploaded_to_s3',
             'srv.name AS version',
-            'rr.name AS run_result'
+            'rr.name AS run_result',
+            'ldc.name AS details_column',
+            'dt.name AS details_column_data_type'
         ]);
     }
     
     public static function addJoins(Builder $query) {
         $query->join("leaderboard_entry_details AS led", 'led.leaderboard_entry_details_id', '=', 'sup.leaderboard_entry_details_id');
+        $query->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id');
+        $query->join('leaderboard_details_columns AS ldc', 'ldc.id', '=', 'lt.leaderboard_details_column_id');
+        $query->join('data_types AS dt', 'dt.id', '=', 'ldc.data_type_id');
     }
     
     public static function addLeftJoins(Builder $query) {    
@@ -250,13 +255,11 @@ class SteamUserPbs extends Model {
         $query = DB::table('steam_user_pbs AS sup')
             ->select([
                 'l.lbid',                
-                'lt.name AS leaderboard_type',
                 'ls.date AS first_snapshot_date',
                 'sup.first_rank'
             ])
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id')
-            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
             ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_snapshot_id', '=', 'sup.first_leaderboard_snapshot_id');
         
         static::addSelects($query);

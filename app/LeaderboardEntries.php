@@ -204,10 +204,8 @@ class LeaderboardEntries extends Model {
     
         $query = DB::table('leaderboards AS l')
             ->select([
-                'lt.name AS leaderboard_type',
                 'le.rank'
             ])
-            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
             ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_id', '=', 'l.leaderboard_id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
@@ -232,10 +230,8 @@ class LeaderboardEntries extends Model {
     
         $query = DB::table('leaderboards AS l')
             ->select([
-                'lt.name AS leaderboard_type',
                 'le.rank',
             ])
-            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
             ->join('leaderboard_snapshots AS ls', function($join) {
                 $join->on('ls.leaderboard_id', '=', 'l.leaderboard_id')
                     ->on('ls.date', '=', 'l.daily_date');
@@ -274,11 +270,9 @@ class LeaderboardEntries extends Model {
         $query = DB::table('leaderboards AS l')
             ->select([
                 'c.name AS character_name',
-                'lt.name AS leaderboard_type',
                 'le.rank',
             ])
             ->join('characters AS c', 'c.character_id', '=', 'l.character_id')
-            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
             ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_id', '=', 'l.leaderboard_id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
@@ -354,11 +348,9 @@ class LeaderboardEntries extends Model {
         $query = DB::table('steam_user_pbs AS sup')
             ->select([
                 'l.daily_date AS first_snapshot_date',
-                'lt.name AS leaderboard_type',
                 'sup.first_rank AS rank'
             ])
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id')
-            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id');
         
         SteamUserPbs::addSelects($query);
