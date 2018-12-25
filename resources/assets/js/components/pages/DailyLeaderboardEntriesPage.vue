@@ -30,8 +30,8 @@
                 <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
             </template>
             <template slot="row-details" slot-scope="{ row }">
-                <leaderboard-score-entry-details-table :record="row">
-                </leaderboard-score-entry-details-table>
+                <leaderboard-entry-details-table :record="row">
+                </leaderboard-entry-details-table>
             </template>
         </necrotable>
     </with-nav-layout>
@@ -44,7 +44,7 @@ import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
 import PlayerProfileModal from '../player/PlayerProfileModal.vue';
 import Seed from '../leaderboards/Seed.vue';
 import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
-import LeaderboardScoreEntryDetailsTable from '../table/LeaderboardScoreEntryDetailsTable.vue';
+import LeaderboardEntryDetailsTable from '../table/LeaderboardEntryDetailsTable.vue';
 
 export default {
     name: 'daily-leaderboard-entries-page',
@@ -54,7 +54,7 @@ export default {
         'player-profile-modal': PlayerProfileModal,
         'seed': Seed,
         'toggle-details': ToggleDetails,
-        'leaderboard-score-entry-details-table': LeaderboardScoreEntryDetailsTable
+        'leaderboard-entry-details-table': LeaderboardEntryDetailsTable
     },
     data() {
         return {

@@ -53,60 +53,6 @@ class Leaderboards extends Model {
         ];
     }
     
-    public static function generateUrlName(object $leaderboard) {    
-        $url_name_segments = [];
-        
-        $leaderboard_type_name = NULL;
-        
-        if(!empty($leaderboard->leaderboard_type)) {
-            $url_name_segments[2] = $leaderboard->leaderboard_type->name;
-            
-            $leaderboard_type_name = $leaderboard->leaderboard_type->name;
-        }
-        
-        if(
-            !empty($leaderboard->character) &&
-            (
-                $leaderboard_type_name == 'daily' && $leaderboard->character != 'cadence' ||
-                $leaderboard_type_name != 'daily'
-            )
-        ) {
-            $url_name_segments[1] = $leaderboard->character->name;
-        }
-        
-        if(!empty($leaderboard->release)) {
-            $url_name_segments[3] = $leaderboard->release->name;
-        }
-        
-        // Since dailies aren't tied to a mode or the flags skip this part for that type
-        if(
-            $leaderboard_type_name != 'daily' &&
-            $leaderboard_type_name != 'deathless'
-        ) {        
-            if(!empty($leaderboard->mode) && $leaderboard->mode->name != 'normal') {
-                $url_name_segments[4] = $leaderboard->mode->name;
-            }
-            
-            if($leaderboard->seeded_type->name != 'unseeded') {
-                $url_name_segments[5] = $leaderboard->seeded_type->name;
-            }
-        }
-        
-        if($leaderboard->multiplayer_type->name != 'single') {
-            $url_name_segments[6] = $leaderboard->multiplayer_type->name;
-        }
-        
-        if($leaderboard->soundtrack->name != 'default') {
-            $url_name_segments[7] = $leaderboard->soundtrack->name;
-        }
-        
-        ksort($url_name_segments);
-        
-        $url_name = implode('-', $url_name_segments);
-        
-        return str_replace('_', '-', $url_name);
-    }
-    
     public static function setPropertiesFromName(object $leaderboard) {
         if(!isset($leaderboard->name)) {
             throw new Exception('name property in specified leaderboard object is required but not found.');
@@ -244,7 +190,6 @@ class Leaderboards extends Model {
                 lbid character varying(20),
                 name character varying(255),
                 display_name text,
-                url_name character varying(255),
                 url text,
                 character_id smallint,
                 leaderboard_type_id smallint,
@@ -266,7 +211,6 @@ class Leaderboards extends Model {
                 lbid,
                 name,
                 display_name,
-                url_name,
                 url,
                 character_id,
                 leaderboard_type_id,
@@ -282,7 +226,6 @@ class Leaderboards extends Model {
                 lbid,
                 name,
                 display_name,
-                url_name,
                 url,
                 character_id,
                 leaderboard_type_id,
@@ -293,16 +236,6 @@ class Leaderboards extends Model {
                 soundtrack_id,
                 multiplayer_type_id
             FROM " . static::getTempTableName() . "
-        ");
-    }
-    
-    public static function updateUrlNamesFromTemp() {
-        DB::statement("
-            UPDATE leaderboards l
-            SET 
-                url_name = lt.url_name
-            FROM " . static::getTempTableName() . " lt
-            WHERE l.leaderboard_id = lt.leaderboard_id
         ");
     }
     
@@ -328,38 +261,42 @@ class Leaderboards extends Model {
     }
     
     public static function getApiReadQuery() {
+        $leaderboard_ranking_types_query = DB::table('leaderboard_ranking_types AS lrt')
+            ->select([
+                'lrt.leaderboard_id',
+                DB::raw('string_agg(rt.name, \',\' ORDER BY rt.id) AS ranking_types')
+            ])
+            ->join('ranking_types AS rt', 'rt.id', '=', 'lrt.ranking_type_id')
+            ->groupBy('lrt.leaderboard_id');
+    
         return DB::table('leaderboards AS l')
             ->select([
                 'l.leaderboard_id',
                 'l.lbid',
                 'l.name',
                 'l.display_name',
-                'l.url_name',
-                'c.name AS character_name',
-                'lt.name AS leaderboard_type_name',
-                DB::raw('string_agg(DISTINCT rt.name, \',\') AS rankings'),
+                'leaderboard_ranking_types.ranking_types',
+                'lt.name AS leaderboard_type',
+                'r.name AS release',
+                'm.name AS mode',
+                'c.name AS character',
                 'st.name AS seeded_type',
                 'strk.name AS soundtrack',
-                'mt.name AS multiplayer_type'
+                'mt.name AS multiplayer_type',
+                'lt.show_seed',
+                'lt.show_replay',
+                'lt.show_zone_level'
             ])
-            ->join('characters AS c', 'c.character_id', '=', 'l.character_id')
             ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->join('releases AS r', 'r.release_id', '=', 'l.release_id')
+            ->join('modes AS m', 'm.mode_id', '=', 'l.mode_id')
+            ->join('characters AS c', 'c.character_id', '=', 'l.character_id')
             ->join('seeded_types AS st', 'st.id', '=', 'l.seeded_type_id')
             ->join('soundtracks AS strk', 'strk.id', '=', 'l.soundtrack_id')
             ->join('multiplayer_types AS mt', 'mt.id', '=', 'l.multiplayer_type_id')
-            ->leftJoin('leaderboard_ranking_types AS lrt', 'lrt.leaderboard_id', '=', 'l.leaderboard_id')
-            ->leftJoin('ranking_types AS rt', 'rt.id', '=', 'lrt.ranking_type_id')
-            ->groupBy(
-                'l.leaderboard_id',
-                'l.lbid',
-                'l.name',
-                'l.display_name',
-                'c.name',
-                'lt.name',
-                'st.name',
-                'strk.name',
-                'mt.name'
-            )
+            ->leftJoinSub($leaderboard_ranking_types_query, 'leaderboard_ranking_types', function($join) {
+                $join->on('leaderboard_ranking_types.leaderboard_id', '=', 'l.leaderboard_id');
+            })
             ->orderBy('lt.name', 'asc')
             ->orderBy('l.name', 'asc');
     }
@@ -385,9 +322,17 @@ class Leaderboards extends Model {
             ->where('l.lbid', $lbid);
     }
     
-    public static function getApiUrlShowQuery(string $url_name) {
+    public static function getApiByAttributesQuery(int $leaderboard_source_id, int $leaderboard_type_id, int $character_id, int $release_id, int $mode_id, int $seeded_type_id, int $multiplayer_type_id, int $soundtrack_id) {
         return static::getApiReadQuery()
-            ->where('l.url_name', $url_name);
+            //TODO: Add leaderboard_source_id into the leaderboards table
+            //->where('l.leaderboard_source_id', $leaderboard_source_id)
+            ->where('l.release_id', $release_id)
+            ->where('l.mode_id', $mode_id)
+            ->where('l.character_id', $character_id)
+            ->where('l.leaderboard_type_id', $leaderboard_type_id)
+            ->where('l.seeded_type_id', $seeded_type_id)
+            ->where('l.multiplayer_type_id', $multiplayer_type_id)
+            ->where('l.soundtrack_id', $soundtrack_id);
     }
     
     public static function getDailyApiReadQuery(int $release_id, int $mode_id) {    
@@ -415,8 +360,8 @@ class Leaderboards extends Model {
                 'l.lbid',
                 'l.name',
                 'l.display_name',
-                'c.name AS character_name',
-                'lt.name AS leaderboard_type_name',
+                'c.name AS character',
+                'lt.name AS leaderboard_type',
                 DB::raw('string_agg(DISTINCT rt.name, \',\') AS rankings'),
                 'st.name AS seeded_type',
                 'strk.name AS soundtrack',

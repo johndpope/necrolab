@@ -33,7 +33,7 @@
 import Win from '../leaderboards/Win.vue';
 import KilledBy from '../leaderboards/KilledBy';
 
-const LeaderboardScoreEntryDetailsTable = {
+const LeaderboardEntryDetailsTable = {
     name: 'leaderboard-score-entry-details-table',
     components: {
         'win': Win,
@@ -47,5 +47,5 @@ const LeaderboardScoreEntryDetailsTable = {
     }
 };
 
-export default LeaderboardScoreEntryDetailsTable;
+export default LeaderboardEntryDetailsTable;
 </script>

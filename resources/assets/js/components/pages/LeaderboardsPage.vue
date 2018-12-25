@@ -1,10 +1,12 @@
 <template>
     <with-nav-layout 
+        v-if="loaded"
         :breadcrumbs="breadcrumbs"
-        :title="display_name + ' Leaderboards'"
+        :title="leaderboard_type.display_name + ' Leaderboards'"
     >
         <necrotable 
-            :api_endpoint_url="api_endpoint_url" 
+            api_endpoint_url="/api/1/leaderboards/category"
+            :default_request_parameters="apiRequestParameters"
             :has_pagination="false" 
             :filters="filters" 
             :data_processor="dataProcessor"
@@ -29,6 +31,7 @@
 </template>
 
 <script>
+import BasePage from './BasePage.vue';
 import WithNavLayout from '../layouts/WithNavLayout.vue';
 import NecroTable from '../table/NecroTable.vue';
 import CharacterDropdownFilter from '../table/filters/CharacterDropdownFilter.vue';
@@ -36,8 +39,9 @@ import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
 import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
 import RightArrow from '../formatting/RightArrow.vue';
 
-const LeaderboardsListingPage = {
-    name: 'leaderboards-listing-page',
+const LeaderboardsPage = {
+    extends: BasePage,
+    name: 'leaderboards-page',
     components: {
         'with-nav-layout': WithNavLayout,
         'necrotable': NecroTable,
@@ -59,16 +63,8 @@ const LeaderboardsListingPage = {
     },
     data() {
         return {
-            breadcrumbs: [
-                {
-                    text: 'Leaderboards'
-                },
-                {
-                    text: this.display_name,
-                    href: '/leaderboards/' + this.name
-                }
-            ],
-            api_endpoint_url: '/api/1/leaderboards/' + this.name,
+            leaderboard_type: {},
+            leaderboard_source: {},
             filters: [
                 CharacterDropdownFilter,
                 ReleaseDropdownFilter,
@@ -76,9 +72,38 @@ const LeaderboardsListingPage = {
             ]
         }
     },
+    computed: {
+        breadcrumbs() {
+            return [
+                {
+                    text: 'Leaderboards'
+                },
+                {
+                    text: this.leaderboard_type.display_name,
+                    href: '/leaderboards/' + this.leaderboard_type.name
+                }
+            ];
+        },
+        apiRequestParameters() {
+            return {
+                leaderboard_source: this.leaderboard_source.name,
+                leaderboard_type: this.leaderboard_type.name
+            }
+        }
+    },
     methods: {
-        getSnapshotsUrl(leaderboard) {
-            return '#/leaderboards/' + this.name + '/' + leaderboard.url_name + '/snapshots';
+        getSnapshotsUrl(leaderboard) { 
+            return '#/leaderboards/' + 
+                leaderboard.leaderboard_type + '/' +
+                //TODO: update this to leaderboard.leaderboard_source when leaderboard sources are implemented for leaderboards
+                this.leaderboard_source.name + '/' + 
+                leaderboard.character + '/' +
+                leaderboard.release + '/' +
+                leaderboard.mode + '/' +
+                leaderboard.seeded_type + '/' +
+                leaderboard.multiplayer_type + '/' +
+                leaderboard.soundtrack + '/' +
+                'snapshots';
         },
         dataProcessor: function(leaderboards) {
             let all_zones_row = {
@@ -188,9 +213,45 @@ const LeaderboardsListingPage = {
             }
             
             return ordered_leaderboards;
+        },
+        loadState(route_params) {
+            let promise = this.$store.dispatch('page/loadModules', [
+                'leaderboard_sources',
+                'leaderboard_types',
+                'characters',
+                'releases',
+                'modes',
+                'seeded_types'
+            ]);
+
+            promise.then(() => {
+                this.$store.commit('characters/setFilterStores', [
+                    'leaderboard_sources',
+                    'releases',
+                    'leaderboard_types',
+                    'modes'
+                ]);
+
+                this.$store.commit('releases/setFilterStores', [
+                    'leaderboard_sources'
+                ]);
+                
+                this.$store.commit('modes/setFilterStores', [
+                    'releases',
+                    'leaderboard_types'
+                ]);
+                
+                this.$store.commit('leaderboard_sources/setSelected', route_params.leaderboard_source);
+                this.$store.commit('leaderboard_types/setSelected', route_params.leaderboard_type);
+
+                this.leaderboard_source = this.$store.getters['leaderboard_sources/getByName'](route_params.leaderboard_source);
+                this.leaderboard_type = this.$store.getters['leaderboard_types/getByName'](route_params.leaderboard_type);
+
+                this.loaded = true;
+            });
         }
     }
 };
 
-export default LeaderboardsListingPage;
+export default LeaderboardsPage;
 </script> 

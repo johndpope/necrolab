@@ -200,7 +200,10 @@ class SteamUserPbs extends Model {
             'srv.name AS version',
             'rr.name AS run_result',
             'ldc.name AS details_column',
-            'dt.name AS details_column_data_type'
+            'dt.name AS details_column_data_type',
+            'lt.show_seed',
+            'lt.show_replay',
+            'lt.show_zone_level'
         ]);
     }
     

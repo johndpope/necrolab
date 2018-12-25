@@ -80,7 +80,7 @@ Route::get('/1/players/steam/{steamid}/rankings/daily/entries', 'Api\DailyRankin
 // Leaderboard Entries
 Route::get('/1/leaderboards/entries', 'Api\LeaderboardEntriesController@nonDailyIndex');
 Route::get('/1/leaderboards/daily/entries', 'Api\LeaderboardEntriesController@dailyIndex');
-
+// 
 // Steam User Leaderboard Entries
 Route::get('/1/players/steam/{steamid}/leaderboards/entries', 'Api\LeaderboardEntriesController@playerNonDailyIndex');
 Route::get('/1/players/steam/{steamid}/leaderboards/category/entries', 'Api\LeaderboardEntriesController@playerCategoryIndex');
@@ -102,6 +102,9 @@ Route::get('/1/leaderboards/daily', 'Api\LeaderboardsController@dailyIndex');
 Route::get('/1/leaderboards/xml', 'Api\LeaderboardsController@xmlIndex');
 Route::get('/1/leaderboards/by_url_name/{url_name}', 'Api\LeaderboardsController@byUrlName');
 Route::get('/1/leaderboards/{lbid}', 'Api\LeaderboardsController@show');
+
+// Leaderboard
+Route::get('/1/leaderboard/by_attributes', 'Api\LeaderboardsController@byAttributes');
 
 // Steam User Leaderboards
 Route::get('/1/players/steam/{steamid}/leaderboards', 'Api\LeaderboardsController@playerIndex');

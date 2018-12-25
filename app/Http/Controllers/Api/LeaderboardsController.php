@@ -9,12 +9,18 @@ use App\Http\Resources\LeaderboardsResource;
 use App\Http\Resources\DailyLeaderboardsResource;
 use App\Http\Resources\LeaderboardsXmlResource;
 use App\Http\Requests\Api\ReadLeaderboards;
+use App\Http\Requests\Api\ReadLeaderboardByAttributes;
+use App\Http\Requests\Api\ReadCategoryLeaderboards;
 use App\Http\Requests\Api\ReadDailyLeaderboards;
 use App\Leaderboards;
+use App\LeaderboardSources;
 use App\LeaderboardTypes;
 use App\Releases;
 use App\Modes;
 use App\Characters;
+use App\SeededTypes;
+use App\MultiplayerTypes;
+use App\Soundtracks;
 
 class LeaderboardsController extends Controller {
     /**
@@ -27,7 +33,7 @@ class LeaderboardsController extends Controller {
             'index',
             'categoryIndex',
             'dailyIndex',
-            'byUrlName',
+            'byAttributes',
             'show',
             'xmlIndex',
             'playerIndex',
@@ -91,14 +97,49 @@ class LeaderboardsController extends Controller {
     }
     
     /**
-     * Display the specified leaderboard by its url_name field.
+     * Display a leaderboard based on its attributes.
      *
-     * @param  string  $url_name
+     * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function byUrlName($url_name) {
+    public function byAttributes(ReadLeaderboardByAttributes $request) {
+        $leaderboard_source_id = LeaderboardSources::getByName($request->leaderboard_source)->id;
+        $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->leaderboard_type_id;
+        $character_id = Characters::getByName($request->character)->character_id;
+        $release_id = Releases::getByName($request->release)->release_id;
+        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
+        $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
+        $soundtrack_id = Soundtracks::getByName($request->soundtrack)->id;
+        
+        $cache_key = "leaderboards:{$leaderboard_source_id}:{$leaderboard_type_id}:{$character_id}:{$release_id}:{$mode_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}";
+    
         return new LeaderboardsResource(
-            Leaderboards::getApiUrlShowQuery($url_name)->first()
+            Cache::store('opcache')->remember(
+                $cache_key, 
+                5, 
+                function() use(
+                    $leaderboard_source_id,
+                    $leaderboard_type_id,
+                    $character_id,
+                    $release_id,
+                    $mode_id,
+                    $seeded_type_id,
+                    $multiplayer_type_id,
+                    $soundtrack_id
+                ) {
+                    return Leaderboards::getApiByAttributesQuery(
+                        $leaderboard_source_id,
+                        $leaderboard_type_id,
+                        $character_id,
+                        $release_id,
+                        $mode_id,
+                        $seeded_type_id,
+                        $multiplayer_type_id,
+                        $soundtrack_id
+                    )->first();
+                }
+            )
         );
     }
 

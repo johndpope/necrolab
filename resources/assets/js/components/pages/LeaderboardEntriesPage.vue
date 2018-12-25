@@ -1,14 +1,15 @@
 <template>
     <with-nav-layout 
+        v-if="loaded"
         :breadcrumbs="breadcrumbs"
-        :title="leaderboard_display_name"
-        :show_body="leaderboard['id'] != null"
+        title="Leaderboard Entries"
+        :sub_title="subTitle"
     >
         <necrotable 
             :api_endpoint_url="api_endpoint_url"
             :header_columns="headerColumns" 
             :has_search="true" 
-            :has_action_column="has_details_row"
+            :has_action_column="leaderboard.show_zone_level === 1"
             :default_request_parameters="apiRequestParameters"
             :filters="filters"
         >
@@ -20,78 +21,62 @@
                     <player-profile-modal :player="row.player"></player-profile-modal>
                 </td>
                 <td>
-                    <slot name="entry-details" :row="row">
-                        Override this slot to specify entry details.
-                    </slot>
+                    <template v-if="leaderboard_details_column.data_type == 'seconds'">
+                        <seconds-to-time 
+                            :unformatted="row.pb[leaderboard_details_column.name]" 
+                            :include_hours="true"
+                        >
+                        </seconds-to-time>
+                    </template>
+                    <template v-else>
+                        {{ row.pb[leaderboard_details_column.name] }}
+                    </template>
                 </td>
-                <td v-if="has_seed">
+                <td v-if="leaderboard.show_seed === 1">
                     <seed :record="row"></seed>
                 </td>
-                <td v-if="has_replay">
+                <td v-if="leaderboard.show_replay === 1">
                     <replay-download-link :record="row"></replay-download-link>
                 </td>
             </template>
-            <template v-if="has_details_row" slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
+            <template v-if="leaderboard.show_zone_level === 1" slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
                 <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
             </template>
-            <template v-if="has_details_row" slot="row-details" slot-scope="{ row }">
-                <slot name="row-details" :row="row">
-                    Override this slot to specify a details row.
-                </slot>
+            <template v-if="leaderboard.show_zone_level === 1" slot="row-details" slot-scope="{ row }">
+                <leaderboard-entry-details-table :record="row">
+                </leaderboard-entry-details-table>
             </template>
         </necrotable>
     </with-nav-layout>
 </template>
 
 <script>
+import LeaderboardBasePage from './LeaderboardBasePage.vue';
 import WithNavLayout from '../layouts/WithNavLayout.vue';
 import NecroTable from '../table/NecroTable.vue';
 import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
 import PlayerProfileModal from '../player/PlayerProfileModal.vue';
 import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
+import SecondsToTime from '../formatting/SecondsToTime';
 import Seed from '../leaderboards/Seed.vue';
 import ReplayDownloadLink from '../leaderboards/ReplayDownloadLink.vue';
+import LeaderboardEntryDetailsTable from '../table/LeaderboardEntryDetailsTable.vue';
 
 const LeaderboardEntriesPage = {
+    extends: LeaderboardBasePage,
     name: 'leaderboard-entries-page',
     components: {
         'with-nav-layout': WithNavLayout,
         'necrotable': NecroTable,
         'player-profile-modal': PlayerProfileModal,
+        'seconds-to-time': SecondsToTime,
         'seed': Seed,
         'replay-download-link': ReplayDownloadLink,
-        'toggle-details': ToggleDetails
-    },
-    props: {
-        name: {
-            type: String,
-            default: ''
-        },
-        display_name: {
-            type: String,
-            default: ''
-        },
-        details_column_display_name: {
-            type: String,
-            default: ''
-        },
-        has_seed: {
-            type: Boolean,
-            default: true
-        },
-        has_replay: {
-            type: Boolean,
-            default: true
-        },
-        has_details_row: {
-            type: Boolean,
-            default: true
-        }
+        'toggle-details': ToggleDetails,
+        'leaderboard-entry-details-table': LeaderboardEntryDetailsTable
     },
     data() {
         return {
-            leaderboard: {},
-            leaderboard_display_name: '',
             date: '',
             api_endpoint_url: '/api/1/leaderboards/entries',
             filters: [
@@ -102,8 +87,9 @@ const LeaderboardEntriesPage = {
     computed: {
         apiRequestParameters() {
             return {
-                'lbid': this.leaderboard.id,
-                'date': this.date
+                leaderboard_source: this.leaderboard_source.name,
+                lbid: this.leaderboard.id,
+                date: this.date
             };
         },
         breadcrumbs() {
@@ -114,19 +100,13 @@ const LeaderboardEntriesPage = {
                     text: 'Leaderboards'
                 },
                 {
-                    text: this.display_name,
-                    href: '#/leaderboards/' + this.name
-                },
-                {
-                    text: this.leaderboard.display_name
-                },
-                {
-                    text: 'Snapshots',
-                    href: snapshots_url
+                    text: 'Snapshots'
                 },
                 {
                     text: this.date,
-                    href: snapshots_url + '/' + this.date
+                },
+                {
+                    text: this.subTitle
                 }
             ]
         },
@@ -134,31 +114,28 @@ const LeaderboardEntriesPage = {
             let header_columns = [
                 'Rank',
                 'Player',
-                this.details_column_display_name
+                this.leaderboard_details_column.display_name
             ];
             
-            if(this.has_seed) {
+            if(this.leaderboard.show_seed === 1) {
                 header_columns.push('Seed');
             }
             
-            if(this.has_replay) {
+            if(this.leaderboard.show_replay === 1) {
                 header_columns.push('Replay');
             }
             
             return header_columns;
         }
     },
-    created() {
-        this.date = this.$route.params.date;
-        
-        let url_name = this.$route.params.url_name;
-        
-        this.$store.dispatch('leaderboards/load', url_name)
-            .then(() => {                        
-                this.leaderboard = this.$store.getters['leaderboards/getRecord'](url_name);
-                
-                this.leaderboard_display_name = this.date + ' - ' + leaderboard.display_name;
+    methods: {
+        loadState(route_params) {
+            this.loadRecords(route_params).then(() => {
+                this.date = route_params.date;
+
+                this.loaded = true;
             });
+        }
     }
 };
 

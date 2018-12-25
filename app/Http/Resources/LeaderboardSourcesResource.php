@@ -27,7 +27,6 @@ class LeaderboardSourcesResource extends JsonResource {
         return [
             'id' => (int)$this->id,
             'name' => $this->name,
-            'url_name' => $this->url_name,
             'display_name' => $this->display_name,
             'releases' => $releases,
             'characters' => $characters

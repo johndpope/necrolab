@@ -82,7 +82,7 @@ const RankingSummaryDetailsTable = {
             default: () => []
         },
         leaderboard_types: {
-            type: Object,
+            type: Array,
             default: () => []
         },
         details_column: {

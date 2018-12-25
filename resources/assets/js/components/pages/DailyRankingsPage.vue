@@ -64,7 +64,7 @@ export default {
         }
     },
     methods: {
-        loadState() {
+        loadState(route_params) {
             let promise = this.$store.dispatch('page/loadModules', [
                 'leaderboard_sources',
                 'leaderboard_types',
@@ -83,7 +83,7 @@ export default {
                     'releases'
                 ]);
                 
-                this.$store.commit('leaderboard_sources/setSelected', this.$route.params.leaderboard_source);
+                this.$store.commit('leaderboard_sources/setSelected', route_params.leaderboard_source);
                 
                 this.$store.commit('leaderboard_types/setSelected', 'daily');
                 

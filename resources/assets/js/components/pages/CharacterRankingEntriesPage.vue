@@ -9,13 +9,13 @@
     >
         <template slot="table-row" slot-scope="{ row_index, row }">
             <td>
-                {{ row.characters[currentCharacter].rank }}
+                {{ row.characters[character_name].rank }}
             </td>
             <td>
                 <player-profile-modal :player="row.player"></player-profile-modal>
             </td>
             <td>
-                <rounded-decimal :original_number="row.characters[currentCharacter].points"></rounded-decimal>
+                <rounded-decimal :original_number="row.characters[character_name].points"></rounded-decimal>
             </td>
         </template>
         <template slot="row-details" slot-scope="{ row }">
@@ -47,6 +47,7 @@ export default {
     },
     data() {
         return {
+            character_name: '',
             api_endpoint_url: '/api/1/rankings/character/entries',
             filter_records: [
                 {
@@ -88,11 +89,6 @@ export default {
             ]
         }
     },
-    computed: {
-        currentCharacter() {
-            return this.$route.params.character;
-        }
-    },
     methods: {
         loadState(route_params) {
             let promise = this.$store.dispatch('page/loadModules', [
@@ -116,6 +112,8 @@ export default {
                 this.$store.commit('releases/setSelected', route_params.release);
                 this.$store.commit('modes/setSelected', route_params.mode);
                 this.$store.commit('seeded_types/setSelected', route_params.seeded_type);
+                
+                this.character_name = route_params.character;
                 
                 this.loaded = true;
             });

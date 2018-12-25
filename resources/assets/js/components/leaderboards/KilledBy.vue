@@ -1,5 +1,5 @@
 <template>
-    <span v-if="record.pb['replay'] != null">
+    <span v-if="record['pb'] != null">
         {{ killedBy }}
     </span>
 </template>
@@ -16,9 +16,9 @@ const KilledBy = {
     computed: {
         killedBy() {
             let killed_by = '';
-            
-            if(this.record.win == 0 && this.record.pb['replay'] != null) {
-                killed_by = this.record.pb.replay.killed_by;
+
+            if(this.record.pb.win === 0 && this.record.pb.run_result != null) {
+                killed_by = this.record.pb.run_result;
             }
             
             return killed_by;

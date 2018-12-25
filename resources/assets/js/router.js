@@ -21,18 +21,12 @@ import CategoryRankingEntriesPage from './components/pages/CategoryRankingEntrie
 import CharacterRankingEntriesPage from './components/pages/CharacterRankingEntriesPage.vue';
 import DailyRankingEntriesPage from './components/pages/DailyRankingEntriesPage.vue';
 
-import ScoreLeaderboardsPage from './components/pages/ScoreLeaderboardsPage.vue';
-import SpeedLeaderboardsPage from './components/pages/SpeedLeaderboardsPage.vue';
-import DeathlessLeaderboardsPage from './components/pages/DeathlessLeaderboardsPage.vue';
+import LeaderboardsPage from './components/pages/LeaderboardsPage.vue';
 import DailyLeaderboardsPage from './components/pages/DailyLeaderboardsPage.vue';
 
-import ScoreLeaderboardSnapshotsPage from './components/pages/ScoreLeaderboardSnapshotsPage.vue';
-import SpeedLeaderboardSnapshotsPage from './components/pages/SpeedLeaderboardSnapshotsPage.vue';
-import DeathlessLeaderboardSnapshotsPage from './components/pages/DeathlessLeaderboardSnapshotsPage.vue';
+import LeaderboardSnapshotsPage from './components/pages/LeaderboardSnapshotsPage.vue';
 
-import ScoreLeaderboardEntriesPage from './components/pages/ScoreLeaderboardEntriesPage.vue';
-import SpeedLeaderboardEntriesPage from './components/pages/SpeedLeaderboardEntriesPage.vue';
-import DeathlessLeaderboardEntriesPage from './components/pages/DeathlessLeaderboardEntriesPage.vue';
+import LeaderboardEntriesPage from './components/pages/LeaderboardEntriesPage.vue';
 import DailyLeaderboardEntriesPage from './components/pages/DailyLeaderboardEntriesPage.vue';
 
 import LeaderboardSourcePlayersPage from './components/player/LeaderboardSourcePlayersPage.vue';
@@ -84,6 +78,14 @@ const routes = [
         component: CategoryRankingEntriesPage
     },
     {
+        path: '/leaderboards/daily/:release',
+        component: DailyLeaderboardsPage
+    },
+    {
+        path: '/leaderboards/daily/:release/:date',
+        component: DailyLeaderboardEntriesPage
+    },
+    {
         path: '/leaderboards/:leaderboard_type/:leaderboard_source',
         component: LeaderboardsPage,
     },
@@ -94,38 +96,6 @@ const routes = [
     {
         path: '/leaderboards/:leaderboard_type/:leaderboard_source/:character/:release/:mode/:seeded_type/:multiplayer_type/:soundtrack/snapshots/:date',
         component: LeaderboardEntriesPage
-    },
-    {
-        path: '/leaderboards/speed',
-        component: SpeedLeaderboardsPage
-    },
-    {
-        path: '/leaderboards/speed/:url_name/snapshots',
-        component: SpeedLeaderboardSnapshotsPage
-    },
-    {
-        path: '/leaderboards/speed/:url_name/snapshots/:date',
-        component: SpeedLeaderboardEntriesPage
-    },
-    {
-        path: '/leaderboards/deathless',
-        component: DeathlessLeaderboardsPage
-    },
-    {
-        path: '/leaderboards/deathless/:url_name/snapshots',
-        component: DeathlessLeaderboardSnapshotsPage
-    },
-    {
-        path: '/leaderboards/deathless/:url_name/snapshots/:date',
-        component: DeathlessLeaderboardEntriesPage
-    },
-    {
-        path: '/leaderboards/daily',
-        component: DailyLeaderboardsPage
-    },
-    {
-        path: '/leaderboards/daily/:release/:date',
-        component: DailyLeaderboardEntriesPage
     },
     {
         path: '/players/:leaderboard_source', 

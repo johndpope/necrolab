@@ -121,7 +121,6 @@ class SaveToDatabase implements ShouldQueue {
                             'lbid' => $leaderboard->lbid,
                             'name' => $leaderboard->name,
                             'display_name' => $leaderboard->display_name,
-                            'url_name' => Leaderboards::generateUrlName($leaderboard),
                             'url' => $leaderboard->url,
                             'character_id' => $leaderboard->character->character_id,
                             'leaderboard_type_id' => $leaderboard->leaderboard_type->leaderboard_type_id,

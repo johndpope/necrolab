@@ -29,11 +29,6 @@ class SteamUserPbsResource extends JsonResource {
         if(!empty($this->first_rank)) {
             $record['rank'] = $this->first_rank;
         }
-
-        $record['details'] = $this->details;
-        $record['zone'] = $this->zone;
-        $record['level'] = $this->level;
-        $record['win'] = $this->is_win;
         
         $details_column = $this->details_column;
         
@@ -48,14 +43,25 @@ class SteamUserPbsResource extends JsonResource {
         
         $record[$this->details_column] = $details_column_value;
         
+        $record['details'] = $this->details;
+        
+        if(!empty($this->show_zone_level)) {
+            $record['zone'] = $this->zone;
+            $record['level'] = $this->level;
+            $record['win'] = $this->is_win;
+            $record['run_result'] = $this->run_result;
+        }
+        
+        if(!empty($this->show_seed)) {
+            $record['seed'] = $this->seed;
+        }
+        
         $replay = [];
         
-        if(!empty($this->ugcid) && !empty($this->downloaded)) {
+        if(!empty($this->show_replay) && !empty($this->ugcid) && !empty($this->downloaded)) {
             $replay = [
                 'ugcid' => $this->ugcid,
-                'version' => $this->version,
-                'seed' => $this->seed,
-                'run_result' => $this->run_result
+                'version' => $this->version
             ];
             
             $replay_url = '';

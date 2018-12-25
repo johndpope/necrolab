@@ -15,14 +15,12 @@ class LeaderboardSourcesSeeder extends Seeder {
             [
                 'name' => 'steam',
                 'display_name' => 'Steam',
-                'url_name' => 'steam',
                 'sort_order' => 1,
                 'enabled' => 1
             ],
             [
                 'name' => 'google_play',
                 'display_name' => 'Google Play',
-                'url_name' => 'google-play',
                 'sort_order' => 2,
                 'enabled' => 1
             ]

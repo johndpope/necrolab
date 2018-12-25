@@ -24,21 +24,6 @@ const ModeDropdownFilter = {
         },
         loadOptions(resolve, reject) {
             resolve();
-        
-            /*let filter_stores = [
-                'releases',
-            ];
-        
-            let promises = [
-                this.$store.dispatch('modes/loadDependencies', {
-                    filter_stores: filter_stores
-                }),
-                this.$store.dispatch('modes/loadAll')
-            ];
-            
-            Promise.all(promises).then(() => {                
-                resolve();
-            });*/
         },
         setSelectedState(selected) {
             this.$store.commit('modes/setSelected', selected);
