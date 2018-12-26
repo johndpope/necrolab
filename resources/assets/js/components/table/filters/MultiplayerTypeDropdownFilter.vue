@@ -19,13 +19,11 @@ const MultiplayerTypeDropdownFilter = {
         }
     },
     methods: {
+        getDefaultOptions() {
+            return this.$store.getters['multiplayer_types/getFiltered'];
+        },
         loadOptions(resolve, reject) {
-            this.$store.dispatch('multiplayer_types/loadAll')
-                .then(() => {                        
-                    this.options = this.$store.getters['multiplayer_types/getAll'];
-                    
-                    resolve();
-                });
+            resolve();
         },
         setSelectedState(selected) {
             this.$store.commit('multiplayer_types/setSelected', selected);
