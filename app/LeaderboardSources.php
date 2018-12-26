@@ -41,13 +41,22 @@ class LeaderboardSources extends Model {
             ])
             ->join('characters AS c', 'c.character_id', '=', 'lsc.character_id')
             ->groupBy('lsc.leaderboard_source_id');
+            
+        $multiplayer_types_query = DB::table('leaderboard_source_multiplayer_types AS lsmt')
+            ->select([
+                'lsmt.leaderboard_source_id',
+                DB::raw('string_agg(mt.name, \',\' ORDER BY mt.id) AS multiplayer_types')
+            ])
+            ->join('multiplayer_types AS mt', 'mt.id', '=', 'lsmt.multiplayer_type_id')
+            ->groupBy('lsmt.leaderboard_source_id');
         
         return static::select([
             'ls.id',
             'ls.name',
             'ls.display_name',
             'leaderboard_source_releases.releases',
-            'leaderboard_source_characters.characters'
+            'leaderboard_source_characters.characters',
+            'leaderboard_source_multiplayer_types.multiplayer_types'
         ])
             ->from('leaderboard_sources AS ls')
             ->leftJoinSub($releases_query, 'leaderboard_source_releases', function($join) {
@@ -56,13 +65,9 @@ class LeaderboardSources extends Model {
             ->leftJoinSub($characters_query, 'leaderboard_source_characters', function($join) {
                 $join->on('leaderboard_source_characters.leaderboard_source_id', '=', 'ls.id');
             })
-            ->groupBy([
-                'ls.id',
-                'ls.name',
-                'ls.display_name',
-                'leaderboard_source_releases.releases',
-                'leaderboard_source_characters.characters'
-            ])
+            ->leftJoinSub($multiplayer_types_query, 'leaderboard_source_multiplayer_types', function($join) {
+                $join->on('leaderboard_source_multiplayer_types.leaderboard_source_id', '=', 'ls.id');
+            })
             ->orderBy('ls.sort_order', 'asc');
     }
 }

@@ -23,13 +23,20 @@ class LeaderboardSourcesResource extends JsonResource {
         if(!empty($this->characters)) {
             $characters = explode(',', $this->characters);
         }
+        
+        $multiplayer_types = [];
+        
+        if(!empty($this->multiplayer_types)) {
+            $multiplayer_types = explode(',', $this->multiplayer_types);
+        }
     
         return [
             'id' => (int)$this->id,
             'name' => $this->name,
             'display_name' => $this->display_name,
             'releases' => $releases,
-            'characters' => $characters
+            'characters' => $characters,
+            'multiplayer_types' => $multiplayer_types
         ];
     }
 }
