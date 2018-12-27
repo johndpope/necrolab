@@ -335,7 +335,7 @@ class Leaderboards extends Model {
             ->where('l.soundtrack_id', $soundtrack_id);
     }
     
-    public static function getDailyApiReadQuery(int $release_id, int $mode_id) {    
+    public static function getDailyApiReadQuery(int $leaderboard_source_id, int $character_id, int $release_id, int $mode_id, int $multiplayer_type_id) {    
         return DB::table('leaderboards AS l')
             ->select([
                 'l.daily_date',
@@ -347,8 +347,12 @@ class Leaderboards extends Model {
                 $join->on('ls.leaderboard_id', '=', 'l.leaderboard_id')
                     ->on('ls.date', '=', 'l.daily_date');
             })
+            //TODO: Uncomment this when leaderboard sources are linked to leaderboards.
+            //->where('l.leaderboard_source_id', $leaderboard_source_id)
+            ->where('l.character_id', $character_id)
             ->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
+            ->where('l.multiplayer_type_id', $multiplayer_type_id)
             ->where('lt.name', 'daily')
             ->orderBy('l.daily_date', 'desc');
     }

@@ -67,9 +67,9 @@ const ModuleGenerator = {
                             let filter_store_name = state.filter_stores[index];
                             
                             let filter_option = root_getters[filter_store_name + '/getSelected'];
-                            
+
                             if(typeof filter_option == 'string') {
-                                filter_option = root_getters[filter_store_name + '/getByField']('name', filter_option);
+                                filter_option = root_getters[filter_store_name + '/getByName'](filter_option);
                             }
                             else if(filter_option['name'] == null) {
                                 filter_option = {};

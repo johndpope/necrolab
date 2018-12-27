@@ -162,14 +162,28 @@ class LeaderboardsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function dailyIndex(ReadDailyLeaderboards $request) {
+        $leaderboard_source_id = LeaderboardSources::getByName($request->leaderboard_source)->id;
+        $character_id = Characters::getByName($request->character)->character_id;
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
+        
+        $cache_key = "leaderboards:steam:daily:{$leaderboard_source_id}:{$character_id}:{$release_id}:{$mode_id}:{$multiplayer_type_id}";
         
         return DailyLeaderboardsResource::collection(
-            Cache::store('opcache')->remember("leaderboards:steam:daily:{$release_id}:{$mode_id}", 5, function() use($release_id) {
+            Cache::store('opcache')->remember($cache_key, 5, function() use(
+                $leaderboard_source_id,
+                $character_id,
+                $release_id, 
+                $mode_id,
+                $multiplayer_type_id
+            ) {
                 return Leaderboards::getDailyApiReadQuery(
-                    $release_id,
-                    $mode_id
+                    $leaderboard_source_id,
+                    $character_id,
+                    $release_id, 
+                    $mode_id,
+                    $multiplayer_type_id
                 )->get();
             })
         );

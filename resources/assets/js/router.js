@@ -78,11 +78,11 @@ const routes = [
         component: CategoryRankingEntriesPage
     },
     {
-        path: '/leaderboards/daily/:release',
+        path: '/leaderboards/daily/:leaderboard_source',
         component: DailyLeaderboardsPage
     },
     {
-        path: '/leaderboards/daily/:release/:date',
+        path: '/leaderboards/daily/:leaderboard_source/:date',
         component: DailyLeaderboardEntriesPage
     },
     {
