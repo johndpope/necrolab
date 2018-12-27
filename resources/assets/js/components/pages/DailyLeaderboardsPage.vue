@@ -21,7 +21,17 @@
                     {{ row.players }}
                 </td>
                 <td>
-                    {{ row.score }}
+                    <template v-if="leaderboard_details_column.data_type == 'seconds'">
+                        <seconds-to-time 
+                            :unformatted="row[leaderboard_details_column.name]" 
+                            :include_hours="true" 
+                            :zero_pad_hours="true"
+                        >
+                        </seconds-to-time>
+                    </template>
+                    <template v-else>
+                        {{ row[leaderboard_details_column.name] }}
+                    </template>
                 </td>  
             </template>
         </necrotable>
@@ -36,17 +46,21 @@ import CharacterDropdownFilter from '../table/filters/CharacterDropdownFilter.vu
 import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
 import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
 import MultiplayerTypeDropdownFilter from '../table/filters/MultiplayerTypeDropdownFilter.vue';
+import SecondsToTime from '../formatting/SecondsToTime';
 
 const LeaderboardSnapshotsPage = {
     extends: BasePage,
     name: 'daily-leaderboards-page',
     components: {
         'with-nav-layout': WithNavLayout,
-        'necrotable': NecroTable
+        'necrotable': NecroTable,
+        'seconds-to-time': SecondsToTime
     },
     data() {
         return {
             leaderboard_source: {},
+            leaderboard_type: {},
+            leaderboard_details_column: {},
             breadcrumbs: [
                 {
                     text: 'Leaderboards'
@@ -88,7 +102,8 @@ const LeaderboardSnapshotsPage = {
                 'characters',
                 'releases',
                 'modes',
-                'multiplayer_types'
+                'multiplayer_types',
+                'leaderboard_details_columns'
             ]);
 
             promise.then(() => {
@@ -116,6 +131,8 @@ const LeaderboardSnapshotsPage = {
                 this.$store.commit('leaderboard_types/setSelected', 'daily');
                 
                 this.leaderboard_source = this.$store.getters['leaderboard_sources/getByName'](route_params.leaderboard_source);
+                this.leaderboard_type = this.$store.getters['leaderboard_types/getByName']('daily');
+                this.leaderboard_details_column = this.$store.getters['leaderboard_details_columns/getByName'](this.leaderboard_type.details_column_name);
                 
                 this.loaded = true;
             });
