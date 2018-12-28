@@ -5,6 +5,7 @@
         :category_display_name="leaderboard_type.display_name"
         :header_columns="headerColumns"
         :api_endpoint_url="apiEndpointUrl"
+        :default_api_request_parameters="apiRequestParameters"
     >
         <template slot="table-row" slot-scope="{ row_index, row }">
             <td>
@@ -82,7 +83,12 @@ export default {
     },
     computed: {
         apiEndpointUrl() {
-            return '/api/1/rankings/' + this.leaderboard_type.name + '/entries';
+            return '/api/1/rankings/category/entries';
+        },
+        apiRequestParameters() {
+            return {
+                leaderboard_type: this.leaderboard_type.name
+            };
         },
         headerColumns() {
             return [

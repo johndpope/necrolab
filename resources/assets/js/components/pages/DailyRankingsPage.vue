@@ -1,6 +1,6 @@
 <template>
     <rankings-overview-page
-        v-if="loaded"
+        :loaded="loaded"
         category_name="daily"
         category_display_name="Daily"
         :api_endpoint_url="api_endpoint_url"

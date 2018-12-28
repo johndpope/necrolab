@@ -1,6 +1,6 @@
 <template>
-    <with-nav-layout 
-        v-if="loaded"
+    <with-nav-body 
+        :loaded="loaded"
         :breadcrumbs="breadcrumbs"
         title="Leaderboard Entries"
         :sub_title="subTitle"
@@ -47,12 +47,12 @@
                 </leaderboard-entry-details-table>
             </template>
         </necrotable>
-    </with-nav-layout>
+    </with-nav-body>
 </template>
 
 <script>
 import LeaderboardBasePage from './LeaderboardBasePage.vue';
-import WithNavLayout from '../layouts/WithNavLayout.vue';
+import WithNavBody from '../layouts/WithNavBody.vue';
 import NecroTable from '../table/NecroTable.vue';
 import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
 import PlayerProfileModal from '../player/PlayerProfileModal.vue';
@@ -66,7 +66,7 @@ const LeaderboardEntriesPage = {
     extends: LeaderboardBasePage,
     name: 'leaderboard-entries-page',
     components: {
-        'with-nav-layout': WithNavLayout,
+        'with-nav-body': WithNavBody,
         'necrotable': NecroTable,
         'player-profile-modal': PlayerProfileModal,
         'seconds-to-time': SecondsToTime,

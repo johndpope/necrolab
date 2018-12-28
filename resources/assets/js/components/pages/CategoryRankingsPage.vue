@@ -1,6 +1,6 @@
 <template>
     <rankings-overview-page
-        v-if="loaded"
+        :loaded="loaded"
         :category_name="leaderboard_type.name"
         :category_display_name="leaderboard_type.display_name"
         :header_columns="headerColumns"

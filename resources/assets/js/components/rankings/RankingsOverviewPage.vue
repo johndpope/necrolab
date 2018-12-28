@@ -1,5 +1,6 @@
 <template>
-    <with-nav-layout 
+    <with-nav-body 
+        :loaded="loaded"
         :breadcrumbs="breadcrumbs"
         :title="title"
     >
@@ -28,11 +29,11 @@
                 </slot>
             </template>
         </necrotable>
-    </with-nav-layout>
+    </with-nav-body>
 </template>
 
 <script>
-import WithNavLayout from '../layouts/WithNavLayout.vue';
+import WithNavBody from '../layouts/WithNavBody.vue';
 import NecroTable from '../table/NecroTable.vue';
 import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
 import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
@@ -42,11 +43,15 @@ import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
 const RankingsOverviewPage = {
     name: 'rankings-overview-page',
     components: {
-        'with-nav-layout': WithNavLayout,
+        'with-nav-body': WithNavBody,
         'necrotable': NecroTable,
         'toggle-details': ToggleDetails,
     },
     props: {
+        loaded: {
+            type: Boolean,
+            default: false
+        },
         category_name: {
             type: String,
             default: ''

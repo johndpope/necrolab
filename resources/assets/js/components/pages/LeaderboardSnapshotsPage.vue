@@ -1,6 +1,6 @@
 <template>
-    <with-nav-layout 
-        v-if="loaded"
+    <with-nav-body 
+        :loaded="loaded"
         :breadcrumbs="breadcrumbs"
         title="Leaderboard Snapshots"
         :sub_title="subTitle"
@@ -34,12 +34,12 @@
                 </td>  
             </template>
         </necrotable>
-    </with-nav-layout>
+    </with-nav-body>
 </template>
 
 <script>
 import LeaderboardBasePage from './LeaderboardBasePage.vue';
-import WithNavLayout from '../layouts/WithNavLayout.vue';
+import WithNavBody from '../layouts/WithNavBody.vue';
 import NecroTable from '../table/NecroTable.vue';
 import SecondsToTime from '../formatting/SecondsToTime';
 
@@ -47,7 +47,7 @@ const LeaderboardSnapshotsPage = {
     extends: LeaderboardBasePage,
     name: 'leaderboard-snapshots-page',
     components: {
-        'with-nav-layout': WithNavLayout,
+        'with-nav-body': WithNavBody,
         'necrotable': NecroTable,
         'seconds-to-time': SecondsToTime
     },

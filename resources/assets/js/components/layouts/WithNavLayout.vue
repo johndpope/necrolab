@@ -85,27 +85,8 @@
                 </b-navbar-nav>
             </b-collapse>
         </b-navbar>
-        <div v-if="show_body" class="container-fluid">
-            <div class="row">
-                <div class="col-12">
-                    <b-breadcrumb :items="breadcrumbItems"></b-breadcrumb>
-                </div>
-            </div>
-            <div v-if="title != ''" class="row">
-                <div class="col-12 pb-3">
-                    <h1>{{ title }}</h1>
-                </div>
-            </div>
-            <div v-if="sub_title != ''" class="row">
-                <div class="col-12 pb-3">
-                    <h3>{{ sub_title }}</h3>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-12">
-                    <slot></slot>
-                </div>
-            </div>
+        <div class="container-fluid">
+            <router-view></router-view>
         </div>
     </div>
 </template>
@@ -118,8 +99,6 @@ import bNavbarToggle from 'bootstrap-vue/es/components/navbar/navbar-toggle';
 import bNavbarBrand from 'bootstrap-vue/es/components/navbar/navbar-brand';
 import bNarbarNav from 'bootstrap-vue/es/components/navbar/navbar-nav';
 import bCollapse from 'bootstrap-vue/es/components/collapse/collapse';
-import bBreadcrumb from 'bootstrap-vue/es/components/breadcrumb/breadcrumb';
-
 import LeaderboardSourceIconDisplay from '../leaderboards/sources/LeaderboardSourceIconDisplay.vue';
 
 const WithNavLayout = {
@@ -132,16 +111,9 @@ const WithNavLayout = {
         'b-navbar-brand': bNavbarBrand,
         'b-navbar-nav': bNarbarNav,
         'b-collapse': bCollapse,
-        'b-breadcrumb': bBreadcrumb,
         'leaderboard-source-icon-display': LeaderboardSourceIconDisplay
     },
     props: {
-        breadcrumbs: {
-            type: Array,
-            default: () => {
-                return [];
-            }
-        },
         title: {
             type: String,
             default: ''
@@ -149,10 +121,6 @@ const WithNavLayout = {
         sub_title: {
             type: String,
             default: ''
-        },
-        show_body: {
-            type: Boolean,
-            default: true
         }
     },
     data() {
@@ -161,22 +129,6 @@ const WithNavLayout = {
             leaderboard_sources: [],
             leaderboard_types: []
         };
-    },
-    computed: {
-        breadcrumbItems() {
-            let breadcrumbs = this.breadcrumbs;
-            
-            if(breadcrumbs.length == 0) {
-                breadcrumbs = this.$store.getters['breadcrumbs/getAll'];
-            }
-            
-            breadcrumbs.unshift({
-                text: 'Home',
-                href: '#/'
-            });
-            
-            return breadcrumbs;
-        }
     },
     created() {        
         let promises = [

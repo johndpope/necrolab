@@ -1,6 +1,6 @@
 <template>
-    <with-nav-layout 
-        v-if="loaded"
+    <with-nav-body 
+        :loaded="loaded"
         :breadcrumbs="breadcrumbs"
         :title="leaderboard_type.display_name + ' Leaderboards'"
     >
@@ -27,12 +27,12 @@
                 </td>
             </template>
         </necrotable>
-    </with-nav-layout>
+    </with-nav-body>
 </template>
 
 <script>
 import BasePage from './BasePage.vue';
-import WithNavLayout from '../layouts/WithNavLayout.vue';
+import WithNavBody from '../layouts/WithNavBody.vue';
 import NecroTable from '../table/NecroTable.vue';
 import CharacterDropdownFilter from '../table/filters/CharacterDropdownFilter.vue';
 import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
@@ -43,7 +43,7 @@ const LeaderboardsPage = {
     extends: BasePage,
     name: 'leaderboards-page',
     components: {
-        'with-nav-layout': WithNavLayout,
+        'with-nav-body': WithNavBody,
         'necrotable': NecroTable,
         'right-arrow': RightArrow
     },

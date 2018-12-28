@@ -1,6 +1,6 @@
 <template>
-    <with-nav-layout 
-        v-if="loaded"
+    <with-nav-body 
+        :loaded="loaded"
         :breadcrumbs="breadcrumbs"
         title="Daily Leaderboard Entries"
         :sub_title="sub_title"
@@ -44,12 +44,12 @@
                 </leaderboard-entry-details-table>
             </template>
         </necrotable>
-    </with-nav-layout>
+    </with-nav-body>
 </template>
 
 <script>
 import BasePage from './BasePage.vue';
-import WithNavLayout from '../layouts/WithNavLayout.vue';
+import WithNavBody from '../layouts/WithNavBody.vue';
 import NecroTable from '../table/NecroTable.vue';
 import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
 import PlayerProfileModal from '../player/PlayerProfileModal.vue';
@@ -62,7 +62,7 @@ export default {
     extends: BasePage,
     name: 'daily-leaderboard-entries-page',
     components: {
-        'with-nav-layout': WithNavLayout,
+        'with-nav-body': WithNavBody,
         'necrotable': NecroTable,
         'player-profile-modal': PlayerProfileModal,
         'seed': Seed,

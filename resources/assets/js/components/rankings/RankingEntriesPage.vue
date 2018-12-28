@@ -1,9 +1,9 @@
 <template>
-    <with-nav-layout 
+    <with-nav-body 
+        :loaded="loaded"
         :breadcrumbs="breadcrumbs"
         :title="title"
         :sub_title="sub_title"
-        :show_body="properties_loaded"
     >
         <necrotable 
             :api_endpoint_url="api_endpoint_url"
@@ -27,11 +27,11 @@
                 </slot>
             </template>
         </necrotable>
-    </with-nav-layout>
+    </with-nav-body>
 </template>
 
 <script>
-import WithNavLayout from '../layouts/WithNavLayout.vue';
+import WithNavBody from '../layouts/WithNavBody.vue';
 import NecroTable from '../table/NecroTable.vue';
 import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
 import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
@@ -39,7 +39,7 @@ import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
 const RankingEntriesPage = {
     name: 'ranking-entries-page',
     components: {
-        'with-nav-layout': WithNavLayout,
+        'with-nav-body': WithNavBody,
         'necrotable': NecroTable,
         'toggle-details': ToggleDetails
     },
@@ -55,6 +55,12 @@ const RankingEntriesPage = {
         api_endpoint_url: {
             type: String,
             default: ''
+        },
+        default_api_request_parameters: {
+            type: Object,
+            default: () => {
+                return {};
+            }
         },
         header_columns: {
             type: Array,
@@ -88,13 +94,14 @@ const RankingEntriesPage = {
     },
     data() {
         return {
+            loaded: false,
             release: {},
             mode: {},
             filter_record_values: {},
             properties_loaded: false,
             title: '',
             sub_title: '',
-            api_request_parameters: {},
+            api_request_parameters: this.default_api_request_parameters,
             filters: [
                 SiteDropdownFilter
             ]
@@ -170,7 +177,7 @@ const RankingEntriesPage = {
                 
                 this.sub_title = this.getDisplayName();
                 
-                this.properties_loaded = true;
+                this.loaded = true;
             });
     }
 };

@@ -1,6 +1,6 @@
 <template>
     <rankings-overview-page
-        v-if="loaded"
+        :loaded="loaded"
         category_name="character"
         category_display_name="Character"
         :header_columns="header_columns"

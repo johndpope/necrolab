@@ -1,5 +1,7 @@
 <template>
-    <with-nav-layout>
+    <with-nav-body
+        :loaded="loaded"
+    >
         <div class="jumbotron">
             <h1 class="display-4">Welcome to The NecroLab!</h1>
             <p class="lead">Here you can find leaderboards and rankings for Crypt of the NecroDancer.</p>
@@ -8,18 +10,25 @@
             <p></p>
             <a class="btn btn-primary btn-lg" href="#" role="button">Learn more</a>
         </div>
-    </with-nav-layout>
+    </with-nav-body>
 </template>
 
 <script>
-import WithNavLayout from '../layouts/WithNavLayout.vue';
+import BasePage from './BasePage.vue';
+import WithNavBody from '../layouts/WithNavBody.vue';
 //import Highcharts from 'highcharts/highstock';
 //import Dygraph from 'dygraphs';
 
 export default {
+    extends: BasePage,
     name: 'home-page',
     components: {
-        'with-nav-layout': WithNavLayout,
+        'with-nav-body': WithNavBody,
+    },
+    methods: {
+        loadState(route_params) {
+            this.loaded = true;
+        }
     }
 };
 </script>
