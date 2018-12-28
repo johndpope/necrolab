@@ -23,8 +23,11 @@ class ReadDailyLeaderboardEntries extends Core {
      */
     public function rules() {
         return CommonApiValidationRules::getRules([
+            'leaderboard_source',
+            'character',
             'release',
             'mode',
+            'multiplayer_type',
             'date',
             'site',
             'search',

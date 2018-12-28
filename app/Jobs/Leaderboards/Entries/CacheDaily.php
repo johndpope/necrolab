@@ -14,6 +14,7 @@ use App\Components\PostgresCursor;
 use App\Components\Redis\Transaction\Pipeline as PipelineTransaction;
 use App\Components\Encoder;
 use App\Components\CacheNames\Leaderboards\Steam as CacheNames;
+use App\LeaderboardSources;
 use App\LeaderboardEntries;
 use App\ExternalSites;
 use App\EntryIndexes;
@@ -58,6 +59,9 @@ class CacheDaily implements ShouldQueue {
         
         /* ---------- Add each entry into its respective index ----------*/
         
+        //TODO: Remove line below when leaderboard sources are linked to leaderboards
+        $leaderboard_source_id = LeaderboardSources::getByName('steam')->id;
+        
         $indexes = [];
         
         foreach($cursor->getRecord() as $entry) {
@@ -66,8 +70,13 @@ class CacheDaily implements ShouldQueue {
             }
             
             $users_index_base_name = CacheNames::getDailyIndex(new DateTime($entry->daily_date), [
+                //TODO: Remove $leaderboard_source_id and uncomment $entry->leaderboard_source_id when leaderboard sources are linked to leaderboards
+                $leaderboard_source_id,
+                //$entry->leaderboard_source_id,
+                $entry->character_id,
                 $entry->release_id,
-                $entry->mode_id
+                $entry->mode_id,
+                $entry->multiplayer_type_id
             ]);
             
             ExternalSites::addToSiteIdIndexes($indexes[$entry->daily_date], $entry, $users_index_base_name, $entry->steam_user_id, $entry->rank);

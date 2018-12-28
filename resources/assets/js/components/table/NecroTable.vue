@@ -222,6 +222,13 @@ const NecroTable = {
             }
         },
         updateFromServer() {
+            let request_parameters = this.request_parameters;
+            
+            if(this.server_pagination) {
+                request_parameters['page'] = this.currentPage;
+                request_parameters['limit'] = this.limit;
+            }
+            
             axios.get(this.api_endpoint_url, {
                 params: this.request_parameters
             })

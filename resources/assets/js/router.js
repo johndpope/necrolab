@@ -82,7 +82,7 @@ const routes = [
         component: DailyLeaderboardsPage
     },
     {
-        path: '/leaderboards/daily/:leaderboard_source/:date',
+        path: '/leaderboards/daily/:leaderboard_source/:character/:release/:mode/:multiplayer_type/:date',
         component: DailyLeaderboardEntriesPage
     },
     {

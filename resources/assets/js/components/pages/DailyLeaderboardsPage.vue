@@ -7,7 +7,7 @@
         <necrotable 
             :api_endpoint_url="api_endpoint_url"
             :default_request_parameters="apiRequestParameters"
-            :header_columns="header_columns" 
+            :header_columns="headerColumns" 
             :filters="filters"
             :has_server_pagination="false"
         >
@@ -71,11 +71,6 @@ const LeaderboardSnapshotsPage = {
                 }   
             ],
             api_endpoint_url: '/api/1/leaderboards/daily',
-            header_columns: [
-                'Date',
-                'Players',
-                'Score'
-            ],
             filters: [
                 CharacterDropdownFilter,
                 ReleaseDropdownFilter,
@@ -89,11 +84,24 @@ const LeaderboardSnapshotsPage = {
             return {
                 leaderboard_source: this.leaderboard_source.name
             };
+        },
+        headerColumns() {
+            return [
+                'Rank',
+                'Player',
+                this.leaderboard_details_column.display_name
+            ];
         }
     },
     methods: {
-        getEntriesUrl(date) {
-            return '/leaderboards/daily/' + this.$store.getters['releases/getSelected'] + '/' + date;
+        getEntriesUrl(date) {            
+            return '/leaderboards/daily/' + 
+                this.leaderboard_source.name + '/' + 
+                this.$store.getters['characters/getSelected'] + '/' + 
+                this.$store.getters['releases/getSelected'] + '/' + 
+                this.$store.getters['modes/getSelected'] + '/' + 
+                this.$store.getters['multiplayer_types/getSelected'] + '/' +
+                date;
         },
         loadState(route_params) {
             let promise = this.$store.dispatch('page/loadModules', [

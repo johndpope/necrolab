@@ -16,7 +16,9 @@ use App\Components\Dataset\Dataset;
 use App\Components\Dataset\Indexes\Sql as SqlIndex;
 use App\Components\Dataset\DataProviders\Sql as SqlDataProvider;
 use App\LeaderboardEntries;
+use App\LeaderboardSources;
 use App\LeaderboardTypes;
+use App\Characters;
 use App\Releases;
 use App\Modes;
 use App\SeededTypes;
@@ -85,19 +87,32 @@ class LeaderboardEntriesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function dailyIndex(ReadDailyLeaderboardEntries $request) {
+        $leaderboard_source_id = LeaderboardSources::getByName($request->leaderboard_source)->id;
+        $character_id = Characters::getByName($request->character)->character_id;
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
         $date = new DateTime($request->date);
         
         $index_name = CacheNames::getDailyIndex($date, [
+            $leaderboard_source_id,
+            $character_id,
             $release_id,
-            $mode_id
+            $mode_id,
+            $multiplayer_type_id
         ]);
         
         
         /* ---------- Data Provider ---------- */
         
-        $data_provider = new SqlDataProvider(LeaderboardEntries::getDailyApiReadQuery($release_id, $mode_id, $date));
+        $data_provider = new SqlDataProvider(LeaderboardEntries::getDailyApiReadQuery(
+            $leaderboard_source_id,
+            $character_id,
+            $release_id, 
+            $mode_id, 
+            $multiplayer_type_id,
+            $date
+        ));
         
         
         /* ---------- Index ---------- */

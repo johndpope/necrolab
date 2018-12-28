@@ -176,22 +176,24 @@ class LeaderboardEntries extends Model {
         $query = DB::table('leaderboard_snapshots AS ls')
             ->select([
                 'ls.leaderboard_id',
+                //TODO:: Uncomment line below when leaderboard sources are linked to leaderboards
+                //'l.leaderboard_source_id',
+                'l.character_id',
                 'l.release_id',
-                'l.daily_date',
                 'l.mode_id',
+                'l.multiplayer_type_id',
+                'l.daily_date',
                 'le.steam_user_id',
                 'le.rank'
             ])
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'ls.leaderboard_id')
             ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
-            ->join('multiplayer_types AS mt', 'mt.id', '=', 'l.multiplayer_type_id')
             ->leftJoin('leaderboards_blacklist AS lb', 'lb.leaderboard_id', '=', 'l.leaderboard_id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
             ->leftJoin('users AS u', 'u.steam_user_id', '=', 'su.steam_user_id')
             ->where('ls.date', $date->format('Y-m-d'))
             ->where('lt.name', '=', 'daily')
-            ->where('mt.name', '=', 'single')
             ->whereNull('lb.leaderboards_blacklist_id');
             
         ExternalSites::addSiteIdSelectFields($query);
@@ -225,7 +227,7 @@ class LeaderboardEntries extends Model {
         return $query;
     }
     
-    public static function getDailyApiReadQuery(int $release_id, int $mode_id, DateTime $date) {    
+    public static function getDailyApiReadQuery(int $leaderboard_source_id, int $character_id, int $release_id, int $mode_id, int $multiplayer_type_id, DateTime $date) {    
         $entries_table_name = static::getTableName($date);
     
         $query = DB::table('leaderboards AS l')
@@ -248,9 +250,13 @@ class LeaderboardEntries extends Model {
         SteamUsers::addLeftJoins($query);
         SteamUserPbs::addLeftJoins($query);
         
-        $query->where('l.release_id', $release_id)
-            ->where('l.mode_id', $mode_id)
+        $query->where('l.character_id', $character_id)
             ->where('lt.name', 'daily')
+            //TODO:: Uncomment line below when leaderboard sources are linked to leaderboards
+            //->where('l.leaderboard_source_id', $leaderboard_source_id)
+            ->where('l.release_id', $release_id)
+            ->where('l.mode_id', $mode_id)
+            ->where('l.multiplayer_type_id', $multiplayer_type_id)
             ->where('l.daily_date', $date->format('Y-m-d'));
         
         return $query;
