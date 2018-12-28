@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use App\Components\CommonApiValidationRules;
 
-class ReadSteamUserDailyRankingEntries extends Core {
+class ReadPlayerDailyRankingEntries extends Core {
     /**
      * Determine if the user is authorized to make this request.
      *

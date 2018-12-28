@@ -16,13 +16,13 @@ use App\LeaderboardRankingTypes;
 use App\LeaderboardSnapshots;
 use App\LeaderboardEntries;
 use App\LeaderboardEntryDetails;
-use App\SteamUsers;
+use App\Players;
 use App\SteamReplays;
-use App\SteamUserPbs;
+use App\PlayerPbs;
 use App\Jobs\Rankings\Power\Generate as PowerRankingsGenerateJob;
 use App\Jobs\Rankings\Daily\Generate as DailyRankingsGenerateJob;
-use App\Jobs\SteamUsers\Cache as SteamUsersCacheJob;
-use App\Jobs\SteamUserPbs\Cache as SteamUserPbsCacheJob;
+use App\Jobs\Players\Cache as PlayersCacheJob;
+use App\Jobs\PlayerPbs\Cache as PlayerPbsCacheJob;
 use App\Jobs\Leaderboards\Entries\CacheNonDaily as CacheNonDailyLeadeboardEntriesJob;
 use App\Jobs\Leaderboards\Entries\CacheDaily as CacheDailyLeadeboardEntriesJob;
 use App\Jobs\Leaderboards\Entries\UpdateStats AS UpdateStatsJob;
@@ -67,9 +67,9 @@ class SaveToDatabase implements ShouldQueue {
         if(!empty($files)) {
             DB::beginTransaction();
             
-            SteamUsers::createTemporaryTable();
+            Players::createTemporaryTable();
             SteamReplays::createTemporaryTable();
-            SteamUserPbs::createTemporaryTable();
+            PlayerPbs::createTemporaryTable();
             Leaderboards::createTemporaryTable();
             LeaderboardSnapshots::createTemporaryTable();
             LeaderboardRankingTypes::createTemporaryTable();
@@ -78,13 +78,13 @@ class SaveToDatabase implements ShouldQueue {
             
             $ids_by_lbid = Leaderboards::getIdsByLbid();
             $snapshot_ids_by_leaderboard_id = LeaderboardSnapshots::getAllByLeaderboardIdForDate($this->date);
-            $steam_user_ids_by_steamid = SteamUsers::getAllIdsBySteamid();
+            $steam_user_ids_by_steamid = Players::getAllIdsBySteamid();
             $entry_details_by_name = LeaderboardEntryDetails::getAllByName();
-            $steam_user_pb_ids_by_unique = SteamUserPbs::getAllIdsByUnique();
+            $steam_user_pb_ids_by_unique = PlayerPbs::getAllIdsByUnique();
             
-            $steam_users_insert_queue = SteamUsers::getTempInsertQueue(20000);
+            $steam_users_insert_queue = Players::getTempInsertQueue(20000);
             $steam_replays_insert_queue = SteamReplays::getTempInsertQueue(6000);
-            $steam_user_pbs_insert_queue = SteamUserPbs::getTempInsertQueue(5000);
+            $steam_user_pbs_insert_queue = PlayerPbs::getTempInsertQueue(5000);
             $leaderboards_insert_queue = Leaderboards::getTempInsertQueue(5000);
             $leaderboard_snapshots_insert_queue = LeaderboardSnapshots::getTempInsertQueue(12000);
             $leaderboard_ranking_types_insert_queue = LeaderboardRankingTypes::getTempInsertQueue(30000);
@@ -174,7 +174,7 @@ class SaveToDatabase implements ShouldQueue {
                             $steam_user_id = $steam_user_ids_by_steamid[$entry->steamid];
                         }
                         else {                            
-                            $steam_user_id = SteamUsers::getNewRecordId();
+                            $steam_user_id = Players::getNewRecordId();
     
                             $updated = new DateTime('-31 day');
                             
@@ -221,12 +221,12 @@ class SaveToDatabase implements ShouldQueue {
                             $pb_is_valid = true;
                         }
                         else {
-                            $pb_is_valid = SteamUserPbs::isValid($leaderboard, $entry->score);
+                            $pb_is_valid = PlayerPbs::isValid($leaderboard, $entry->score);
                             
                             if($pb_is_valid) {
-                                SteamUserPbs::setPropertiesFromEntry($entry, $leaderboard, $this->date);
+                                PlayerPbs::setPropertiesFromEntry($entry, $leaderboard, $this->date);
                             
-                                $steam_user_pb_id = SteamUserPbs::getNewRecordId();
+                                $steam_user_pb_id = PlayerPbs::getNewRecordId();
 
                                 $steam_user_pbs_insert_queue->addRecord([
                                     'steam_user_pb_id' => $steam_user_pb_id,
@@ -291,9 +291,9 @@ class SaveToDatabase implements ShouldQueue {
             Leaderboards::saveTemp();
             LeaderboardRankingTypes::saveTemp();
             LeaderboardSnapshots::saveTemp();
-            SteamUsers::saveNewTemp();
+            Players::saveNewTemp();
             LeaderboardEntryDetails::saveTemp();
-            SteamUserPbs::saveNewTemp();
+            PlayerPbs::saveNewTemp();
             SteamReplays::saveNewTemp();
             LeaderboardEntries::saveTemp($this->date);
             
@@ -302,8 +302,8 @@ class SaveToDatabase implements ShouldQueue {
             // Dispatch all asynchronous jobs that utilize this imported data
             PowerRankingsGenerateJob::dispatch($this->date);
             DailyRankingsGenerateJob::dispatch($this->date);
-            SteamUsersCacheJob::dispatch();
-            SteamUserPbsCacheJob::dispatch();
+            PlayersCacheJob::dispatch();
+            PlayerPbsCacheJob::dispatch();
             UpdateStatsJob::dispatch($this->date);
             CacheNonDailyLeadeboardEntriesJob::dispatch($this->date);
             CacheDailyLeadeboardEntriesJob::dispatch($this->date);

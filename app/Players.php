@@ -13,7 +13,7 @@ use App\Traits\HasManualSequence;
 use App\Traits\AddsSqlCriteria;
 use App\ExternalSites;
 
-class SteamUsers extends Model {
+class Players extends Model {
     use HasTempTable, HasManualSequence, AddsSqlCriteria;
 
     /**
@@ -96,7 +96,7 @@ class SteamUsers extends Model {
         ");
     }
     
-    public static function updateRecordSearchIndex(\App\SteamUsers $record) {    
+    public static function updateRecordSearchIndex(\App\Players $record) {    
         DB::update("
             UPDATE steam_users
             SET personaname_search_index = to_tsvector(:personaname)

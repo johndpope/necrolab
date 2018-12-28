@@ -8,7 +8,7 @@ use stdClass;
 use Illuminate\Support\Facades\Storage;
 use App\Components\SteamDataManager\Core;
 
-class SteamUsers
+class Players
 extends Core {  
     protected $temp_files = [];
 

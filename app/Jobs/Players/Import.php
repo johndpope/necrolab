@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs\SteamUsers;
+namespace App\Jobs\Players;
 
 use DateTime;
 use Illuminate\Bus\Queueable;
@@ -16,10 +16,10 @@ use Steam\Utility\GuzzleUrlBuilder;
 use Steam\Command\User\GetPlayerSummaries;
 use App\Components\RecordQueue;
 use App\Components\CallbackHandler;
-use App\Components\SteamDataManager\SteamUsers as SteamUsersManager;
+use App\Components\SteamDataManager\Players as PlayersManager;
 use App\Components\PostgresCursor;
-use App\SteamUsers;
-use App\Jobs\SteamUsers\SaveImported as SaveImportedJob;
+use App\Players;
+use App\Jobs\Players\SaveImported as SaveImportedJob;
 
 class Import implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -57,7 +57,7 @@ class Import implements ShouldQueue {
         
         /* ---------- Configure Data Manager ---------- */ 
         
-        $this->data_manager = new SteamUsersManager($this->date);
+        $this->data_manager = new PlayersManager($this->date);
         
         $this->data_manager->deleteTemp();
         
@@ -109,7 +109,7 @@ class Import implements ShouldQueue {
         
         $cursor = new PostgresCursor(
             'get_outdated_steam_users', 
-            SteamUsers::getOutdatedIdsQuery(),
+            Players::getOutdatedIdsQuery(),
             20000
         );
         

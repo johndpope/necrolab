@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use App\Components\Encoder;
-use App\Components\CacheNames\Users\Steam as SteamUsersCacheNames;
+use App\Components\CacheNames\Users\Steam as PlayersCacheNames;
 use App\Traits\HasTempTable;
 
 class EntryIndexes extends Model {

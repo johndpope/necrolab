@@ -17,10 +17,10 @@ class LeaderboardEntriesResource extends JsonResource {
         ];
         
         if(!empty($this->steamid)) {
-            $record['player'] = new SteamUsersResource($this->resource);
+            $record['player'] = new PlayersResource($this->resource);
         }
         
-        $record['pb'] = new SteamUserPbsResource($this->resource);
+        $record['pb'] = new PlayerPbsResource($this->resource);
     
         return $record;
     }

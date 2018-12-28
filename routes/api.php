@@ -45,9 +45,11 @@ Route::get('/1/soundtracks', 'Api\SoundtracksController@index');
 // Data Types
 Route::get('/1/data_types', 'Api\DataTypesController@index');
 
-// Steam Players
-Route::get('/1/players/steam', 'Api\SteamUsersController@index');
-Route::get('/1/players/steam/{id}', 'Api\SteamUsersController@show');
+// Players
+Route::get('/1/players', 'Api\PlayersController@index');
+
+// Player
+Route::get('/1/player', 'Api\PlayersController@show');
 
 // Specific User PBs
 Route::get('/1/players/steam/{steamid}/pbs', 'Api\SteamUserPbsController@playerIndex');

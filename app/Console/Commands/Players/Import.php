@@ -1,9 +1,9 @@
 <?php
 
-namespace App\Console\Commands\SteamUsers;
+namespace App\Console\Commands\Players;
 
 use Illuminate\Console\Command;
-use App\Jobs\SteamUsers\Import as ImportJob;
+use App\Jobs\Players\Import as ImportJob;
 
 class Import extends Command {
     /**

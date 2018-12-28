@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs\SteamUsers;
+namespace App\Jobs\Players;
 
 use DateTime;
 use Exception;
@@ -10,8 +10,8 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
-use App\Components\SteamDataManager\SteamUsers as SteamUsersManager;
-use App\SteamUsers;
+use App\Components\SteamDataManager\Players as PlayersManager;
+use App\Players;
 
 class SaveImported implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -46,18 +46,18 @@ class SaveImported implements ShouldQueue {
     public function handle() {
         $this->date = new DateTime();
         
-        $this->data_manager = new SteamUsersManager($this->date);
+        $this->data_manager = new PlayersManager($this->date);
         
         $temp_files = $this->data_manager->getTempFiles();
         
         if(!empty($temp_files)) {
             DB::beginTransaction();
             
-            SteamUsers::createTemporaryTable();
+            Players::createTemporaryTable();
             
-            $steam_user_ids_by_steamid = SteamUsers::getAllIdsBySteamid();
+            $steam_user_ids_by_steamid = Players::getAllIdsBySteamid();
             
-            $steam_users_insert_queue = SteamUsers::getTempInsertQueue(6500);
+            $steam_users_insert_queue = Players::getTempInsertQueue(6500);
 
             foreach($this->data_manager->getTempEntry() as $steam_users) {
                 if(!empty($steam_users->response->players)) {
@@ -86,7 +86,7 @@ class SaveImported implements ShouldQueue {
             
             $steam_users_insert_queue->commit();
             
-            SteamUsers::updateFromTemp();
+            Players::updateFromTemp();
             
             DB::commit();
             

@@ -3,10 +3,10 @@ namespace App\Components\Dataset\Indexes;
 
 use stdClass;
 use Illuminate\Support\Facades\Cache;
-use App\Components\CacheNames\Users\Steam as SteamUsersCacheNames;
+use App\Components\CacheNames\Users\Steam as PlayersCacheNames;
 use App\Components\Dataset\Indexes\Index;
 use App\EntryIndexes;
-use App\SteamUsers;
+use App\Players;
 
 class Sql
 extends Index {    
@@ -46,7 +46,7 @@ extends Index {
                 if(!empty($base_index_data)) {
                     // If a search term has been specified then filter the base index by it
                     if(!empty($this->search_term)) {
-                        $matching_steam_user_ids = SteamUsers::getIdsBySearchTerm($this->search_term);
+                        $matching_steam_user_ids = Players::getIdsBySearchTerm($this->search_term);
                         
                         /*
                             Loop through the base index and check for if its steam_user_id exists in $matching_steam_user_ids.

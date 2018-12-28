@@ -7,9 +7,9 @@ use Illuminate\Support\Facades\Cache;
 use App\Components\Dataset\Dataset;
 use App\Components\Dataset\DataProviders\Sql as SqlDataProvider;
 use App\Http\Controllers\Controller;
-use App\Http\Resources\SteamUserPbsResource;
-use App\Http\Requests\Api\ReadSteamUserPbs;
-use App\SteamUserPbs;
+use App\Http\Resources\PlayerPbsResource;
+use App\Http\Requests\Api\ReadPlayerPbs;
+use App\PlayerPbs;
 use App\Characters;
 use App\Releases;
 use App\Modes;
@@ -18,7 +18,7 @@ use App\SeededTypes;
 use App\MultiplayerTypes;
 use App\Soundtracks;
 
-class SteamUserPbsController extends Controller {
+class PlayerPbsController extends Controller {
     /**
      * Instantiate a new controller instance.
      *
@@ -33,10 +33,10 @@ class SteamUserPbsController extends Controller {
     /**
      * Shared method for player pb endpoints in this controller.
      *
-     * @param  \App\Http\Requests\Api\ReadSteamUserPbs  $request
+     * @param  \App\Http\Requests\Api\ReadPlayerPbs  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerIndex(ReadSteamUserPbs $request) {        
+    public function playerIndex(ReadPlayerPbs $request) {        
         $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->leaderboard_type_id;
         $steamid = $request->steamid;
         $character_id = Characters::getByName($request->character)->character_id;
@@ -49,7 +49,7 @@ class SteamUserPbsController extends Controller {
         
         $cache_key = "players:steam:{$steamid}:pbs:{$character_id}:{$release_id}:{$mode_id}:{$leaderboard_type_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}";
         
-        return SteamUserPbsResource::collection(
+        return PlayerPbsResource::collection(
             Cache::store('opcache')->remember($cache_key, 5, function() use(
                 $steamid,
                 $character_id, 
@@ -60,7 +60,7 @@ class SteamUserPbsController extends Controller {
                 $multiplayer_type_id,
                 $soundtrack_id
             ) {            
-                return SteamUserPbs::getPlayerApiReadQuery(
+                return PlayerPbs::getPlayerApiReadQuery(
                     $steamid,
                     $character_id,
                     $release_id,

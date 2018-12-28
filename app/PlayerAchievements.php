@@ -4,7 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 
-class SteamUserAchievements extends Model {
+class PlayerAchievements extends Model {
     /**
      * The table associated with the model.
      *

@@ -6,7 +6,7 @@ use Socialite;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
-use App\SteamUsers;
+use App\Players;
 use App\Users;
 
 class LoginController extends Controller {
@@ -50,7 +50,7 @@ class LoginController extends Controller {
             return redirect('/');
         }
     
-        $steam_user = SteamUsers::where('steamid', $user->user['steamid'])->first();
+        $steam_user = Players::where('steamid', $user->user['steamid'])->first();
         
         if(empty($steam_user)) {
             /* ---------- Redirect back to the login page indicating that the user cannot be found ---------- */

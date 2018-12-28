@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use App\Components\CommonApiValidationRules;
 
-class ReadSteamUserCharacterRankingEntries extends Core {
+class ReadPlayerDailyLeaderboardEntries extends Core {
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -25,8 +25,6 @@ class ReadSteamUserCharacterRankingEntries extends Core {
         return CommonApiValidationRules::getRules([
             'release',
             'mode',
-            'seeded_type',
-            'character',
             'page',
             'limit'
         ]);

@@ -13,7 +13,7 @@ use App\Traits\HasManualSequence;
 use App\Traits\AddsSqlCriteria;
 use App\Releases;
 
-class SteamUserPbs extends Model {
+class PlayerPbs extends Model {
     use HasTempTable, HasManualSequence, AddsSqlCriteria;
 
     /**

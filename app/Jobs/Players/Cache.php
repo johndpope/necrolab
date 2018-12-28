@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs\SteamUsers;
+namespace App\Jobs\Players;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\DB;
 use App\Components\PostgresCursor;
 use App\Components\Encoder;
 use App\Components\CacheNames\Players as CacheNames;
-use App\SteamUsers;
+use App\Players;
 use App\ExternalSites;
 use App\EntryIndexes;
 
@@ -42,7 +42,7 @@ class Cache implements ShouldQueue {
     
         $cursor = new PostgresCursor(
             'steam_users_cache', 
-            SteamUsers::getCacheQuery(),
+            Players::getCacheQuery(),
             20000
         );
 

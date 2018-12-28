@@ -9,8 +9,8 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\LeaderboardEntriesResource;
 use App\Http\Requests\Api\ReadLeaderboardEntries;
 use App\Http\Requests\Api\ReadDailyLeaderboardEntries;
-use App\Http\Requests\Api\ReadSteamUserLeaderboardEntries;
-use App\Http\Requests\Api\ReadSteamUserDailyLeaderboardEntries;
+use App\Http\Requests\Api\ReadPlayerLeaderboardEntries;
+use App\Http\Requests\Api\ReadPlayerDailyLeaderboardEntries;
 use App\Components\CacheNames\Leaderboards\Steam as CacheNames;
 use App\Components\Dataset\Dataset;
 use App\Components\Dataset\Indexes\Sql as SqlIndex;
@@ -146,7 +146,7 @@ class LeaderboardEntriesController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerNonDailyIndex($steamid, ReadSteamUserLeaderboardEntries $request) {
+    public function playerNonDailyIndex($steamid, ReadPlayerLeaderboardEntries $request) {
         $validated_request = $request->validated();
  
         $release_id = Releases::getByName($validated_request['release'])->release_id;
@@ -169,7 +169,7 @@ class LeaderboardEntriesController extends Controller {
                 $multiplayer_type_id,
                 $soundtrack_id
             ) {
-                return LeaderboardEntries::getSteamUserNonDailyApiReadQuery(
+                return LeaderboardEntries::getPlayerNonDailyApiReadQuery(
                     $steamid,
                     $date,
                     $release_id,
@@ -189,7 +189,7 @@ class LeaderboardEntriesController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerCategoryIndex($steamid, ReadSteamUserLeaderboardEntries $request) {        
+    public function playerCategoryIndex($steamid, ReadPlayerLeaderboardEntries $request) {        
         $validated_request = $request->validated();
  
         $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->leaderboard_type_id;
@@ -214,7 +214,7 @@ class LeaderboardEntriesController extends Controller {
                 $multiplayer_type_id,
                 $soundtrack_id
             ) {
-                return LeaderboardEntries::getSteamUserCategoryApiReadQuery(
+                return LeaderboardEntries::getPlayerCategoryApiReadQuery(
                     $steamid,
                     $date,
                     $leaderboard_type_id,
@@ -234,14 +234,14 @@ class LeaderboardEntriesController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerDailyIndex($steamid, ReadSteamUserDailyLeaderboardEntries $request) {
+    public function playerDailyIndex($steamid, ReadPlayerDailyLeaderboardEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
         
         
         /* ---------- Data Provider ---------- */
         
-        $data_provider = new SqlDataProvider(LeaderboardEntries::getSteamUserDailyApiReadQuery($steamid, $release_id, $mode_id));
+        $data_provider = new SqlDataProvider(LeaderboardEntries::getPlayerDailyApiReadQuery($steamid, $release_id, $mode_id));
         
         
         /* ---------- Dataset ---------- */

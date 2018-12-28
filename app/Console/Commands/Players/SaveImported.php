@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Console\Commands\SteamUsers;
+namespace App\Console\Commands\Players;
 
 use Illuminate\Console\Command;
-use App\Jobs\SteamUsers\Cache as CacheJob;
+use App\Jobs\Players\SaveImported as SaveImportedJob;
 
-class Cache extends Command {
+class SaveImported extends Command {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'steam_users:cache';
+    protected $signature = 'steam_users:save_imported';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Loads steam users into cache.";
+    protected $description = "Saves imported Steam users to the database.";
 
     /**
      * Create a new command instance.
@@ -35,6 +35,6 @@ class Cache extends Command {
      * @return mixed
      */
     public function handle() {
-        CacheJob::dispatch()->onConnection('sync');
+        SaveImportedJob::dispatch()->onConnection('sync');
     }
 }

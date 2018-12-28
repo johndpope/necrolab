@@ -1,24 +1,25 @@
 <?php
 
-namespace App\Console\Commands\SteamUsers;
+namespace App\Console\Commands\PlayerPbs;
 
+use DateTime;
 use Illuminate\Console\Command;
-use App\Jobs\SteamUsers\SaveImported as SaveImportedJob;
+use App\Jobs\PlayerPbs\Cache as CacheJob;
 
-class SaveImported extends Command {
+class Cache extends Command {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'steam_users:save_imported';
+    protected $signature = 'steam_user_pbs:cache';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Saves imported Steam users to the database.";
+    protected $description = "Loads steam user pbs into cache.";
 
     /**
      * Create a new command instance.
@@ -35,6 +36,6 @@ class SaveImported extends Command {
      * @return mixed
      */
     public function handle() {
-        SaveImportedJob::dispatch()->onConnection('sync');
+        CacheJob::dispatch()->onConnection('sync');
     }
 }

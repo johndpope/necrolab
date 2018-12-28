@@ -1,10 +1,9 @@
 <?php
 
-namespace App\Console\Commands\SteamUserPbs;
+namespace App\Console\Commands\Players;
 
-use DateTime;
 use Illuminate\Console\Command;
-use App\Jobs\SteamUserPbs\Cache as CacheJob;
+use App\Jobs\Players\Cache as CacheJob;
 
 class Cache extends Command {
     /**
@@ -12,14 +11,14 @@ class Cache extends Command {
      *
      * @var string
      */
-    protected $signature = 'steam_user_pbs:cache';
+    protected $signature = 'steam_users:cache';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Loads steam user pbs into cache.";
+    protected $description = "Loads steam users into cache.";
 
     /**
      * Create a new command instance.

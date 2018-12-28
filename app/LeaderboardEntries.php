@@ -9,8 +9,8 @@ use App\ExternalSites;
 use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
 use App\Modes;
-use App\SteamUsers;
-use App\SteamUserPbs;
+use App\Players;
+use App\PlayerPbs;
 
 class LeaderboardEntries extends Model {
     use HasPartitions, HasTempTable;
@@ -213,13 +213,13 @@ class LeaderboardEntries extends Model {
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
             ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id');
             
-        SteamUsers::addSelects($query);
-        SteamUserPbs::addSelects($query);
+        Players::addSelects($query);
+        PlayerPbs::addSelects($query);
             
-        SteamUserPbs::addJoins($query);        
+        PlayerPbs::addJoins($query);        
 
-        SteamUsers::addLeftJoins($query);
-        SteamUserPbs::addLeftJoins($query);
+        Players::addLeftJoins($query);
+        PlayerPbs::addLeftJoins($query);
             
         $query->where('l.lbid', $lbid)
             ->where('ls.date', $date->format('Y-m-d'));        
@@ -242,13 +242,13 @@ class LeaderboardEntries extends Model {
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
             ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id');
         
-        SteamUsers::addSelects($query);
-        SteamUserPbs::addSelects($query);
+        Players::addSelects($query);
+        PlayerPbs::addSelects($query);
             
-        SteamUserPbs::addJoins($query);        
+        PlayerPbs::addJoins($query);        
 
-        SteamUsers::addLeftJoins($query);
-        SteamUserPbs::addLeftJoins($query);
+        Players::addLeftJoins($query);
+        PlayerPbs::addLeftJoins($query);
         
         $query->where('l.character_id', $character_id)
             ->where('lt.name', 'daily')
@@ -262,7 +262,7 @@ class LeaderboardEntries extends Model {
         return $query;
     }
     
-    public static function getSteamUserNonDailyApiQuery(
+    public static function getPlayerNonDailyApiQuery(
         string $steamid, 
         DateTime $date, 
         int $release_id, 
@@ -284,9 +284,9 @@ class LeaderboardEntries extends Model {
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
             ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id');
         
-        SteamUserPbs::addSelects($query);
-        SteamUserPbs::addJoins($query);
-        SteamUserPbs::addLeftJoins($query);
+        PlayerPbs::addSelects($query);
+        PlayerPbs::addJoins($query);
+        PlayerPbs::addLeftJoins($query);
         
         $query->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
@@ -301,7 +301,7 @@ class LeaderboardEntries extends Model {
         return $query;
     }
     
-    public static function getSteamUserNonDailyApiReadQuery(
+    public static function getPlayerNonDailyApiReadQuery(
         string $steamid, 
         DateTime $date, 
         int $release_id, 
@@ -310,7 +310,7 @@ class LeaderboardEntries extends Model {
         int $multiplayer_type_id,
         int $soundtrack_id
     ) {
-        $query = static::getSteamUserNonDailyApiQuery(
+        $query = static::getPlayerNonDailyApiQuery(
             $steamid, 
             $date, 
             $release_id, 
@@ -325,7 +325,7 @@ class LeaderboardEntries extends Model {
         return $query;
     }
     
-    public static function getSteamUserCategoryApiReadQuery(
+    public static function getPlayerCategoryApiReadQuery(
         string $steamid, 
         DateTime $date, 
         int $leaderboard_type_id,
@@ -335,7 +335,7 @@ class LeaderboardEntries extends Model {
         int $multiplayer_type_id,
         int $soundtrack_id
     ) {
-        $query = static::getSteamUserNonDailyApiQuery(
+        $query = static::getPlayerNonDailyApiQuery(
             $steamid, 
             $date, 
             $release_id, 
@@ -350,7 +350,7 @@ class LeaderboardEntries extends Model {
         return $query;
     }
     
-    public static function getSteamUserDailyApiReadQuery(string $steamid, int $release_id, int $mode_id) {            
+    public static function getPlayerDailyApiReadQuery(string $steamid, int $release_id, int $mode_id) {            
         $query = DB::table('steam_user_pbs AS sup')
             ->select([
                 'l.daily_date AS first_snapshot_date',
@@ -359,9 +359,9 @@ class LeaderboardEntries extends Model {
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id')
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id');
         
-        SteamUserPbs::addSelects($query);
-        SteamUserPbs::addJoins($query);
-        SteamUserPbs::addLeftJoins($query);
+        PlayerPbs::addSelects($query);
+        PlayerPbs::addJoins($query);
+        PlayerPbs::addLeftJoins($query);
         
         $query->where('su.steamid', $steamid)
             ->where('l.release_id', $release_id)

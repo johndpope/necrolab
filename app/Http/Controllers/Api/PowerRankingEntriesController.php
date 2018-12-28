@@ -11,9 +11,9 @@ use App\Http\Resources\PowerRankingEntriesResource;
 use App\Http\Requests\Api\ReadPowerRankingEntries;
 use App\Http\Requests\Api\ReadCategoryRankingEntries;
 use App\Http\Requests\Api\ReadPowerRankingCharacterEntries;
-use App\Http\Requests\Api\ReadSteamUserPowerRankingEntries;
-use App\Http\Requests\Api\ReadSteamUserCategoryRankingEntries;
-use App\Http\Requests\Api\ReadSteamUserCharacterRankingEntries;
+use App\Http\Requests\Api\ReadPlayerPowerRankingEntries;
+use App\Http\Requests\Api\ReadPlayerCategoryRankingEntries;
+use App\Http\Requests\Api\ReadPlayerCharacterRankingEntries;
 use App\Components\CacheNames\Rankings\Power as CacheNames;
 use App\Components\Dataset\Dataset;
 use App\Components\Dataset\Indexes\Sql as SqlIndex;
@@ -205,7 +205,7 @@ class PowerRankingEntriesController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerIndex($steamid, ReadSteamUserPowerRankingEntries $request) {
+    public function playerIndex($steamid, ReadPlayerPowerRankingEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
@@ -213,7 +213,7 @@ class PowerRankingEntriesController extends Controller {
         return $this->getPlayerEntriesResponse(
             CacheNames::getPlayer($steamid, $release_id, $mode_id, $seeded_type_id),
             $request,
-            PowerRankingEntries::getSteamUserApiReadQuery(
+            PowerRankingEntries::getPlayerApiReadQuery(
                 $steamid, 
                 $release_id, 
                 $mode_id, 
@@ -228,7 +228,7 @@ class PowerRankingEntriesController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerCategoryIndex($steamid, ReadSteamUserCategoryRankingEntries $request) {
+    public function playerCategoryIndex($steamid, ReadPlayerCategoryRankingEntries $request) {
         $leaderboard_type = LeaderboardTypes::getByName($request->leaderboard_type);
     
         $leaderboard_type_id = $leaderboard_type->leaderboard_type_id;
@@ -239,7 +239,7 @@ class PowerRankingEntriesController extends Controller {
         return $this->getPlayerEntriesResponse(
             CacheNames::getPlayerCategory($steamid, $leaderboard_type_id, $release_id, $mode_id, $seeded_type_id),
             $request,
-            PowerRankingEntries::getSteamUserCategoryApiReadQuery(
+            PowerRankingEntries::getPlayerCategoryApiReadQuery(
                 $steamid,
                 $leaderboard_type,
                 $release_id, 
@@ -255,7 +255,7 @@ class PowerRankingEntriesController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerCharacterIndex($steamid, ReadSteamUserCharacterRankingEntries $request) {
+    public function playerCharacterIndex($steamid, ReadPlayerCharacterRankingEntries $request) {
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $character_name = $request->character;
@@ -265,7 +265,7 @@ class PowerRankingEntriesController extends Controller {
         return $this->getPlayerEntriesResponse(
             CacheNames::getPlayerCharacter($steamid, $release_id, $mode_id, $seeded_type_id, $character_id),
             $request,
-            PowerRankingEntries::getSteamUserApiReadQuery(
+            PowerRankingEntries::getPlayerApiReadQuery(
                 $steamid, 
                 $release_id, 
                 $mode_id, 

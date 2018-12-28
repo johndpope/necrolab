@@ -19,7 +19,7 @@ class DailyRankingEntriesResource extends JsonResource {
             $record['date'] = $this->date;
         }
         else {
-            $record['player'] = new SteamUsersResource($this->resource);
+            $record['player'] = new PlayersResource($this->resource);
         }
         
         $record['rank'] = (int)$this->rank;

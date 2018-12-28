@@ -4,7 +4,7 @@ namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
 
-class SteamUsersResource extends JsonResource {
+class PlayersResource extends JsonResource {
     /**
      * Transforma single release into an array.
      *

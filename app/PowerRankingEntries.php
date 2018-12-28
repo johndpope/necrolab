@@ -12,7 +12,7 @@ use App\ExternalSites;
 use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
 use App\Releases;
-use App\SteamUsers;
+use App\Players;
 use App\LeaderboardTypes;
 
 class PowerRankingEntries extends Model {
@@ -205,13 +205,13 @@ class PowerRankingEntries extends Model {
             ->where('pr.mode_id', $mode_id)
             ->where('pr.seeded_type_id', $seeded_type_id);
         
-        SteamUsers::addSelects($query);
-        SteamUsers::addLeftJoins($query);
+        Players::addSelects($query);
+        Players::addLeftJoins($query);
         
         return $query;
     }
     
-    public static function getSteamUserApiReadQuery(string $steamid, int $leaderboard_type_id, int $release_id, int $mode_id,  int $seeded_type_id, callable $additional_criteria = NULL) {
+    public static function getPlayerApiReadQuery(string $steamid, int $leaderboard_type_id, int $release_id, int $mode_id,  int $seeded_type_id, callable $additional_criteria = NULL) {
         $release = Releases::getById($release_id);
         
         $start_date = new DateTime($release['start_date']);
@@ -261,13 +261,13 @@ class PowerRankingEntries extends Model {
         return $query;
     }
     
-    public static function getSteamUserCategoryApiReadQuery(string $steamid, LeaderboardTypes $leaderboard_type, int $release_id, int $mode_id,  int $seeded_type_id) { 
+    public static function getPlayerCategoryApiReadQuery(string $steamid, LeaderboardTypes $leaderboard_type, int $release_id, int $mode_id,  int $seeded_type_id) { 
         $additional_criteria = function(Builder $query) use ($leaderboard_type) {
             $rank_name = "{$leaderboard_type->name}_rank";
         
             $query->whereNotNull("pre.{$rank_name}");
         };
     
-        return static::getSteamUserApiReadQuery($steamid, $release_id, $mode_id, $seeded_type_id, $additional_criteria);
+        return static::getPlayerApiReadQuery($steamid, $release_id, $mode_id, $seeded_type_id, $additional_criteria);
     }
 }

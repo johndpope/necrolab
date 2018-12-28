@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use App\Components\CommonApiValidationRules;
 
-class ReadSteamUserLeaderboardEntries extends Core {
+class ReadPlayerPbs extends Core {
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -23,8 +23,8 @@ class ReadSteamUserLeaderboardEntries extends Core {
      */
     public function rules() {
         return CommonApiValidationRules::getRules([
-            'date',
             'leaderboard_type',
+            'character',
             'release',
             'mode',
             'seeded_type',

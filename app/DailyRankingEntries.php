@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
-use App\SteamUsers;
+use App\Players;
 
 class DailyRankingEntries extends Model {
     use HasPartitions, HasTempTable;
@@ -153,13 +153,13 @@ class DailyRankingEntries extends Model {
             ->where('dr.mode_id', $mode_id)
             ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type_id);
             
-        SteamUsers::addSelects($query);
-        SteamUsers::addLeftJoins($query);
+        Players::addSelects($query);
+        Players::addLeftJoins($query);
         
         return $query;
     }
     
-    public static function getSteamUserApiReadQuery(string $steamid, int $release_id, int $mode_id, int $daily_ranking_day_type_id) {
+    public static function getPlayerApiReadQuery(string $steamid, int $release_id, int $mode_id, int $daily_ranking_day_type_id) {
         $release = Releases::getById($release_id);
         
         $start_date = new DateTime($release['start_date']);
