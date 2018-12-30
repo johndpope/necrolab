@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
+use App\Http\Requests\Api\ReadLeaderboardSnapshots;
 use App\Http\Requests\Api\ReadPlayerLeaderboardSnapshots;
 use App\Http\Resources\LeaderboardSnapshotsResource;
 use App\Http\Resources\PlayerLeaderboardSnapshotsResource;
@@ -33,10 +34,16 @@ class LeaderboardSnapshotsController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function index($lbid) {      
+    public function index(ReadLeaderboardSnapshots $request) {
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
+        
+        $leaderboard_id = $request->leaderboard_id;
+        
+        $cache_key = "leaderboards:{$leaderboard_source->name}:{$leaderboard_id}:snapshots";
+    
         return LeaderboardSnapshotsResource::collection(
-            Cache::store('opcache')->remember("leaderboards:{$lbid}:snapshots", 5, function() use($lbid) {
-                return LeaderboardSnapshots::getApiReadQuery($lbid)->get();
+            Cache::store('opcache')->remember("", 5, function() use($leaderboard_source, $leaderboard_id) {
+                return LeaderboardSnapshots::getApiReadQuery($leaderboard_source, $leaderboard_id)->get();
             })
         );
     }

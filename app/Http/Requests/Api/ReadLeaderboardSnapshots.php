@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use App\Components\CommonApiValidationRules;
 
-class ReadLeaderboardEntries extends Core {
+class ReadLeaderboardSnapshots extends Core {
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -24,12 +24,7 @@ class ReadLeaderboardEntries extends Core {
     public function rules() {
         return CommonApiValidationRules::getRules([
             'leaderboard_source',
-            'leaderboard_id',
-            'date',
-            'site',
-            'search',
-            'page',
-            'limit'
+            'leaderboard_id'
         ]);
     }
 }

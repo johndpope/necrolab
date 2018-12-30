@@ -7,6 +7,7 @@
     >
         <necrotable
             :api_endpoint_url="apiEndpointUrl" 
+            :default_request_parameters="apiRequestParameters"
             :header_columns="headerColumns" 
             :has_server_pagination="false"
         >
@@ -56,7 +57,13 @@ const LeaderboardSnapshotsPage = {
     },
     computed: {
         apiEndpointUrl() {
-            return '/api/1/leaderboards/' + this.leaderboard.id + '/snapshots';
+            return '/api/1/leaderboard/snapshots';
+        },
+        apiRequestParameters() {
+            return {
+                leaderboard_source: this.leaderboard_source.name,
+                leaderboard_id: this.leaderboard.id
+            };
         },
         breadcrumbs() {
             return [

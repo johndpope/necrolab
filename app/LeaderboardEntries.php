@@ -202,7 +202,7 @@ class LeaderboardEntries extends Model {
         return $query;
     }
     
-    public static function getNonDailyApiReadQuery(int $lbid, DateTime $date) {    
+    public static function getNonDailyApiReadQuery(LeaderboardSources $leaderboard_source, int $leaderboard_id, DateTime $date) {    
         $entries_table_name = static::getTableName($date);
     
         $query = DB::table('leaderboards AS l')
@@ -222,13 +222,20 @@ class LeaderboardEntries extends Model {
         Players::addLeftJoins($query);
         PlayerPbs::addLeftJoins($query);
             
-        $query->where('l.lbid', $lbid)
+        $query->where('l.lbid', $leaderboard_id)
             ->where('ls.date', $date->format('Y-m-d'));        
         
         return $query;
     }
     
-    public static function getDailyApiReadQuery(int $leaderboard_source_id, int $character_id, int $release_id, int $mode_id, int $multiplayer_type_id, DateTime $date) {    
+    public static function getDailyApiReadQuery(
+        int $leaderboard_source_id, 
+        int $character_id, 
+        int $release_id, 
+        int $mode_id, 
+        int $multiplayer_type_id, 
+        DateTime $date
+    ) {    
         $entries_table_name = static::getTableName($date);
     
         $query = DB::table('leaderboards AS l')

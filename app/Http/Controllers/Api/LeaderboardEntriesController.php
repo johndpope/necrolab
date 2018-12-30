@@ -49,12 +49,19 @@ class LeaderboardEntriesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function nonDailyIndex(ReadLeaderboardEntries $request) {
-        $index_name = CacheNames::getIndex((int)$request->lbid, []);
-        
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
+    
+        $index_name = CacheNames::getIndex($request->leaderboard_id, [
+            $leaderboard_source->name
+        ]);
         
         /* ---------- Data Provider ---------- */
         
-        $data_provider = new SqlDataProvider(LeaderboardEntries::getNonDailyApiReadQuery($request->lbid, new DateTime($request->date)));
+        $data_provider = new SqlDataProvider(LeaderboardEntries::getNonDailyApiReadQuery(
+            $leaderboard_source,
+            $request->leaderboard_id, 
+            new DateTime($request->date)
+        ));
         
         
         /* ---------- Index ---------- */

@@ -129,7 +129,7 @@ class LeaderboardSnapshots extends Model {
         return $snapshots_by_leaderboard_id;
     }
     
-    public static function getApiReadQuery(int $lbid) {
+    public static function getApiReadQuery(LeaderboardSources $leaderboard_source, int $leaderboard_id) {
         return DB::table('leaderboards AS l')
             ->select([
                 'ls.date',
@@ -139,7 +139,7 @@ class LeaderboardSnapshots extends Model {
                 'ls.win_count'
             ])
             ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_id', '=', 'l.leaderboard_id')
-            ->where('l.lbid', $lbid)
+            ->where('l.lbid', $leaderboard_id)
             ->orderBy('date', 'desc');
     }
     

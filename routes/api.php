@@ -78,7 +78,7 @@ Route::get('/1/rankings/daily', 'Api\DailyRankingsController@index');
 Route::get('/1/rankings/daily/entries', 'Api\DailyRankingEntriesController@index');
 
 // Leaderboard Entries
-Route::get('/1/leaderboards/entries', 'Api\LeaderboardEntriesController@nonDailyIndex');
+Route::get('/1/leaderboard/entries', 'Api\LeaderboardEntriesController@nonDailyIndex');
 Route::get('/1/leaderboards/daily/entries', 'Api\LeaderboardEntriesController@dailyIndex');
 
 // Leaderboards
@@ -86,11 +86,10 @@ Route::get('/1/leaderboards', 'Api\LeaderboardsController@index');
 Route::get('/1/leaderboards/category', 'Api\LeaderboardsController@categoryIndex');
 Route::get('/1/leaderboards/daily', 'Api\LeaderboardsController@dailyIndex');
 Route::get('/1/leaderboards/xml', 'Api\LeaderboardsController@xmlIndex');
-Route::get('/1/leaderboards/by_url_name/{url_name}', 'Api\LeaderboardsController@byUrlName');
 Route::get('/1/leaderboards/{lbid}', 'Api\LeaderboardsController@show');
 
 // Leaderboard Snapshots
-Route::get('/1/leaderboards/{lbid}/snapshots', 'Api\LeaderboardSnapshotsController@index');
+Route::get('/1/leaderboard/snapshots', 'Api\LeaderboardSnapshotsController@index');
 
 // Leaderboard
 Route::get('/1/leaderboard/by_attributes', 'Api\LeaderboardsController@byAttributes');

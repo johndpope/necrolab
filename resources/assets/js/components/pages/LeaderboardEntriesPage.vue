@@ -78,7 +78,7 @@ const LeaderboardEntriesPage = {
     data() {
         return {
             date: '',
-            api_endpoint_url: '/api/1/leaderboards/entries',
+            api_endpoint_url: '/api/1/leaderboard/entries',
             filters: [
                 SiteDropdownFilter
             ]
@@ -88,7 +88,7 @@ const LeaderboardEntriesPage = {
         apiRequestParameters() {
             return {
                 leaderboard_source: this.leaderboard_source.name,
-                lbid: this.leaderboard.id,
+                leaderboard_id: this.leaderboard.id,
                 date: this.date
             };
         },
