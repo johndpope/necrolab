@@ -17,6 +17,7 @@ use App\CallbackHandler;
 use App\Characters;
 use App\Releases;
 use App\Modes;
+use App\LeaderboardSources;
 use App\LeaderboardTypes;
 use App\SeededTypes;
 use App\Soundtracks;
@@ -357,7 +358,7 @@ class Leaderboards extends Model {
             ->orderBy('l.daily_date', 'desc');
     }
     
-    public static function getPlayerApiReadQuery(string $steamid) {
+    public static function getPlayerApiReadQuery(string $player_id) {
         return DB::table('steam_user_pbs AS sup')
             ->select([
                 'l.leaderboard_id',
@@ -380,7 +381,7 @@ class Leaderboards extends Model {
             ->join('multiplayer_types AS mt', 'mt.id', '=', 'l.multiplayer_type_id')
             ->leftJoin('leaderboard_ranking_types AS lrt', 'lrt.leaderboard_id', '=', 'l.leaderboard_id')
             ->leftJoin('ranking_types AS rt', 'rt.id', '=', 'lrt.ranking_type_id')
-            ->where('su.steamid', $steamid)
+            ->where('su.steamid', $player_id)
             ->groupBy(
                 'l.leaderboard_id',
                 'l.lbid',
@@ -396,23 +397,23 @@ class Leaderboards extends Model {
             ->orderBy('l.name', 'asc');
     }
     
-    public static function getPlayerNonDailyApiReadQuery(string $steamid, int $release_id, int $mode_id, int $character_id) {
-        return static::getPlayerApiReadQuery($steamid)
+    public static function getPlayerNonDailyApiReadQuery(string $player_id, LeaderboardSources $leaderboard_source, int $release_id, int $mode_id, int $character_id) {
+        return static::getPlayerApiReadQuery($player_id)
             ->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
             ->where('l.character_id', $character_id)
             ->where('lt.name', '!=', 'daily');
     }
     
-    public static function getPlayerCategoryApiReadQuery(string $steamid, int $leaderboard_type_id, int $release_id, int $mode_id, int $character_id) {
-        return static::getPlayerApiReadQuery($steamid)
+    public static function getPlayerCategoryApiReadQuery(string $player_id, LeaderboardSources $leaderboard_source, int $leaderboard_type_id, int $release_id, int $mode_id, int $character_id) {
+        return static::getPlayerApiReadQuery($player_id)
             ->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
             ->where('l.character_id', $character_id)
             ->where('l.leaderboard_type_id', $leaderboard_type_id);
     }
     
-    public static function getPlayerDailyApiReadQuery(string $steamid, int $release_id, int $mode_id) {    
+    public static function getPlayerDailyApiReadQuery(string $player_id, LeaderboardSources $leaderboard_source, int $release_id, int $mode_id) {    
         return DB::table('steam_user_pbs AS sup')
             ->select([
                 'l.leaderboard_id',
@@ -421,6 +422,7 @@ class Leaderboards extends Model {
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id')
             ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->where('su.steamid', $player_id)
             ->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
             ->where('lt.name', 'daily')

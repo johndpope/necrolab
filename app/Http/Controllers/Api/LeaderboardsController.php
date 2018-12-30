@@ -209,17 +209,21 @@ class LeaderboardsController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerIndex($steamid, ReadLeaderboards $request) {
+    public function playerIndex(ReadLeaderboards $request) {
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
+    
+        $player_id = $request->player_id;
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $character_id = Characters::getByName($request->character)->character_id;
         
-        $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:{$mode_id}:{$character_id}";
+        $cache_key = "player:{$leaderboard_source->name}:{$player_id}:leaderboards:{$release_id}:{$mode_id}:{$character_id}";
         
         return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id, $mode_id, $character_id) {
+            Cache::store('opcache')->remember($cache_key, 5, function() use($player_id, $leaderboard_source, $release_id, $mode_id, $character_id) {
                 return Leaderboards::getPlayerNonDailyApiReadQuery(
-                    $steamid,
+                    $player_id,
+                    $leaderboard_source,
                     $release_id,
                     $mode_id,
                     $character_id
@@ -234,18 +238,29 @@ class LeaderboardsController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerCategoryIndex($steamid, ReadCategoryLeaderboards $request) {
+    public function playerCategoryIndex(ReadCategoryLeaderboards $request) {
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
+    
+        $player_id = $request->player_id;
         $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type_id)->leaderboard_type_id;
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $character_id = Characters::getByName($request->character)->character_id;
         
-        $cache_key = "players:steam:{$steamid}:leaderboards:category:{$leaderboard_type_id}:{$release_id}:{$mode_id}:{$character_id}";
+        $cache_key = "player:{$leaderboard_source->name}:{$player_id}:leaderboards:category:{$leaderboard_type_id}:{$release_id}:{$mode_id}:{$character_id}";
         
         return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $leaderboard_type_id, $release_id, $mode_id, $character_id) {
+            Cache::store('opcache')->remember($cache_key, 5, function() use(
+                $player_id, 
+                $leaderboard_source, 
+                $leaderboard_type_id, 
+                $release_id, 
+                $mode_id, 
+                $character_id
+            ) {
                 return Leaderboards::getPlayerCategoryApiReadQuery(
-                    $steamid,
+                    $player_id,
+                    $leaderboard_source,
                     $leaderboard_type_id,
                     $release_id,
                     $mode_id,
@@ -261,16 +276,20 @@ class LeaderboardsController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerDailyIndex($steamid, ReadDailyLeaderboards $request) {
+    public function playerDailyIndex(ReadDailyLeaderboards $request) {
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
+    
+        $player_id = $request->player_id;
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
         
-        $cache_key = "players:steam:{$steamid}:leaderboards:daily:{$release_id}:{$mode_id}";
+        $cache_key = "player:{$leaderboard_source->name}:{$player_id}:leaderboards:daily:{$release_id}:{$mode_id}";
         
         return DailyLeaderboardsResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use($steamid, $release_id, $mode_id) {
+            Cache::store('opcache')->remember($cache_key, 5, function() use($player_id, $leaderboard_source, $release_id, $mode_id) {
                 return Leaderboards::getPlayerDailyApiReadQuery(
-                    $steamid,
+                    $player_id,
+                    $leaderboard_source,
                     $release_id,
                     $mode_id
                 )->get();

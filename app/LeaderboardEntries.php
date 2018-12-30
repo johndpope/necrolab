@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\ExternalSites;
 use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
+use App\LeaderboardSources;
 use App\Modes;
 use App\Players;
 use App\PlayerPbs;
@@ -263,8 +264,9 @@ class LeaderboardEntries extends Model {
     }
     
     public static function getPlayerNonDailyApiQuery(
-        string $steamid, 
+        string $player_id, 
         DateTime $date, 
+        LeaderboardSources $leaderboard_source,
         int $release_id, 
         int $mode_id, 
         int $seeded_type_id, 
@@ -294,7 +296,7 @@ class LeaderboardEntries extends Model {
             ->where('l.multiplayer_type_id', $multiplayer_type_id)
             ->where('l.soundtrack_id', $soundtrack_id)
             ->where('ls.date', $date->format('Y-m-d'))
-            ->where('su.steamid', $steamid)
+            ->where('su.steamid', $player_id)
             ->orderBy('c.sort_order', 'asc')
             ->orderBy('lt.leaderboard_type_id', 'asc');
             
@@ -302,8 +304,9 @@ class LeaderboardEntries extends Model {
     }
     
     public static function getPlayerNonDailyApiReadQuery(
-        string $steamid, 
+        string $player_id, 
         DateTime $date, 
+        LeaderboardSources $leaderboard_source,
         int $release_id, 
         int $mode_id, 
         int $seeded_type_id, 
@@ -311,8 +314,9 @@ class LeaderboardEntries extends Model {
         int $soundtrack_id
     ) {
         $query = static::getPlayerNonDailyApiQuery(
-            $steamid, 
+            $player_id, 
             $date, 
+            $leaderboard_source,
             $release_id, 
             $mode_id, 
             $seeded_type_id, 
@@ -326,8 +330,9 @@ class LeaderboardEntries extends Model {
     }
     
     public static function getPlayerCategoryApiReadQuery(
-        string $steamid, 
+        string $player_id, 
         DateTime $date, 
+        LeaderboardSources $leaderboard_source,
         int $leaderboard_type_id,
         int $release_id, 
         int $mode_id, 
@@ -336,8 +341,9 @@ class LeaderboardEntries extends Model {
         int $soundtrack_id
     ) {
         $query = static::getPlayerNonDailyApiQuery(
-            $steamid, 
+            $player_id, 
             $date, 
+            $leaderboard_source,
             $release_id, 
             $mode_id, 
             $seeded_type_id, 
@@ -350,7 +356,14 @@ class LeaderboardEntries extends Model {
         return $query;
     }
     
-    public static function getPlayerDailyApiReadQuery(string $steamid, int $release_id, int $mode_id) {            
+    public static function getPlayerDailyApiReadQuery(
+        string $player_id, 
+        LeaderboardSources $leaderboard_source, 
+        int $character_id, 
+        int $release_id, 
+        int $mode_id,
+        int $multiplayer_type_id
+    ) {            
         $query = DB::table('steam_user_pbs AS sup')
             ->select([
                 'l.daily_date AS first_snapshot_date',
@@ -363,10 +376,12 @@ class LeaderboardEntries extends Model {
         PlayerPbs::addJoins($query);
         PlayerPbs::addLeftJoins($query);
         
-        $query->where('su.steamid', $steamid)
+        $query->where('su.steamid', $player_id)
+            ->where('lt.name', 'daily')
+            ->where('l.character_id', $character_id)
             ->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
-            ->where('lt.name', 'daily')
+            ->where('l.multiplayer_type_id',$multiplayer_type_id)
             ->orderBy('l.daily_date', 'desc');
         
         return $query;

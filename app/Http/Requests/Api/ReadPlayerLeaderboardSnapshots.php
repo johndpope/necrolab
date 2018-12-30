@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use App\Components\CommonApiValidationRules;
 
-class ReadPlayerDailyRankingEntries extends Core {
+class ReadPlayerLeaderboardSnapshots extends Core {
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -25,11 +25,7 @@ class ReadPlayerDailyRankingEntries extends Core {
         return CommonApiValidationRules::getRules([
             'player_id',
             'leaderboard_source',
-            'release',
-            'mode',
-            'number_of_days',
-            'page',
-            'limit'
+            'leaderboard_id'
         ]);
     }
 }

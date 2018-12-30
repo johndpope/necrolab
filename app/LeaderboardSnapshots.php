@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use App\Components\PostgresCursor;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
+use App\LeaderboardSources;
 use App\LeaderboardEntries;
 
 class LeaderboardSnapshots extends Model {
@@ -142,7 +143,7 @@ class LeaderboardSnapshots extends Model {
             ->orderBy('date', 'desc');
     }
     
-    public static function getPlayerApiDates(string $steamid, int $lbid) {
+    public static function getPlayerApiDates(string $player_id, LeaderboardSources $leaderboard_source, int $leaderboard_id) {
         // Attempt to look up the earliest snapshot that this player has an entry for via their PBs.
         $earliest_snapshot = DB::table('steam_user_pbs AS sup')
             ->selectRaw("
@@ -155,8 +156,8 @@ class LeaderboardSnapshots extends Model {
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id')
             ->join('releases AS r', 'r.release_id', '=', 'l.release_id')
             ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_snapshot_id', '=', 'sup.first_leaderboard_snapshot_id')
-            ->where('su.steamid', $steamid)
-            ->where('l.lbid', $lbid)
+            ->where('su.steamid', $player_id)
+            ->where('l.lbid', $leaderboard_id)
             ->groupBy(
                 'sup.leaderboard_id',
                 'l.release_id',

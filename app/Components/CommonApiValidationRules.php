@@ -23,7 +23,8 @@ class CommonApiValidationRules {
         'start_date' => 'required|date_format:Y-m-d|before_or_equal:end_date',
         'end_date' => 'required|date_format:Y-m-d|after_or_equal:start_date',
         'lbid' => 'required|integer',
-        'steamid' => 'required|string'
+        'player_id' => 'required|string',
+        'leaderboard_id' => 'required|string'
     ];
 
     public static function getRules(array $rule_names) {    

@@ -10,6 +10,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\PlayerPbsResource;
 use App\Http\Requests\Api\ReadPlayerPbs;
 use App\PlayerPbs;
+use App\LeaderboardSources;
 use App\Characters;
 use App\Releases;
 use App\Modes;
@@ -36,9 +37,11 @@ class PlayerPbsController extends Controller {
      * @param  \App\Http\Requests\Api\ReadPlayerPbs  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerIndex(ReadPlayerPbs $request) {        
+    public function playerIndex(ReadPlayerPbs $request) {
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
+        
         $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->leaderboard_type_id;
-        $steamid = $request->steamid;
+        $player_id = $request->player_id;
         $character_id = Characters::getByName($request->character)->character_id;
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
@@ -47,11 +50,12 @@ class PlayerPbsController extends Controller {
         $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
         $soundtrack_id = Soundtracks::getByName($request->soundtrack)->id;
         
-        $cache_key = "players:steam:{$steamid}:pbs:{$character_id}:{$release_id}:{$mode_id}:{$leaderboard_type_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}";
+        $cache_key = "players:{$leaderboard_source->name}:{$player_id}:pbs:{$character_id}:{$release_id}:{$mode_id}:{$leaderboard_type_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}";
         
         return PlayerPbsResource::collection(
             Cache::store('opcache')->remember($cache_key, 5, function() use(
-                $steamid,
+                $player_id,
+                $leaderboard_source,
                 $character_id, 
                 $release_id, 
                 $mode_id, 
@@ -61,7 +65,8 @@ class PlayerPbsController extends Controller {
                 $soundtrack_id
             ) {            
                 return PlayerPbs::getPlayerApiReadQuery(
-                    $steamid,
+                    $player_id,
+                    $leaderboard_source,
                     $character_id,
                     $release_id,
                     $mode_id,

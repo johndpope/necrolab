@@ -10,6 +10,7 @@ use App\Http\Resources\LeaderboardEntriesResource;
 use App\Http\Requests\Api\ReadLeaderboardEntries;
 use App\Http\Requests\Api\ReadDailyLeaderboardEntries;
 use App\Http\Requests\Api\ReadPlayerLeaderboardEntries;
+use App\Http\Requests\Api\ReadPlayerCategoryLeaderboardEntries;
 use App\Http\Requests\Api\ReadPlayerDailyLeaderboardEntries;
 use App\Components\CacheNames\Leaderboards\Steam as CacheNames;
 use App\Components\Dataset\Dataset;
@@ -142,27 +143,28 @@ class LeaderboardEntriesController extends Controller {
     /**
      * Display a listing of all non daily leaderboard entries for a specific player.
      *
-     * @param string $steamid
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerNonDailyIndex($steamid, ReadPlayerLeaderboardEntries $request) {
-        $validated_request = $request->validated();
- 
-        $release_id = Releases::getByName($validated_request['release'])->release_id;
-        $mode_id = Modes::getByName($validated_request['mode'])->mode_id;
-        $date = new DateTime($validated_request['date']);
+    public function playerNonDailyIndex(ReadPlayerLeaderboardEntries $request) {
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
+    
+        $player_id = $request->player_id;
+        $release_id = Releases::getByName($request->release)->release_id;
+        $mode_id = Modes::getByName($request->mode)->mode_id;        
+        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
+        $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
+        $soundtrack_id = Soundtracks::getByName($request->soundtrack)->id;
         
-        $seeded_type_id = SeededTypes::getByName($validated_request['seeded_type'])->id;
-        $multiplayer_type_id = MultiplayerTypes::getByName($validated_request['multiplayer_type'])->id;
-        $soundtrack_id = Soundtracks::getByName($validated_request['soundtrack'])->id;
+        $date = new DateTime($request->date);
         
-        $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:{$mode_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}:entries:{$date->format('Y-m-d')}";
+        $cache_key = "players:{$leaderboard_source->name}:{$player_id}:leaderboards:{$release_id}:{$mode_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}:entries:{$date->format('Y-m-d')}";
         
         return LeaderboardEntriesResource::collection(
             Cache::store('opcache')->remember($cache_key, 5, function() use(
-                $steamid,
+                $player_id,
                 $date,
+                $leaderboard_source,
                 $release_id, 
                 $mode_id,
                 $seeded_type_id,
@@ -170,8 +172,9 @@ class LeaderboardEntriesController extends Controller {
                 $soundtrack_id
             ) {
                 return LeaderboardEntries::getPlayerNonDailyApiReadQuery(
-                    $steamid,
+                    $player_id,
                     $date,
+                    $leaderboard_source,
                     $release_id,
                     $mode_id,
                     $seeded_type_id,
@@ -185,13 +188,13 @@ class LeaderboardEntriesController extends Controller {
     /**
      * Display a listing of all leaderboard entries of a particular category for a specific player.
      *
-     * @param string $steamid
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerCategoryIndex($steamid, ReadPlayerLeaderboardEntries $request) {        
-        $validated_request = $request->validated();
+    public function playerCategoryIndex(ReadPlayerCategoryLeaderboardEntries $request) {        
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
  
+        $player_id = $request->player_id;
         $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->leaderboard_type_id;
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
@@ -201,12 +204,13 @@ class LeaderboardEntriesController extends Controller {
         $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
         $soundtrack_id = Soundtracks::getByName($request->soundtrack)->id;
         
-        $cache_key = "players:steam:{$steamid}:leaderboards:{$leaderboard_type_id}:{$release_id}:{$mode_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}:score:entries:{$date->format('Y-m-d')}";
+        $cache_key = "players:{$leaderboard_source->name}:{$player_id}:leaderboards:{$leaderboard_type_id}:{$release_id}:{$mode_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}:entries:{$date->format('Y-m-d')}";
         
         return LeaderboardEntriesResource::collection(
             Cache::store('opcache')->remember($cache_key, 5, function() use(
-                $steamid,
+                $player_id,
                 $date,
+                $leaderboard_source,
                 $leaderboard_type_id,
                 $release_id, 
                 $mode_id,
@@ -215,8 +219,9 @@ class LeaderboardEntriesController extends Controller {
                 $soundtrack_id
             ) {
                 return LeaderboardEntries::getPlayerCategoryApiReadQuery(
-                    $steamid,
+                    $player_id,
                     $date,
+                    $leaderboard_source,
                     $leaderboard_type_id,
                     $release_id,
                     $mode_id,
@@ -234,19 +239,31 @@ class LeaderboardEntriesController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerDailyIndex($steamid, ReadPlayerDailyLeaderboardEntries $request) {
+    public function playerDailyIndex(ReadPlayerDailyLeaderboardEntries $request) {
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
+    
+        $player_id = $request->player_id;
+        $character_id = Characters::getByName($request->character)->character_id;
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
         
         
         /* ---------- Data Provider ---------- */
         
-        $data_provider = new SqlDataProvider(LeaderboardEntries::getPlayerDailyApiReadQuery($steamid, $release_id, $mode_id));
+        $data_provider = new SqlDataProvider(LeaderboardEntries::getPlayerDailyApiReadQuery(
+            $player_id, 
+            $leaderboard_source, 
+            $character_id,
+            $release_id, 
+            $mode_id,
+            $multiplayer_type_id
+        ));
         
         
         /* ---------- Dataset ---------- */
         
-        $cache_key = "players:steam:{$steamid}:leaderboards:{$release_id}:{$mode_id}:daily:entries";
+        $cache_key = "players:{$leaderboard_source->name}:{$player_id}:leaderboards:{$release_id}:{$mode_id}:daily:{$character_id}:{$multiplayer_type_id}:entries";
         
         $dataset = new Dataset($cache_key, $data_provider);
         

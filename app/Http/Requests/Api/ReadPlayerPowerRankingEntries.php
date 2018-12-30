@@ -23,6 +23,8 @@ class ReadPlayerPowerRankingEntries extends Core {
      */
     public function rules() {
         return CommonApiValidationRules::getRules([
+            'player_id',
+            'leaderboard_source',
             'release',
             'mode',
             'seeded_type',

@@ -245,7 +245,8 @@ class PlayerPbs extends Model {
     }
     
     public static function getPlayerApiReadQuery(
-        string $steamid, 
+        string $player_id, 
+        LeaderboardSources $leaderboard_source,
         int $character_id, 
         int $release_id, 
         int $mode_id,
@@ -269,7 +270,7 @@ class PlayerPbs extends Model {
         static::addJoins($query);
         static::addLeftJoins($query);
 
-        $query->where('su.steamid', $steamid)
+        $query->where('su.steamid', $player_id)
             ->where('l.character_id', $character_id)
             ->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)

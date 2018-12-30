@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
 use App\Players;
+use App\LeaderboardSources;
 
 class DailyRankingEntries extends Model {
     use HasPartitions, HasTempTable;
@@ -159,7 +160,13 @@ class DailyRankingEntries extends Model {
         return $query;
     }
     
-    public static function getPlayerApiReadQuery(string $steamid, int $release_id, int $mode_id, int $daily_ranking_day_type_id) {
+    public static function getPlayerApiReadQuery(
+        string $player_id, 
+        LeaderboardSources $leaderboard_source, 
+        int $release_id, 
+        int $mode_id, 
+        int $daily_ranking_day_type_id
+    ) {
         $release = Releases::getById($release_id);
         
         $start_date = new DateTime($release['start_date']);
@@ -189,7 +196,7 @@ class DailyRankingEntries extends Model {
                     ])
                     ->join("{$table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.daily_ranking_id')
                     ->join('steam_users AS su', 'su.steam_user_id', '=', 'dre.steam_user_id')
-                    ->where('su.steamid', $steamid)
+                    ->where('su.steamid', $player_id)
                     ->whereBetween('dr.date', [
                         $start_date->format('Y-m-d'),
                         $end_date->format('Y-m-d')

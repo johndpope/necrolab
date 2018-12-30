@@ -14,6 +14,7 @@ use App\Components\Dataset\Dataset;
 use App\Components\Dataset\Indexes\Sql as SqlIndex;
 use App\Components\Dataset\DataProviders\Sql as SqlDataProvider;
 use App\DailyRankingEntries;
+use App\LeaderboardSources;
 use App\Releases;
 use App\Modes;
 use App\DailyRankingDayTypes;
@@ -90,7 +91,10 @@ class DailyRankingEntriesController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerIndex($steamid, ReadPlayerDailyRankingEntries $request) {
+    public function playerIndex(ReadPlayerDailyRankingEntries $request) {
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
+    
+        $player_id = $request->player_id;
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $daily_ranking_day_type_id = DailyRankingDayTypes::getByName($request->number_of_days)->daily_ranking_day_type_id;
@@ -99,7 +103,8 @@ class DailyRankingEntriesController extends Controller {
         /* ---------- Data Provider ---------- */
         
         $data_provider = new SqlDataProvider(DailyRankingEntries::getPlayerApiReadQuery(
-            $steamid,
+            $player_id,
+            $leaderboard_source,
             $release_id, 
             $mode_id, 
             $daily_ranking_day_type_id
@@ -110,7 +115,8 @@ class DailyRankingEntriesController extends Controller {
         
         $dataset = new Dataset(
             CacheNames::getPlayerRankings(
-                $steamid, 
+                $player_id, 
+                $leaderboard_source->id,
                 $release_id, 
                 $mode_id, 
                 $daily_ranking_day_type_id

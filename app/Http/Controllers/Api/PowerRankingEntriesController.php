@@ -19,6 +19,7 @@ use App\Components\Dataset\Dataset;
 use App\Components\Dataset\Indexes\Sql as SqlIndex;
 use App\Components\Dataset\DataProviders\Sql as SqlDataProvider;
 use App\PowerRankingEntries;
+use App\LeaderboardSources;
 use App\LeaderboardTypes;
 use App\Releases;
 use App\Modes;
@@ -205,16 +206,20 @@ class PowerRankingEntriesController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerIndex($steamid, ReadPlayerPowerRankingEntries $request) {
+    public function playerIndex(ReadPlayerPowerRankingEntries $request) {
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
+    
+        $player_id = $request->player_id;
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         
         return $this->getPlayerEntriesResponse(
-            CacheNames::getPlayer($steamid, $release_id, $mode_id, $seeded_type_id),
+            CacheNames::getPlayer($player_id, $leaderboard_source->id, $release_id, $mode_id, $seeded_type_id),
             $request,
             PowerRankingEntries::getPlayerApiReadQuery(
-                $steamid, 
+                $player_id, 
+                $leaderboard_source,
                 $release_id, 
                 $mode_id, 
                 $seeded_type_id
@@ -228,7 +233,11 @@ class PowerRankingEntriesController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerCategoryIndex($steamid, ReadPlayerCategoryRankingEntries $request) {
+    public function playerCategoryIndex(ReadPlayerCategoryRankingEntries $request) {
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
+    
+        $player_id = $request->player_id;
+    
         $leaderboard_type = LeaderboardTypes::getByName($request->leaderboard_type);
     
         $leaderboard_type_id = $leaderboard_type->leaderboard_type_id;
@@ -237,10 +246,11 @@ class PowerRankingEntriesController extends Controller {
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         
         return $this->getPlayerEntriesResponse(
-            CacheNames::getPlayerCategory($steamid, $leaderboard_type_id, $release_id, $mode_id, $seeded_type_id),
+            CacheNames::getPlayerCategory($player_id, $leaderboard_source->id, $leaderboard_type_id, $release_id, $mode_id, $seeded_type_id),
             $request,
             PowerRankingEntries::getPlayerCategoryApiReadQuery(
-                $steamid,
+                $player_id,
+                $leaderboard_source,
                 $leaderboard_type,
                 $release_id, 
                 $mode_id, 
@@ -255,18 +265,25 @@ class PowerRankingEntriesController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerCharacterIndex($steamid, ReadPlayerCharacterRankingEntries $request) {
+    public function playerCharacterIndex(ReadPlayerCharacterRankingEntries $request) {
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
+    
+        $player_id = $request->player_id;
+    
         $release_id = Releases::getByName($request->release)->release_id;
         $mode_id = Modes::getByName($request->mode)->mode_id;
+        
         $character_name = $request->character;
         $character_id = Characters::getByName($character_name)->character_id;
+        
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
 
         return $this->getPlayerEntriesResponse(
-            CacheNames::getPlayerCharacter($steamid, $release_id, $mode_id, $seeded_type_id, $character_id),
+            CacheNames::getPlayerCharacter($player_id, $leaderboard_source->id, $release_id, $mode_id, $seeded_type_id, $character_id),
             $request,
             PowerRankingEntries::getPlayerApiReadQuery(
-                $steamid, 
+                $player_id, 
+                $leaderboard_source,
                 $release_id, 
                 $mode_id, 
                 $seeded_type_id

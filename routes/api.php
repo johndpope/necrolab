@@ -21,6 +21,9 @@ Route::fallback(function(){
     return response()->json([], 404);
 });
 
+
+/* --------- Supplemental data endpoints --------- */
+
 // Releases
 Route::get('/1/releases', 'Api\ReleasesController@index');
 
@@ -42,17 +45,20 @@ Route::get('/1/multiplayer_types', 'Api\MultiplayerTypesController@index');
 // Soundtracks
 Route::get('/1/soundtracks', 'Api\SoundtracksController@index');
 
+// Leaderboard Types
+Route::get('/1/leaderboards/types', 'Api\LeaderboardTypesController@index');
+
+// Leaderboard Details Columns
+Route::get('/1/leaderboards/details_columns', 'Api\LeaderboardDetailsColumnsController@index');
+
+// Leaderboard Sources
+Route::get('/1/leaderboards/sources', 'Api\LeaderboardSourcesController@index');
+
 // Data Types
 Route::get('/1/data_types', 'Api\DataTypesController@index');
 
-// Players
-Route::get('/1/players', 'Api\PlayersController@index');
 
-// Player
-Route::get('/1/player', 'Api\PlayersController@show');
-
-// Specific User PBs
-Route::get('/1/players/steam/{steamid}/pbs', 'Api\SteamUserPbsController@playerIndex');
+/* --------- All players endpoints --------- */
 
 // Power Rankings
 Route::get('/1/rankings/power', 'Api\PowerRankingsController@index');
@@ -61,11 +67,6 @@ Route::get('/1/rankings/power', 'Api\PowerRankingsController@index');
 Route::get('/1/rankings/power/entries', 'Api\PowerRankingEntriesController@index');
 Route::get('/1/rankings/character/entries', 'Api\PowerRankingEntriesController@characterIndex');
 Route::get('/1/rankings/category/entries', 'Api\PowerRankingEntriesController@categoryIndex');
-
-// Steam User Power Ranking Entries
-Route::get('/1/players/steam/{steamid}/rankings/power/entries', 'Api\PowerRankingEntriesController@playerIndex');
-Route::get('/1/players/steam/{steamid}/rankings/character/entries', 'Api\PowerRankingEntriesController@playerCharacterIndex');
-Route::get('/1/players/steam/{steamid}/rankings/category/entries', 'Api\PowerRankingEntriesController@playerCategoryIndex');
 
 // Daily Rankings Day Types
 Route::get('/1/rankings/daily/day_types', 'Api\DailyRankingDayTypesController@index');
@@ -76,26 +77,9 @@ Route::get('/1/rankings/daily', 'Api\DailyRankingsController@index');
 // Daily Ranking Entries
 Route::get('/1/rankings/daily/entries', 'Api\DailyRankingEntriesController@index');
 
-// Steam User Daily Ranking Entries
-Route::get('/1/players/steam/{steamid}/rankings/daily/entries', 'Api\DailyRankingEntriesController@playerIndex');
-
 // Leaderboard Entries
 Route::get('/1/leaderboards/entries', 'Api\LeaderboardEntriesController@nonDailyIndex');
 Route::get('/1/leaderboards/daily/entries', 'Api\LeaderboardEntriesController@dailyIndex');
-// 
-// Steam User Leaderboard Entries
-Route::get('/1/players/steam/{steamid}/leaderboards/entries', 'Api\LeaderboardEntriesController@playerNonDailyIndex');
-Route::get('/1/players/steam/{steamid}/leaderboards/category/entries', 'Api\LeaderboardEntriesController@playerCategoryIndex');
-Route::get('/1/players/steam/{steamid}/leaderboards/daily/entries', 'Api\LeaderboardEntriesController@playerDailyIndex');
-
-// Leaderboard Types
-Route::get('/1/leaderboards/types', 'Api\LeaderboardTypesController@index');
-
-// Leaderboard Details Columns
-Route::get('/1/leaderboards/details_columns', 'Api\LeaderboardDetailsColumnsController@index');
-
-// Leaderboard Sources
-Route::get('/1/leaderboards/sources', 'Api\LeaderboardSourcesController@index');
 
 // Leaderboards
 Route::get('/1/leaderboards', 'Api\LeaderboardsController@index');
@@ -105,16 +89,41 @@ Route::get('/1/leaderboards/xml', 'Api\LeaderboardsController@xmlIndex');
 Route::get('/1/leaderboards/by_url_name/{url_name}', 'Api\LeaderboardsController@byUrlName');
 Route::get('/1/leaderboards/{lbid}', 'Api\LeaderboardsController@show');
 
-// Leaderboard
-Route::get('/1/leaderboard/by_attributes', 'Api\LeaderboardsController@byAttributes');
-
-// Steam User Leaderboards
-Route::get('/1/players/steam/{steamid}/leaderboards', 'Api\LeaderboardsController@playerIndex');
-Route::get('/1/players/steam/{steamid}/leaderboards/category', 'Api\LeaderboardsController@playerCategoryIndex');
-Route::get('/1/players/steam/{steamid}/leaderboards/daily', 'Api\LeaderboardsController@playerDailyIndex');
-
 // Leaderboard Snapshots
 Route::get('/1/leaderboards/{lbid}/snapshots', 'Api\LeaderboardSnapshotsController@index');
 
-// Steam User Leaderboard Snapshots
-Route::get('/1/players/steam/{steamid}/leaderboards/{lbid}/snapshots', 'Api\LeaderboardSnapshotsController@playerIndex');
+// Leaderboard
+Route::get('/1/leaderboard/by_attributes', 'Api\LeaderboardsController@byAttributes');
+
+
+/* ---------- Player Endpoints ---------- */
+
+// Players
+Route::get('/1/players', 'Api\PlayersController@index');
+
+// Player
+Route::get('/1/player', 'Api\PlayersController@show');
+
+// Player Leaderboards
+Route::get('/1/player/leaderboards', 'Api\LeaderboardsController@playerIndex');
+Route::get('/1/player/leaderboards/category', 'Api\LeaderboardsController@playerCategoryIndex');
+Route::get('/1/player/leaderboards/daily', 'Api\LeaderboardsController@playerDailyIndex');
+
+// Player Leaderboard Snapshots
+Route::get('/1/player/leaderboard/snapshots', 'Api\LeaderboardSnapshotsController@playerIndex');
+
+// Specific User PBs
+Route::get('/1/player/pbs', 'Api\PlayerPbsController@playerIndex');
+
+// Player Power Ranking Entries
+Route::get('/1/player/rankings/power/entries', 'Api\PowerRankingEntriesController@playerIndex');
+Route::get('/1/player/rankings/character/entries', 'Api\PowerRankingEntriesController@playerCharacterIndex');
+Route::get('/1/player/rankings/category/entries', 'Api\PowerRankingEntriesController@playerCategoryIndex');
+
+// Player Daily Ranking Entries
+Route::get('/1/player/rankings/daily/entries', 'Api\DailyRankingEntriesController@playerIndex');
+
+// Player Leaderboard Entries
+Route::get('/1/player/leaderboards/entries', 'Api\LeaderboardEntriesController@playerNonDailyIndex');
+Route::get('/1/player/leaderboards/category/entries', 'Api\LeaderboardEntriesController@playerCategoryIndex');
+Route::get('/1/player/leaderboards/daily/entries', 'Api\LeaderboardEntriesController@playerDailyIndex');

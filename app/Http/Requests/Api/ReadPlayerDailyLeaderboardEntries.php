@@ -23,8 +23,12 @@ class ReadPlayerDailyLeaderboardEntries extends Core {
      */
     public function rules() {
         return CommonApiValidationRules::getRules([
+            'player_id',
+            'leaderboard_source',
+            'character',
             'release',
             'mode',
+            'multiplayer_type',
             'page',
             'limit'
         ]);

@@ -23,8 +23,9 @@ class ReadPlayerLeaderboardEntries extends Core {
      */
     public function rules() {
         return CommonApiValidationRules::getRules([
+            'player_id',
             'date',
-            'leaderboard_type',
+            'leaderboard_source',
             'release',
             'mode',
             'seeded_type',

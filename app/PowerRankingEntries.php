@@ -13,6 +13,7 @@ use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
 use App\Releases;
 use App\Players;
+use App\LeaderboardSources;
 use App\LeaderboardTypes;
 
 class PowerRankingEntries extends Model {
@@ -211,7 +212,14 @@ class PowerRankingEntries extends Model {
         return $query;
     }
     
-    public static function getPlayerApiReadQuery(string $steamid, int $leaderboard_type_id, int $release_id, int $mode_id,  int $seeded_type_id, callable $additional_criteria = NULL) {
+    public static function getPlayerApiReadQuery(
+        string $player_id, 
+        LeaderboardSources $leaderboard_source, 
+        int $release_id, 
+        int $mode_id,  
+        int $seeded_type_id,
+        callable $additional_criteria = NULL
+    ) {
         $release = Releases::getById($release_id);
         
         $start_date = new DateTime($release['start_date']);
@@ -234,7 +242,7 @@ class PowerRankingEntries extends Model {
                     ])
                     ->join("{$table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.power_ranking_id')
                     ->join('steam_users AS su', 'su.steam_user_id', '=', 'pre.steam_user_id')
-                    ->where('su.steamid', $steamid)
+                    ->where('su.steamid', $player_id)
                     ->whereBetween('pr.date', [
                         $start_date->format('Y-m-d'),
                         $end_date->format('Y-m-d')
@@ -261,13 +269,20 @@ class PowerRankingEntries extends Model {
         return $query;
     }
     
-    public static function getPlayerCategoryApiReadQuery(string $steamid, LeaderboardTypes $leaderboard_type, int $release_id, int $mode_id,  int $seeded_type_id) { 
+    public static function getPlayerCategoryApiReadQuery(
+        string $player_id, 
+        LeaderboardSources $leaderboard_source, 
+        LeaderboardTypes $leaderboard_type, 
+        int $release_id, 
+        int $mode_id,  
+        int $seeded_type_id
+    ) { 
         $additional_criteria = function(Builder $query) use ($leaderboard_type) {
             $rank_name = "{$leaderboard_type->name}_rank";
         
             $query->whereNotNull("pre.{$rank_name}");
         };
     
-        return static::getPlayerApiReadQuery($steamid, $release_id, $mode_id, $seeded_type_id, $additional_criteria);
+        return static::getPlayerApiReadQuery($player_id, $leaderboard_source, $release_id, $mode_id, $seeded_type_id, $additional_criteria);
     }
 }
