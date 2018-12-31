@@ -15,7 +15,7 @@ class CharactersResource extends JsonResource {
         $authenticated_user = $request->user();
         
         return [
-            'id' => (int)$this->character_id,
+            'id' => (int)$this->id,
             'name' => $this->name,
             'display_name' => $this->display_name,
             $this->mergeWhen(!empty($authenticated_user) && $authenticated_user->hasAnyPermission([

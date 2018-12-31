@@ -91,8 +91,8 @@ class PowerRankingEntriesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function index(ReadPowerRankingEntries $request) {
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         $date = new DateTime($request->date);
     
@@ -115,9 +115,9 @@ class PowerRankingEntriesController extends Controller {
     public function categoryIndex(ReadCategoryRankingEntries $request) {
         $leaderboard_type = LeaderboardTypes::getByName($request->leaderboard_type);
         
-        $leaderboard_type_id = $leaderboard_type->leaderboard_type_id;
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $leaderboard_type_id = $leaderboard_type->id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         $date = new DateTime($request->date);
     
@@ -146,9 +146,9 @@ class PowerRankingEntriesController extends Controller {
     public function characterIndex(ReadPowerRankingCharacterEntries $request) {
         $character_name = $request->character;
     
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
-        $character_id = Characters::getByName($character_name)->character_id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
+        $character_id = Characters::getByName($character_name)->id;
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         $date = new DateTime($request->date);
         
@@ -210,8 +210,8 @@ class PowerRankingEntriesController extends Controller {
         $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
     
         $player_id = $request->player_id;
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         
         return $this->getPlayerEntriesResponse(
@@ -240,9 +240,9 @@ class PowerRankingEntriesController extends Controller {
     
         $leaderboard_type = LeaderboardTypes::getByName($request->leaderboard_type);
     
-        $leaderboard_type_id = $leaderboard_type->leaderboard_type_id;
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $leaderboard_type_id = $leaderboard_type->id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         
         return $this->getPlayerEntriesResponse(
@@ -270,11 +270,11 @@ class PowerRankingEntriesController extends Controller {
     
         $player_id = $request->player_id;
     
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
         
         $character_name = $request->character;
-        $character_id = Characters::getByName($character_name)->character_id;
+        $character_id = Characters::getByName($character_name)->id;
         
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
 

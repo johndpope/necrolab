@@ -25,7 +25,7 @@ class ReleasesResource extends JsonResource {
         }
     
         return [
-            'id' => (int)$this->release_id,
+            'id' => (int)$this->id,
             'name' => $this->name,
             'display_name' => $this->display_name,
             'start_date' => $this->start_date,

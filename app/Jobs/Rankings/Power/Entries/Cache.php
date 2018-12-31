@@ -126,7 +126,7 @@ class Cache implements ShouldQueue {
                     ExternalSites::addToSiteIdIndexes(
                         $indexes, 
                         $entry, 
-                        CacheNames::getCharacter($entry->release_id, $entry->mode_id, $entry->seeded_type_id, $characters[$character_name]->character_id),
+                        CacheNames::getCharacter($entry->release_id, $entry->mode_id, $entry->seeded_type_id, $characters[$character_name]->id),
                         $steam_user_id, 
                         (int)$character_rank['rank']
                     );

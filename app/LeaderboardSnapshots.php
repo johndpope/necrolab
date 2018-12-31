@@ -92,7 +92,7 @@ class LeaderboardSnapshots extends Model {
                         COALESCE(SUM(sup.win_count), 0) AS win_count
                 FROM leaderboard_snapshots ls
                 JOIN leaderboards l ON l.leaderboard_id = ls.leaderboard_id
-                JOIN leaderboard_types lt ON lt.leaderboard_type_id = l.leaderboard_type_id
+                JOIN leaderboard_types lt ON lt.id = l.leaderboard_type_id
                 JOIN {$table_name} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id
                 JOIN steam_user_pbs sup ON sup.steam_user_pb_id = le.steam_user_pb_id
                 WHERE ls.date = :date
@@ -154,7 +154,7 @@ class LeaderboardSnapshots extends Model {
             ")
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id')
-            ->join('releases AS r', 'r.release_id', '=', 'l.release_id')
+            ->join('releases AS r', 'r.id', '=', 'l.release_id')
             ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_snapshot_id', '=', 'sup.first_leaderboard_snapshot_id')
             ->where('su.steamid', $player_id)
             ->where('l.lbid', $leaderboard_id)

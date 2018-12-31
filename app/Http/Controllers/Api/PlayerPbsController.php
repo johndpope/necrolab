@@ -40,11 +40,11 @@ class PlayerPbsController extends Controller {
     public function playerIndex(ReadPlayerPbs $request) {
         $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
         
-        $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->leaderboard_type_id;
+        $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->id;
         $player_id = $request->player_id;
-        $character_id = Characters::getByName($request->character)->character_id;
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $character_id = Characters::getByName($request->character)->id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
         
         $seeded_type_id = $mode_id = SeededTypes::getByName($request->seeded_type)->id;
         $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;

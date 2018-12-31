@@ -31,7 +31,7 @@ class DailyRankingsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function index(ReadDailyRankings $request) {
-        $release_id = Releases::getByName($request->release)->release_id;
+        $release_id = Releases::getByName($request->release)->id;
         $daily_ranking_day_type_id = DailyRankingDayTypes::getByName($request->number_of_days)->daily_ranking_day_type_id;
         
         return DailyRankingsResource::collection(

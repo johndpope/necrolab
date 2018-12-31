@@ -24,7 +24,7 @@ class Releases extends Model {
      *
      * @var string
      */
-    protected $primaryKey = 'release_id';
+    protected $primaryKey = 'id';
     
     /**
      * Indicates if the model should be timestamped.
@@ -39,7 +39,7 @@ class Releases extends Model {
                 'rm.release_id',
                 DB::raw('string_agg(m.name, \',\' ORDER BY m.sort_order) AS modes'),
             ])
-            ->join('modes AS m', 'm.mode_id', '=', 'rm.mode_id')
+            ->join('modes AS m', 'm.id', '=', 'rm.mode_id')
             ->groupBy('rm.release_id');
         
         $characters_query = DB::table('release_characters AS rc')
@@ -47,11 +47,11 @@ class Releases extends Model {
                 'rc.release_id',
                 DB::raw('string_agg(c.name, \',\' ORDER BY c.sort_order) AS characters')
             ])
-            ->join('characters AS c', 'c.character_id', '=', 'rc.character_id')
+            ->join('characters AS c', 'c.id', '=', 'rc.character_id')
             ->groupBy('rc.release_id');
     
         return static::select([
-            'r.release_id',
+            'r.id',
             'r.name',
             'r.display_name',
             'r.start_date',
@@ -61,20 +61,11 @@ class Releases extends Model {
         ])
             ->from('releases AS r')
             ->leftJoinSub($modes_query, 'release_modes', function($join) {
-                $join->on('release_modes.release_id', '=', 'r.release_id');
+                $join->on('release_modes.release_id', '=', 'r.id');
             })
             ->leftJoinSub($characters_query, 'release_characters', function($join) {
-                $join->on('release_characters.release_id', '=', 'r.release_id');
+                $join->on('release_characters.release_id', '=', 'r.id');
             })
-            ->groupBy([
-                'r.release_id',
-                'r.name',
-                'r.display_name',
-                'r.start_date',
-                'r.end_date',
-                'release_modes.modes',
-                'release_characters.characters'
-            ])
             ->orderBy('r.start_date', 'asc');
     }
     

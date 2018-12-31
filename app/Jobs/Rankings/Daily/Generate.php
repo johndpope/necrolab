@@ -223,21 +223,21 @@ class Generate implements ShouldQueue {
                                         $ranking_record = [
                                             'date' => $this->date->format('Y-m-d'),
                                             'release_id' => $release->release_id,
-                                            'mode_id' => $mode->mode_id,
+                                            'mode_id' => $mode->id,
                                             'daily_ranking_day_type_id' => $daily_ranking_day_type_id,
                                             'created' => date('Y-m-d H:i:s'),
                                             'updated' => NULL
                                         ];
                                         
-                                        if(isset($daily_ranking_ids_by_grouped[$release->release_id][$mode->mode_id][$daily_ranking_day_type_id])) {
-                                            $daily_ranking_id = $daily_ranking_ids_by_grouped[$release->release_id][$mode->mode_id][$daily_ranking_day_type_id];
+                                        if(isset($daily_ranking_ids_by_grouped[$release->release_id][$mode->id][$daily_ranking_day_type_id])) {
+                                            $daily_ranking_id = $daily_ranking_ids_by_grouped[$release->release_id][$mode->id][$daily_ranking_day_type_id];
                                             
                                             $ranking_record['updated'] = date('Y-m-d H:i:s');
                                         }
                                         else {
                                             $daily_ranking_id = DailyRankings::getNewRecordId();
                                             
-                                            $daily_ranking_ids_by_grouped[$release->release_id][$mode->mode_id][$daily_ranking_day_type_id] = $daily_ranking_id;
+                                            $daily_ranking_ids_by_grouped[$release->release_id][$mode->id][$daily_ranking_day_type_id] = $daily_ranking_id;
                                         }
                                         
                                         $ranking_record['daily_ranking_id'] = $daily_ranking_id;

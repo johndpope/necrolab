@@ -23,7 +23,7 @@ class Modes extends Model {
      *
      * @var string
      */
-    protected $primaryKey = 'mode_id';
+    protected $primaryKey = 'id';
     
     /**
      * Indicates if the model should be timestamped.
@@ -44,9 +44,9 @@ class Modes extends Model {
         $leaderboard_types_query = DB::table('leaderboard_type_modes AS ltm')
             ->select([
                 'ltm.mode_id',
-                DB::raw('string_agg(lt.name, \',\' ORDER BY lt.leaderboard_type_id) AS leaderboard_types')
+                DB::raw('string_agg(lt.name, \',\' ORDER BY lt.id) AS leaderboard_types')
             ])
-            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'ltm.leaderboard_type_id')
+            ->join('leaderboard_types AS lt', 'lt.id', '=', 'ltm.leaderboard_type_id')
             ->groupBy('ltm.mode_id');
     
         $characters_query = DB::table('mode_characters AS mc')
@@ -54,11 +54,11 @@ class Modes extends Model {
                 'mc.mode_id',
                 DB::raw('string_agg(c.name, \',\' ORDER BY c.sort_order) AS characters')
             ])
-            ->join('characters AS c', 'c.character_id', '=', 'mc.character_id')
+            ->join('characters AS c', 'c.id', '=', 'mc.character_id')
             ->groupBy('mc.mode_id');
     
         return static::select([
-            'm.mode_id',
+            'm.id',
             'm.name',
             'm.display_name',
             'leaderboard_types',
@@ -67,18 +67,11 @@ class Modes extends Model {
         ])
             ->from('modes AS m')
             ->leftJoinSub($leaderboard_types_query, 'mode_leaderboard_types', function($join) {
-                $join->on('mode_leaderboard_types.mode_id', '=', 'm.mode_id');
+                $join->on('mode_leaderboard_types.mode_id', '=', 'm.id');
             })
             ->leftJoinSub($characters_query, 'mode_characters', function($join) {
-                $join->on('mode_characters.mode_id', '=', 'm.mode_id');
+                $join->on('mode_characters.mode_id', '=', 'm.id');
             })
-            ->groupBy([
-                'm.mode_id',
-                'm.name',
-                'm.display_name',
-                'mode_leaderboard_types.leaderboard_types',
-                'mode_characters.characters'
-            ])
             ->orderBy('m.sort_order', 'asc');
     }
     

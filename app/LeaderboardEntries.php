@@ -97,8 +97,8 @@ class LeaderboardEntries extends Model {
                 'le.rank',
             ])
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'ls.leaderboard_id')
-            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
-            ->join('characters AS c', 'c.character_id', '=', 'l.character_id')
+            ->join('leaderboard_types AS lt', 'lt.id', '=', 'l.leaderboard_type_id')
+            ->join('characters AS c', 'c.id', '=', 'l.character_id')
             ->join('leaderboard_ranking_types AS lrt', 'lrt.leaderboard_id', '=', 'l.leaderboard_id')
             ->join('ranking_types AS rt', 'rt.id', '=', 'lrt.ranking_type_id')
             ->join(static::getTableName($date) . " AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
@@ -157,7 +157,7 @@ class LeaderboardEntries extends Model {
                 'le.rank'
             ])
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'ls.leaderboard_id')
-            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->join('leaderboard_types AS lt', 'lt.id', '=', 'l.leaderboard_type_id')
             ->leftJoin('leaderboards_blacklist AS lb', 'lb.leaderboard_id', '=', 'l.leaderboard_id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
@@ -188,7 +188,7 @@ class LeaderboardEntries extends Model {
                 'le.rank'
             ])
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'ls.leaderboard_id')
-            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->join('leaderboard_types AS lt', 'lt.id', '=', 'l.leaderboard_type_id')
             ->leftJoin('leaderboards_blacklist AS lb', 'lb.leaderboard_id', '=', 'l.leaderboard_id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
@@ -287,7 +287,7 @@ class LeaderboardEntries extends Model {
                 'c.name AS character_name',
                 'le.rank',
             ])
-            ->join('characters AS c', 'c.character_id', '=', 'l.character_id')
+            ->join('characters AS c', 'c.id', '=', 'l.character_id')
             ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_id', '=', 'l.leaderboard_id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'le.steam_user_id')
@@ -305,7 +305,7 @@ class LeaderboardEntries extends Model {
             ->where('ls.date', $date->format('Y-m-d'))
             ->where('su.steamid', $player_id)
             ->orderBy('c.sort_order', 'asc')
-            ->orderBy('lt.leaderboard_type_id', 'asc');
+            ->orderBy('lt.id', 'asc');
             
         return $query;
     }

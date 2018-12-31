@@ -167,7 +167,7 @@ class Generate implements ShouldQueue {
         $redis_transaction->commit();
     }
     
-    protected function generateRankPoints($points_hash_name, $release_id, $mode_id, $seeded_type_id, $rank_name) {
+    protected function generateRankPoints(string $points_hash_name, int $release_id, int $mode_id, int $seeded_type_id, string $rank_name) {
         $points_entries = $this->redis->zRevRange($points_hash_name, 0, -1);
 
         if(!empty($points_entries)) {
@@ -326,21 +326,21 @@ class Generate implements ShouldQueue {
                                 $ranking_record = [
                                     'date' => $this->date->format('Y-m-d'),
                                     'release_id' => $release->release_id,
-                                    'mode_id' => $mode->mode_id,
+                                    'mode_id' => $mode->id,
                                     'seeded_type_id' => $seeded_type->id,
                                     'created' => date('Y-m-d H:i:s'),
                                     'updated' => NULL
                                 ];
                                 
-                                if(isset($power_ranking_id_by_grouped[$release->release_id][$mode->mode_id][$seeded_type->id])) {
-                                    $power_ranking_id = $power_ranking_id_by_grouped[$release->release_id][$mode->mode_id][$seeded_type->id];
+                                if(isset($power_ranking_id_by_grouped[$release->release_id][$mode->id][$seeded_type->id])) {
+                                    $power_ranking_id = $power_ranking_id_by_grouped[$release->release_id][$mode->id][$seeded_type->id];
                                     
                                     $ranking_record['updated'] = date('Y-m-d H:i:s');
                                 }
                                 else {
                                     $power_ranking_id = PowerRankings::getNewRecordId();
                                     
-                                    $power_ranking_id_by_grouped[$release->release_id][$mode->mode_id][$seeded_type->id] = $power_ranking_id;
+                                    $power_ranking_id_by_grouped[$release->release_id][$mode->id][$seeded_type->id] = $power_ranking_id;
                                 }
                                 
                                 $ranking_record['power_ranking_id'] = $power_ranking_id;

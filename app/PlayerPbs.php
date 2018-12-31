@@ -209,7 +209,7 @@ class PlayerPbs extends Model {
     
     public static function addJoins(Builder $query) {
         $query->join("leaderboard_entry_details AS led", 'led.leaderboard_entry_details_id', '=', 'sup.leaderboard_entry_details_id');
-        $query->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id');
+        $query->join('leaderboard_types AS lt', 'lt.id', '=', 'l.leaderboard_type_id');
         $query->join('leaderboard_details_columns AS ldc', 'ldc.id', '=', 'lt.leaderboard_details_column_id');
         $query->join('data_types AS dt', 'dt.id', '=', 'ldc.data_type_id');
     }

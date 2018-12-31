@@ -25,7 +25,7 @@ class LeaderboardTypesResource extends JsonResource {
         }
     
         return [
-            'id' => (int)$this->leaderboard_type_id,
+            'id' => (int)$this->id,
             'name' => $this->name,
             'display_name' => $this->display_name,
             'details_column_name' => $this->details_column,

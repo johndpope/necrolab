@@ -96,9 +96,9 @@ class LeaderboardEntriesController extends Controller {
      */
     public function dailyIndex(ReadDailyLeaderboardEntries $request) {
         $leaderboard_source_id = LeaderboardSources::getByName($request->leaderboard_source)->id;
-        $character_id = Characters::getByName($request->character)->character_id;
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $character_id = Characters::getByName($request->character)->id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
         $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
         $date = new DateTime($request->date);
         
@@ -157,8 +157,8 @@ class LeaderboardEntriesController extends Controller {
         $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
     
         $player_id = $request->player_id;
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;        
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;        
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
         $soundtrack_id = Soundtracks::getByName($request->soundtrack)->id;
@@ -202,9 +202,9 @@ class LeaderboardEntriesController extends Controller {
         $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
  
         $player_id = $request->player_id;
-        $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->leaderboard_type_id;
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
         $date = new DateTime($request->date);
         
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
@@ -250,9 +250,9 @@ class LeaderboardEntriesController extends Controller {
         $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
     
         $player_id = $request->player_id;
-        $character_id = Characters::getByName($request->character)->character_id;
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $character_id = Characters::getByName($request->character)->id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
         $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
         
         

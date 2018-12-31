@@ -49,9 +49,9 @@ class LeaderboardsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function index(ReadLeaderboards $request) {
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
-        $character_id = Characters::getByName($request->character)->character_id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
+        $character_id = Characters::getByName($request->character)->id;
         
         return LeaderboardsResource::collection(
             Cache::store('opcache')->remember(
@@ -75,10 +75,10 @@ class LeaderboardsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function categoryIndex(ReadCategoryLeaderboards $request) {
-        $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->leaderboard_type_id;
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
-        $character_id = Characters::getByName($request->character)->character_id;
+        $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
+        $character_id = Characters::getByName($request->character)->id;
         
         return LeaderboardsResource::collection(
             Cache::store('opcache')->remember(
@@ -104,10 +104,10 @@ class LeaderboardsController extends Controller {
      */
     public function byAttributes(ReadLeaderboardByAttributes $request) {
         $leaderboard_source_id = LeaderboardSources::getByName($request->leaderboard_source)->id;
-        $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->leaderboard_type_id;
-        $character_id = Characters::getByName($request->character)->character_id;
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->id;
+        $character_id = Characters::getByName($request->character)->id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
         $soundtrack_id = Soundtracks::getByName($request->soundtrack)->id;
@@ -163,9 +163,9 @@ class LeaderboardsController extends Controller {
      */
     public function dailyIndex(ReadDailyLeaderboards $request) {
         $leaderboard_source_id = LeaderboardSources::getByName($request->leaderboard_source)->id;
-        $character_id = Characters::getByName($request->character)->character_id;
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $character_id = Characters::getByName($request->character)->id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
         $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
         
         $cache_key = "leaderboards:steam:daily:{$leaderboard_source_id}:{$character_id}:{$release_id}:{$mode_id}:{$multiplayer_type_id}";
@@ -213,9 +213,9 @@ class LeaderboardsController extends Controller {
         $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
     
         $player_id = $request->player_id;
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
-        $character_id = Characters::getByName($request->character)->character_id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
+        $character_id = Characters::getByName($request->character)->id;
         
         $cache_key = "player:{$leaderboard_source->name}:{$player_id}:leaderboards:{$release_id}:{$mode_id}:{$character_id}";
         
@@ -242,10 +242,10 @@ class LeaderboardsController extends Controller {
         $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
     
         $player_id = $request->player_id;
-        $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type_id)->leaderboard_type_id;
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
-        $character_id = Characters::getByName($request->character)->character_id;
+        $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
+        $character_id = Characters::getByName($request->character)->id;
         
         $cache_key = "player:{$leaderboard_source->name}:{$player_id}:leaderboards:category:{$leaderboard_type_id}:{$release_id}:{$mode_id}:{$character_id}";
         
@@ -280,8 +280,8 @@ class LeaderboardsController extends Controller {
         $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
     
         $player_id = $request->player_id;
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
         
         $cache_key = "player:{$leaderboard_source->name}:{$player_id}:leaderboards:daily:{$release_id}:{$mode_id}";
         

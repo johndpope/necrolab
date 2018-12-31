@@ -25,7 +25,7 @@ class ModesResource extends JsonResource {
         }
     
         return [
-            'id' => (int)$this->mode_id,
+            'id' => (int)$this->id,
             'name' => $this->name,
             'display_name' => $this->display_name,
             'leaderboard_types' => $leaderboard_types,

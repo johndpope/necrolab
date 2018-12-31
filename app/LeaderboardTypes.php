@@ -23,7 +23,7 @@ class LeaderboardTypes extends Model {
      *
      * @var string
      */
-    protected $primaryKey = 'leaderboard_type_id';
+    protected $primaryKey = 'id';
     
     /**
      * Indicates if the model should be timestamped.
@@ -36,9 +36,9 @@ class LeaderboardTypes extends Model {
         $modes_query = DB::table('leaderboard_type_modes AS ltm')
             ->select([
                 'ltm.leaderboard_type_id',
-                DB::raw('string_agg(m.name, \',\' ORDER BY m.mode_id) AS modes')
+                DB::raw('string_agg(m.name, \',\' ORDER BY m.id) AS modes')
             ])
-            ->join('modes AS m', 'm.mode_id', '=', 'ltm.mode_id')
+            ->join('modes AS m', 'm.id', '=', 'ltm.mode_id')
             ->groupBy('ltm.leaderboard_type_id');
     
         $characters_query = DB::table('leaderboard_type_characters AS ltc')
@@ -46,11 +46,11 @@ class LeaderboardTypes extends Model {
                 'ltc.leaderboard_type_id',
                 DB::raw('string_agg(c.name, \',\' ORDER BY c.sort_order) AS characters')
             ])
-            ->join('characters AS c', 'c.character_id', '=', 'ltc.character_id')
+            ->join('characters AS c', 'c.id', '=', 'ltc.character_id')
             ->groupBy('ltc.leaderboard_type_id');
         
         return static::select([
-            'lt.leaderboard_type_id',
+            'lt.id',
             'lt.name',
             'lt.display_name',
             'ldc.name AS details_column',
@@ -60,20 +60,12 @@ class LeaderboardTypes extends Model {
             ->from('leaderboard_types AS lt')
             ->join('leaderboard_details_columns AS ldc', 'ldc.id', 'lt.leaderboard_details_column_id')
             ->leftJoinSub($modes_query, 'leaderboard_type_modes', function($join) {
-                $join->on('leaderboard_type_modes.leaderboard_type_id', '=', 'lt.leaderboard_type_id');
+                $join->on('leaderboard_type_modes.leaderboard_type_id', '=', 'lt.id');
             })
             ->leftJoinSub($characters_query, 'leaderboard_type_characters', function($join) {
-                $join->on('leaderboard_type_characters.leaderboard_type_id', '=', 'lt.leaderboard_type_id');
+                $join->on('leaderboard_type_characters.leaderboard_type_id', '=', 'lt.id');
             })
-            ->groupBy([
-                'lt.leaderboard_type_id',
-                'lt.name',
-                'lt.display_name',
-                'ldc.name',
-                'leaderboard_type_modes.modes',
-                'leaderboard_type_characters.characters'
-            ])
-            ->orderBy('lt.leaderboard_type_id', 'asc');
+            ->orderBy('lt.id', 'asc');
     }
     
     public static function getTypeFromString($string) {

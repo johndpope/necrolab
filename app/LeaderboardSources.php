@@ -31,7 +31,7 @@ class LeaderboardSources extends Model {
                 'lsr.leaderboard_source_id',
                 DB::raw('string_agg(r.name, \',\' ORDER BY r.start_date) AS releases')
             ])
-            ->join('releases AS r', 'r.release_id', '=', 'lsr.release_id')
+            ->join('releases AS r', 'r.id', '=', 'lsr.release_id')
             ->groupBy('lsr.leaderboard_source_id');
     
         $characters_query = DB::table('leaderboard_source_characters AS lsc')
@@ -39,7 +39,7 @@ class LeaderboardSources extends Model {
                 'lsc.leaderboard_source_id',
                 DB::raw('string_agg(c.name, \',\' ORDER BY c.sort_order) AS characters')
             ])
-            ->join('characters AS c', 'c.character_id', '=', 'lsc.character_id')
+            ->join('characters AS c', 'c.id', '=', 'lsc.character_id')
             ->groupBy('lsc.leaderboard_source_id');
             
         $multiplayer_types_query = DB::table('leaderboard_source_multiplayer_types AS lsmt')

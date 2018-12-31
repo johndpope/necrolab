@@ -148,7 +148,7 @@ class Leaderboards extends Model {
         
         if(
             //empty($blacklist_record) && 
-            !empty($leaderboard->character->character_id) && 
+            !empty($leaderboard->character->id) && 
             $date_within_release 
             //($this->is_daily == 0) || ($this->is_daily == 1 && $this->is_daily_ranking == 1 && $daily_date >= $date && $daily_date_difference->format('%a') == 1)
         ) {
@@ -288,10 +288,10 @@ class Leaderboards extends Model {
                 'lt.show_replay',
                 'lt.show_zone_level'
             ])
-            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
-            ->join('releases AS r', 'r.release_id', '=', 'l.release_id')
-            ->join('modes AS m', 'm.mode_id', '=', 'l.mode_id')
-            ->join('characters AS c', 'c.character_id', '=', 'l.character_id')
+            ->join('leaderboard_types AS lt', 'lt.id', '=', 'l.leaderboard_type_id')
+            ->join('releases AS r', 'r.id', '=', 'l.release_id')
+            ->join('modes AS m', 'm.id', '=', 'l.mode_id')
+            ->join('characters AS c', 'c.id', '=', 'l.character_id')
             ->join('seeded_types AS st', 'st.id', '=', 'l.seeded_type_id')
             ->join('soundtracks AS strk', 'strk.id', '=', 'l.soundtrack_id')
             ->join('multiplayer_types AS mt', 'mt.id', '=', 'l.multiplayer_type_id')
@@ -343,7 +343,7 @@ class Leaderboards extends Model {
                 'ls.players',
                 'ls.score'
             ])
-            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->join('leaderboard_types AS lt', 'lt.id', '=', 'l.leaderboard_type_id')
             ->join('leaderboard_snapshots AS ls', function($join) {
                 $join->on('ls.leaderboard_id', '=', 'l.leaderboard_id')
                     ->on('ls.date', '=', 'l.daily_date');
@@ -374,8 +374,8 @@ class Leaderboards extends Model {
             ])
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id')
-            ->join('characters AS c', 'c.character_id', '=', 'l.character_id')
-            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->join('characters AS c', 'c.id', '=', 'l.character_id')
+            ->join('leaderboard_types AS lt', 'lt.id', '=', 'l.leaderboard_type_id')
             ->join('seeded_types AS st', 'st.id', '=', 'l.seeded_type_id')
             ->join('soundtracks AS strk', 'strk.id', '=', 'l.soundtrack_id')
             ->join('multiplayer_types AS mt', 'mt.id', '=', 'l.multiplayer_type_id')
@@ -421,7 +421,7 @@ class Leaderboards extends Model {
             ])
             ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id')
-            ->join('leaderboard_types AS lt', 'lt.leaderboard_type_id', '=', 'l.leaderboard_type_id')
+            ->join('leaderboard_types AS lt', 'lt.id', '=', 'l.leaderboard_type_id')
             ->where('su.steamid', $player_id)
             ->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)

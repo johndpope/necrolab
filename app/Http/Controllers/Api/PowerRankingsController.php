@@ -33,8 +33,8 @@ class PowerRankingsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function index(ReadPowerRankings $request) {
-        $release_id = Releases::getByName($request->release)->release_id;
-        $mode_id = Modes::getByName($request->mode)->mode_id;
+        $release_id = Releases::getByName($request->release)->id;
+        $mode_id = Modes::getByName($request->mode)->id;
         $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
         
         return PowerRankingsResource::collection(
