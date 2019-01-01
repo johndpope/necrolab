@@ -32,7 +32,7 @@ class DailyRankingsController extends Controller {
      */
     public function index(ReadDailyRankings $request) {
         $release_id = Releases::getByName($request->release)->id;
-        $daily_ranking_day_type_id = DailyRankingDayTypes::getByName($request->number_of_days)->daily_ranking_day_type_id;
+        $daily_ranking_day_type_id = DailyRankingDayTypes::getByName($request->number_of_days)->id;
         
         return DailyRankingsResource::collection(
             Cache::store('opcache')->remember("rankings:daily:steam:{$release_id}:{$daily_ranking_day_type_id}", 5, function() use($release_id, $daily_ranking_day_type_id) {

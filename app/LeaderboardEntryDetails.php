@@ -23,7 +23,7 @@ class LeaderboardEntryDetails extends Model {
      *
      * @var string
      */
-    protected $primaryKey = 'leaderboard_entry_details_id';
+    protected $primaryKey = 'id';
     
     /**
      * Indicates if the model should be timestamped.
@@ -35,7 +35,7 @@ class LeaderboardEntryDetails extends Model {
     public static function createTemporaryTable() {
         DB::statement("
             CREATE TEMPORARY TABLE leaderboard_entry_details_temp (
-                leaderboard_entry_details_id smallint,
+                id smallint,
                 \"name\" character varying(25)
             )
             ON COMMIT DROP;
@@ -45,11 +45,11 @@ class LeaderboardEntryDetails extends Model {
     public static function saveTemp() {
         DB::statement("
             INSERT INTO leaderboard_entry_details (
-                leaderboard_entry_details_id, 
+                id, 
                 name
             )
             SELECT 
-                leaderboard_entry_details_id, 
+                id, 
                 name
             FROM leaderboard_entry_details_temp
         ");

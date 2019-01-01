@@ -41,7 +41,7 @@ class DailyRankingEntriesController extends Controller {
     public function index(ReadDailyRankingEntries $request) {
         $release_id = Releases::getByName($request->release)->id;
         $mode_id = Modes::getByName($request->mode)->id;
-        $daily_ranking_day_type_id = DailyRankingDayTypes::getByName($request->number_of_days)->daily_ranking_day_type_id;
+        $daily_ranking_day_type_id = DailyRankingDayTypes::getByName($request->number_of_days)->id;
         $date = new DateTime($request->date);
         
         $index_name = CacheNames::getRankings($release_id, $mode_id, $daily_ranking_day_type_id);
@@ -97,7 +97,7 @@ class DailyRankingEntriesController extends Controller {
         $player_id = $request->player_id;
         $release_id = Releases::getByName($request->release)->id;
         $mode_id = Modes::getByName($request->mode)->id;
-        $daily_ranking_day_type_id = DailyRankingDayTypes::getByName($request->number_of_days)->daily_ranking_day_type_id;
+        $daily_ranking_day_type_id = DailyRankingDayTypes::getByName($request->number_of_days)->id;
         
         
         /* ---------- Data Provider ---------- */

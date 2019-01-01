@@ -192,19 +192,19 @@ class SaveToDatabase implements ShouldQueue {
                         $leaderboard_entry_details_id = NULL;
                         
                         if(isset($entry_details_by_name[$entry->details])) {
-                            $leaderboard_entry_details_id = $entry_details_by_name[$entry->details]->leaderboard_entry_details_id;
+                            $leaderboard_entry_details_id = $entry_details_by_name[$entry->details]->id;
                         }
                         else {
                             $leaderboard_entry_details_id = LeaderboardEntryDetails::getNewRecordId();
                         
                             $leaderboard_entry_details_insert_queue->addRecord([
-                                'leaderboard_entry_details_id' => $leaderboard_entry_details_id,
+                                'id' => $leaderboard_entry_details_id,
                                 'name' => $entry->details
                             ]);
                             
                             $leaderboard_entry_details = new LeaderboardEntryDetails();
                             
-                            $leaderboard_entry_details->leaderboard_entry_details_id = $leaderboard_entry_details_id;
+                            $leaderboard_entry_details->id = $leaderboard_entry_details_id;
                             $leaderboard_entry_details->name = $entry->details;
                             
                             $entry_details_by_name[$entry->details] = $leaderboard_entry_details;

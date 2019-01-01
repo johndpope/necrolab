@@ -23,7 +23,7 @@ class DailyRankingDayTypes extends Model {
      *
      * @var string
      */
-    protected $primaryKey = 'daily_ranking_day_type_id';
+    protected $primaryKey = 'id';
     
     /**
      * Indicates if the model should be timestamped.
@@ -58,7 +58,7 @@ class DailyRankingDayTypes extends Model {
                 
                 $active_day_type->start_date = new DateTime($day_type_start_date->format('Y-m-d'));
             
-                $active_day_types[$active_day_type->daily_ranking_day_type_id] = $active_day_type;
+                $active_day_types[$active_day_type->id] = $active_day_type;
             }
         }
         

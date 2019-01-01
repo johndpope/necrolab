@@ -61,7 +61,7 @@ class Generate implements ShouldQueue {
                 $daily_ranking_entry_hash_name = CacheNames::getEntry(
                     $leaderboard_entry->release_id, 
                     $leaderboard_entry->mode_id, 
-                    $day_type->daily_ranking_day_type_id, 
+                    $day_type->id, 
                     $leaderboard_entry->steam_user_id
                 );
                 
@@ -73,8 +73,8 @@ class Generate implements ShouldQueue {
                 
                 $redis_transaction->hSetNx(
                     CacheNames::getModeNumberOfDays($leaderboard_entry->release_id, $leaderboard_entry->mode_id), 
-                    $day_type->daily_ranking_day_type_id, 
-                    $day_type->daily_ranking_day_type_id
+                    $day_type->id, 
+                    $day_type->id
                 );
                     
                 $redis_transaction->hSetNx($daily_ranking_entry_hash_name, 'steam_user_id', $leaderboard_entry->steam_user_id);
@@ -109,7 +109,7 @@ class Generate implements ShouldQueue {
                     CacheNames::getTotalPoints(
                         $leaderboard_entry->release_id, 
                         $leaderboard_entry->mode_id, 
-                        $day_type->daily_ranking_day_type_id
+                        $day_type->id
                     ), 
                     $rank_points, 
                     $leaderboard_entry->steam_user_id
