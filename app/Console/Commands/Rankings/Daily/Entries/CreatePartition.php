@@ -5,6 +5,7 @@ namespace App\Console\Commands\Rankings\Daily\Entries;
 use DateTime;
 use Illuminate\Console\Command;
 use App\Jobs\Rankings\Daily\Entries\CreatePartition as CreatePartitionJob;
+use App\DailyRankingEntries;
 
 class CreatePartition extends Command {
     /**
@@ -12,14 +13,14 @@ class CreatePartition extends Command {
      *
      * @var string
      */
-    protected $signature = 'rankings:daily:entries:create_partition {date?}';
+    protected $signature = 'rankings:daily:entries:create_partition {--leaderboard_source=} {--date=}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Creates the daily ranking entries table partition for the specified date. Defaults to today's date when none is specified.";
+    protected $description = "Creates the daily ranking entries table partition for each source of the specified date. Defaults to today's date when none is specified.";
 
     /**
      * Create a new command instance.
@@ -36,6 +37,9 @@ class CreatePartition extends Command {
      * @return mixed
      */
     public function handle() {
-        CreatePartitionJob::dispatch(new DateTime($this->argument('date')))->onConnection('sync');
+        $leaderboard_source_name = $this->option('leaderboard_source');
+        $date = new DateTime($this->option('date'));
+        
+        DailyRankingEntries::dispatchPartitionCreationJob(CreatePartitionJob::class, $leaderboard_source_name, $date);
     }
 }

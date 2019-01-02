@@ -5,6 +5,7 @@ namespace App\Console\Commands\Rankings\Power\Entries;
 use DateTime;
 use Illuminate\Console\Command;
 use App\Jobs\Rankings\Power\Entries\CreatePartition as CreatePartitionJob;
+use App\PowerRankingEntries;
 
 class CreatePartition extends Command {
     /**
@@ -12,14 +13,14 @@ class CreatePartition extends Command {
      *
      * @var string
      */
-    protected $signature = 'rankings:power:entries:create_partition {date?}';
+    protected $signature = 'rankings:power:entries:create_partition {--leaderboard_source=} {--date=}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Creates the power ranking entries table partition for the specified date. Defaults to today's date when none is specified.";
+    protected $description = "Creates the power ranking entries table partition for each source of the specified date. Defaults to today's date when none is specified.";
 
     /**
      * Create a new command instance.
@@ -35,7 +36,10 @@ class CreatePartition extends Command {
      *
      * @return mixed
      */
-    public function handle() {
-        CreatePartitionJob::dispatch(new DateTime($this->argument('date')))->onConnection('sync');
+    public function handle() {        
+        $leaderboard_source_name = $this->option('leaderboard_source');
+        $date = new DateTime($this->option('date'));
+        
+        PowerRankingEntries::dispatchPartitionCreationJob(CreatePartitionJob::class, $leaderboard_source_name, $date);
     }
 }

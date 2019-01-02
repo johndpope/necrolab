@@ -11,6 +11,8 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\DB;
+use App\LeaderboardSources;
 
 class CreatePartition implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -22,14 +24,30 @@ class CreatePartition implements ShouldQueue {
      */
     public $tries = 1;
     
+    /**
+     * The date that this partition will be created for.
+     *
+     * @var \DateTime
+     */
     protected $date;
+    
+    /**
+     * The instance of LeaderboardSources that this partition will be created for.
+     *
+     * @var \App\LeaderboardSources;
+     */
+    protected $leaderboard_source;
 
     /**
      * Create a new job instance.
      *
+     * @param \App\LeaderboardSources $leaderboard_source
+     * @param \DateTime $date
      * @return void
      */
-    public function __construct(DateTime $date) {
+    public function __construct(LeaderboardSources $leaderboard_source, DateTime $date) {
+        $this->leaderboard_source = $leaderboard_source;
+    
         $this->date = $date;
     }
 
@@ -41,29 +59,29 @@ class CreatePartition implements ShouldQueue {
     public function handle() {
         $date_formatted = $this->date->format('Y_m');
         
-        Schema::create("power_ranking_entries_{$date_formatted}", function (Blueprint $table) {
+        $table_short_name = "power_ranking_entries_{$date_formatted}";
+        
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->integer('power_ranking_id');
-            $table->integer('steam_user_id');
+            $table->integer('player_id');
             $table->integer('rank');
             $table->binary('characters');
-            $table->integer('score_rank')->nullable();
-            $table->integer('deathless_rank')->nullable();
-            $table->integer('speed_rank')->nullable();
-
-            $table->foreign('power_ranking_id')
-                ->references('power_ranking_id')
-                ->on('power_rankings')
-                ->onDelete('cascade');
-                
-            $table->foreign('steam_user_id')
-                ->references('steam_user_id')
-                ->on('steam_users')
-                ->onDelete('cascade');
+            $table->binary('category_ranks');
 
             $table->primary([
                 'power_ranking_id',
-                'steam_user_id'
+                'player_id'
             ]);
         });
+        
+        DB::statement("
+            ALTER TABLE {$table_full_name}
+                ADD CONSTRAINT {$this->leaderboard_source->name}_{$table_short_name}_power_ranking_id_foreign
+                    FOREIGN KEY (power_ranking_id) REFERENCES {$this->leaderboard_source->name}.power_rankings (id) ON DELETE CASCADE,
+                ADD CONSTRAINT {$this->leaderboard_source->name}_{$table_short_name}_player_id_foreign
+                    FOREIGN KEY (player_id) REFERENCES {$this->leaderboard_source->name}.players (id) ON DELETE CASCADE;
+        ");
     }
 }

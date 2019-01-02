@@ -8,6 +8,7 @@ use Illuminate\Console\Command;
 use App\Components\CallbackHandler;
 use App\Components\DateIncrementor;
 use App\Jobs\Rankings\Daily\Entries\CreatePartition as CreatePartitionJob;
+use App\DailyRankingEntries;
 
 class CreatePartitions extends Command {
     /**
@@ -15,14 +16,14 @@ class CreatePartitions extends Command {
      *
      * @var string
      */
-    protected $signature = 'rankings:daily:entries:create_partitions {start_date} {end_date}';
+    protected $signature = 'rankings:daily:entries:create_partitions {--leaderboard_source=} {--start_date=} {--end_date=}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Creates daily ranking entries table partitions for each month between the specified start date and end date.";
+    protected $description = "Creates daily ranking entries table partitions for each each leaderboard source and month between the specified start date and end date.";
 
     /**
      * Create a new command instance.
@@ -38,19 +39,11 @@ class CreatePartitions extends Command {
      *
      * @return mixed
      */
-    public function handle() {
-        $callback_handler = new CallbackHandler();
+    public function handle() {    
+        $leaderboard_source_name = $this->option('leaderboard_source');
+        $start_date = new DateTime($this->option('start_date'));
+        $end_date = new DateTime($this->option('end_date'));
         
-        $callback_handler->setCallback(function(DateTime $date) {
-            CreatePartitionJob::dispatch($date)->onConnection('sync');
-        });
-    
-        $date_incrementor = new DateIncrementor(
-            new DateTime($this->argument('start_date')), 
-            new DateTime($this->argument('end_date')), 
-            new DateInterval('P1M')
-        );
-        
-        $date_incrementor->run($callback_handler);
+        DailyRankingEntries::dispatchRangePartitionCreationJob(CreatePartitionJob::class, $leaderboard_source_name, $start_date, $end_date);
     }
 }
