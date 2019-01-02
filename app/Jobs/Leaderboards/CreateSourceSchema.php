@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Leaderboards;
 
+use DateTime;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -10,7 +11,13 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
+use App\Jobs\Leaderboards\Entries\CreatePartition as CreateLeaderboardEntriesPartitionJob;
+use App\Jobs\Rankings\Power\Entries\CreatePartition as CreatePowerRankingEntriesPartitionJob;
+use App\Jobs\Rankings\Daily\Entries\CreatePartition as CreateDailyRankingEntriesPartitionJob;
 use App\LeaderboardSources;
+use App\LeaderboardEntries;
+use App\PowerRankingEntries;
+use App\DailyRankingEntries;
 
 class CreateSourceSchema implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -60,10 +67,12 @@ class CreateSourceSchema implements ShouldQueue {
      *
      * @return void
      */
-    protected function createLeaderboardsTable() {        
-        $table_name = "{$this->leaderboard_source->name}.leaderboards";
+    protected function createLeaderboardsTable() {                
+        $table_short_name = "leaderboards";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->integer('id');
             $table->smallInteger('leaderboard_type_id');
             $table->smallInteger('character_id');
@@ -154,27 +163,29 @@ class CreateSourceSchema implements ShouldQueue {
             */
         });
         
+        $constraint_prefix = "{$this->leaderboard_source->name}_{$table_short_name}";
+        
         DB::statement("
-            ALTER TABLE {$table_name}
-                ADD CONSTRAINT {$this->leaderboard_source->name}_leaderboards_leaderboard_type_id_foreign
+            ALTER TABLE {$table_full_name}
+                ADD CONSTRAINT {$constraint_prefix}_leaderboard_type_id_foreign
                     FOREIGN KEY (leaderboard_type_id) REFERENCES public.leaderboard_types (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_leaderboards_character_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_character_id_foreign
                     FOREIGN KEY (character_id) REFERENCES public.characters (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_leaderboards_release_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_release_id_foreign
                     FOREIGN KEY (release_id) REFERENCES public.releases (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_leaderboards_mode_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_mode_id_foreign
                     FOREIGN KEY (mode_id) REFERENCES public.modes (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_leaderboards_seeded_type_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_seeded_type_id_foreign
                     FOREIGN KEY (seeded_type_id) REFERENCES public.seeded_types (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_leaderboards_multiplayer_type_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_multiplayer_type_id_foreign
                     FOREIGN KEY (multiplayer_type_id) REFERENCES public.multiplayer_types (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_leaderboards_soundtrack_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_soundtrack_id_foreign
                     FOREIGN KEY (soundtrack_id) REFERENCES public.soundtracks (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_leaderboards_daily_date_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_daily_date_id_foreign
                     FOREIGN KEY (daily_date_id) REFERENCES public.dates (id) ON DELETE CASCADE;
         ");
         
-        $this->createTableSequence($table_name);
+        $this->createTableSequence($table_full_name);
     }
     
     /**
@@ -182,19 +193,23 @@ class CreateSourceSchema implements ShouldQueue {
      *
      * @return void
      */
-    protected function createLeaderboardsBlacklistTable() {
-        $table_name = "{$this->leaderboard_source->name}.leaderboards_blacklist";
+    protected function createLeaderboardsBlacklistTable() {        
+        $table_short_name = "leaderboards_blacklist";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->timestamp('created');
-            $table->integer('leaderboard_id');
+            $table->integer('leaderboard_id')->unique();
             
             $table->primary('leaderboard_id');
         });
         
+        $constraint_prefix = "{$this->leaderboard_source->name}_{$table_short_name}";
+        
         DB::statement("
-            ALTER TABLE {$table_name}
-                ADD CONSTRAINT {$this->leaderboard_source->name}_leaderboards_blacklist_leaderboard_id_foreign
+            ALTER TABLE {$table_full_name}
+                ADD CONSTRAINT {$constraint_prefix}_leaderboard_id_foreign
                     FOREIGN KEY (leaderboard_id) REFERENCES {$this->leaderboard_source->name}.leaderboards (id) ON DELETE CASCADE;
         ");
     }
@@ -205,10 +220,12 @@ class CreateSourceSchema implements ShouldQueue {
      *
      * @return void
      */
-    protected function createLeaderboardSnapshotsTable() {
-        $table_name = "{$this->leaderboard_source->name}.leaderboard_snapshots";
+    protected function createLeaderboardSnapshotsTable() {        
+        $table_short_name = "leaderboard_snapshots";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->timestamp('created');
             $table->timestamp('updated')->nullable();
             $table->integer('id');
@@ -227,15 +244,17 @@ class CreateSourceSchema implements ShouldQueue {
             $table->index('date_id');
         });
         
+        $constraint_prefix = "{$this->leaderboard_source->name}_{$table_short_name}";
+        
         DB::statement("
-            ALTER TABLE {$table_name}
-                ADD CONSTRAINT {$this->leaderboard_source->name}_leaderboard_snapshots_leaderboard_id_foreign
+            ALTER TABLE {$table_full_name}
+                ADD CONSTRAINT {$constraint_prefix}_leaderboard_id_foreign
                     FOREIGN KEY (leaderboard_id) REFERENCES {$this->leaderboard_source->name}.leaderboards (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_leaderboard_snapshots_date_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_date_id_foreign
                     FOREIGN KEY (date_id) REFERENCES public.dates (id) ON DELETE CASCADE;
         ");
         
-        $this->createTableSequence($table_name);
+        $this->createTableSequence($table_full_name);
     }
     
     /**
@@ -243,10 +262,12 @@ class CreateSourceSchema implements ShouldQueue {
      *
      * @return void
      */
-    protected function createLeaderboardEntryDetailsTable() {
-        $table_name = "{$this->leaderboard_source->name}.leaderboard_entry_details";
+    protected function createLeaderboardEntryDetailsTable() {        
+        $table_short_name = "leaderboard_entry_details";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->smallInteger('id');
             $table->string('name', 255)->unique();
 
@@ -254,7 +275,7 @@ class CreateSourceSchema implements ShouldQueue {
             $table->primary('id');
         });
         
-        $this->createTableSequence($table_name);
+        $this->createTableSequence($table_full_name);
     }
     
     /**
@@ -262,10 +283,12 @@ class CreateSourceSchema implements ShouldQueue {
      *
      * @return void
      */
-    protected function createLeaderboardRankingTypesTable() {
-        $table_name = "{$this->leaderboard_source->name}.leaderboard_ranking_types";
+    protected function createLeaderboardRankingTypesTable() {        
+        $table_short_name = "leaderboard_ranking_types";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->integer('leaderboard_id');
             $table->smallInteger('ranking_type_id');
             
@@ -277,11 +300,13 @@ class CreateSourceSchema implements ShouldQueue {
             $table->index('ranking_type_id');
         });
         
+        $constraint_prefix = "{$this->leaderboard_source->name}_{$table_short_name}";
+        
         DB::statement("
-            ALTER TABLE {$table_name}
-                ADD CONSTRAINT {$this->leaderboard_source->name}_leaderboard_ranking_types_leaderboard_id_foreign
+            ALTER TABLE {$table_full_name}
+                ADD CONSTRAINT {$constraint_prefix}_leaderboard_id_foreign
                     FOREIGN KEY (leaderboard_id) REFERENCES {$this->leaderboard_source->name}.leaderboards (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_leaderboard_ranking_type_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_ranking_type_id_foreign
                     FOREIGN KEY (ranking_type_id) REFERENCES public.ranking_types (id) ON DELETE CASCADE;
         ");
     }
@@ -291,10 +316,12 @@ class CreateSourceSchema implements ShouldQueue {
      *
      * @return void
      */
-    protected function createPowerRankingsTable() {
-        $table_name = "{$this->leaderboard_source->name}.power_rankings";
+    protected function createPowerRankingsTable() {        
+        $table_short_name = "power_rankings";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->timestamp('created');
             $table->timestamp('updated')->nullable();
             $table->integer('id');
@@ -326,23 +353,25 @@ class CreateSourceSchema implements ShouldQueue {
             $table->index('date_id');
         });
         
+        $constraint_prefix = "{$this->leaderboard_source->name}_{$table_short_name}";
+        
         DB::statement("
-            ALTER TABLE {$table_name}
-                ADD CONSTRAINT {$this->leaderboard_source->name}_power_rankings_release_id_foreign
+            ALTER TABLE {$table_full_name}
+                ADD CONSTRAINT {$constraint_prefix}_release_id_foreign
                     FOREIGN KEY (release_id) REFERENCES public.releases (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_power_rankings_mode_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_mode_id_foreign
                     FOREIGN KEY (mode_id) REFERENCES public.modes (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_power_rankings_seeded_type_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_seeded_type_id_foreign
                     FOREIGN KEY (seeded_type_id) REFERENCES public.seeded_types (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_power_rankings_multiplayer_type_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_multiplayer_type_id_foreign
                     FOREIGN KEY (multiplayer_type_id) REFERENCES public.multiplayer_types (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_power_rankings_soundtrack_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_soundtrack_id_foreign
                     FOREIGN KEY (soundtrack_id) REFERENCES public.soundtracks (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_power_rankings_date_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_date_id_foreign
                     FOREIGN KEY (date_id) REFERENCES public.dates (id) ON DELETE CASCADE;
         ");
         
-        $this->createTableSequence($table_name);
+        $this->createTableSequence($table_full_name);
     }
     
     /**
@@ -350,10 +379,12 @@ class CreateSourceSchema implements ShouldQueue {
      *
      * @return void
      */
-    protected function createDailyRankingsTable() {
-        $table_name = "{$this->leaderboard_source->name}.daily_rankings";
+    protected function createDailyRankingsTable() {        
+        $table_short_name = "daily_rankings";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->timestamp('created');
             $table->timestamp('updated')->nullable();
             $table->integer('id');
@@ -389,25 +420,27 @@ class CreateSourceSchema implements ShouldQueue {
             $table->index('date_id');
         });
         
+        $constraint_prefix = "{$this->leaderboard_source->name}_{$table_short_name}";
+        
         DB::statement("
-            ALTER TABLE {$table_name}
-                ADD CONSTRAINT {$this->leaderboard_source->name}_daily_rankings_character_id_foreign
+            ALTER TABLE {$table_full_name}
+                ADD CONSTRAINT {$constraint_prefix}_character_id_foreign
                     FOREIGN KEY (character_id) REFERENCES public.characters (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_daily_rankings_release_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_release_id_foreign
                     FOREIGN KEY (release_id) REFERENCES public.releases (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_daily_rankings_mode_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_mode_id_foreign
                     FOREIGN KEY (mode_id) REFERENCES public.modes (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_daily_rankings_multiplayer_type_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_multiplayer_type_id_foreign
                     FOREIGN KEY (multiplayer_type_id) REFERENCES public.multiplayer_types (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_daily_rankings_soundtrack_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_soundtrack_id_foreign
                     FOREIGN KEY (soundtrack_id) REFERENCES public.soundtracks (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_daily_rankings_daily_ranking_day_type_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_daily_ranking_day_type_id_foreign
                     FOREIGN KEY (daily_ranking_day_type_id) REFERENCES public.daily_ranking_day_types (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_daily_rankings_date_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_date_id_foreign
                     FOREIGN KEY (date_id) REFERENCES public.dates (id) ON DELETE CASCADE;
         ");
         
-        $this->createTableSequence($table_name);
+        $this->createTableSequence($table_full_name);
     }
     
     /**
@@ -416,9 +449,11 @@ class CreateSourceSchema implements ShouldQueue {
      * @return void
      */
     protected function createPlayersTable() {
-        $table_name = "{$this->leaderboard_source->name}.players";
+        $table_short_name = "players";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->timestamp('created');
             $table->timestamp('updated');
             $table->integer('id');
@@ -431,17 +466,17 @@ class CreateSourceSchema implements ShouldQueue {
         });
         
         DB::statement("
-            ALTER TABLE {$table_name}
+            ALTER TABLE {$table_full_name}
             ADD COLUMN username_search_index tsvector
         ");
         
         DB::statement("
             CREATE INDEX idx_players_username_search_index 
-            ON {$table_name}
+            ON {$table_full_name}
             USING GIN (username_search_index);
         ");
         
-        $this->createTableSequence($table_name);
+        $this->createTableSequence($table_full_name);
     }
     
     /**
@@ -449,10 +484,12 @@ class CreateSourceSchema implements ShouldQueue {
      *
      * @return void
      */
-    protected function createPlayerPbsTable() {
-        $table_name = "{$this->leaderboard_source->name}.player_pbs";
+    protected function createPlayerPbsTable() {        
+        $table_short_name = "player_pbs";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->integer('id');
             $table->integer('player_id');
             $table->integer('leaderboard_id');
@@ -478,19 +515,21 @@ class CreateSourceSchema implements ShouldQueue {
             $table->index('leaderboard_entry_details_id');
         });
         
+        $constraint_prefix = "{$this->leaderboard_source->name}_{$table_short_name}";
+        
         DB::statement("
-            ALTER TABLE {$table_name}
-                ADD CONSTRAINT {$this->leaderboard_source->name}_player_pbs_player_id_foreign
+            ALTER TABLE {$table_full_name}
+                ADD CONSTRAINT {$constraint_prefix}_player_id_foreign
                     FOREIGN KEY (player_id) REFERENCES {$this->leaderboard_source->name}.players (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_player_pbs_leaderboard_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_leaderboard_id_foreign
                     FOREIGN KEY (leaderboard_id) REFERENCES {$this->leaderboard_source->name}.leaderboards (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_player_pbs_first_leaderboard_snapshot_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_first_leaderboard_snapshot_id_foreign
                     FOREIGN KEY (first_leaderboard_snapshot_id) REFERENCES {$this->leaderboard_source->name}.leaderboard_snapshots (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_player_pbs_leaderboard_entry_details_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_leaderboard_entry_details_id_foreign
                     FOREIGN KEY (leaderboard_entry_details_id) REFERENCES {$this->leaderboard_source->name}.leaderboard_entry_details (id) ON DELETE CASCADE;
         ");
         
-        $this->createTableSequence($table_name);
+        $this->createTableSequence($table_full_name);
     }
     
     /**
@@ -498,19 +537,23 @@ class CreateSourceSchema implements ShouldQueue {
      *
      * @return void
      */
-    protected function createPlayersBlacklistTable() {
-        $table_name = "{$this->leaderboard_source->name}.players_blacklist";
+    protected function createPlayersBlacklistTable() {        
+        $table_short_name = "players_blacklist";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->timestamp('created');
-            $table->integer('player_id');
+            $table->integer('player_id')->unique();
             
             $table->primary('player_id');
         });
         
+        $constraint_prefix = "{$this->leaderboard_source->name}_{$table_short_name}";
+        
         DB::statement("
-            ALTER TABLE {$table_name}
-                ADD CONSTRAINT {$this->leaderboard_source->name}_players_blacklist_player_id_foreign
+            ALTER TABLE {$table_full_name}
+                ADD CONSTRAINT {$constraint_prefix}_player_id_foreign
                     FOREIGN KEY (player_id) REFERENCES {$this->leaderboard_source->name}.players (id) ON DELETE CASCADE;
         ");
     }
@@ -520,10 +563,12 @@ class CreateSourceSchema implements ShouldQueue {
      *
      * @return void
      */
-    protected function createAchievementsTable() {
-        $table_name = "{$this->leaderboard_source->name}.achievements";
+    protected function createAchievementsTable() {        
+        $table_short_name = "achievements";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->smallIncrements('id');
             $table->string('name', 255);
             $table->string('display_name', 255);
@@ -538,10 +583,12 @@ class CreateSourceSchema implements ShouldQueue {
      *
      * @return void
      */
-    protected function createPlayerAchievementsTable() {
-        $table_name = "{$this->leaderboard_source->name}.player_achievements";
+    protected function createPlayerAchievementsTable() {        
+        $table_short_name = "player_achievements";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->timestamp('achieved');
             $table->integer('player_id');
             $table->smallInteger('achievement_id');
@@ -554,11 +601,13 @@ class CreateSourceSchema implements ShouldQueue {
             $table->index('achievement_id');
         });
         
+        $constraint_prefix = "{$this->leaderboard_source->name}_{$table_short_name}";
+        
         DB::statement("
-            ALTER TABLE {$table_name}
-                ADD CONSTRAINT {$this->leaderboard_source->name}_player_achievements_player_id_foreign
+            ALTER TABLE {$table_full_name}
+                ADD CONSTRAINT {$constraint_prefix}_player_id_foreign
                     FOREIGN KEY (player_id) REFERENCES {$this->leaderboard_source->name}.players (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_player_achievements_achievement_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_achievement_id_foreign
                     FOREIGN KEY (achievement_id) REFERENCES {$this->leaderboard_source->name}.achievements (id) ON DELETE CASCADE;
         ");
     }
@@ -569,9 +618,11 @@ class CreateSourceSchema implements ShouldQueue {
      * @return void
      */
     protected function createReplayVersionsTable() {
-        $table_name = "{$this->leaderboard_source->name}.replay_versions";
+        $table_short_name = "replay_versions";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->smallInteger('id');
             $table->string('name', 255)->unique();
 
@@ -579,7 +630,7 @@ class CreateSourceSchema implements ShouldQueue {
             $table->primary('id');
         });
         
-        $this->createTableSequence($table_name);
+        $this->createTableSequence($table_full_name);
     }
     
     /**
@@ -588,9 +639,11 @@ class CreateSourceSchema implements ShouldQueue {
      * @return void
      */
     protected function createRunResultsTable() {
-        $table_name = "{$this->leaderboard_source->name}.run_results";
+        $table_short_name = "run_results";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->smallInteger('id');
             $table->smallInteger('is_win');
             $table->string('name', 255)->unique();
@@ -599,7 +652,7 @@ class CreateSourceSchema implements ShouldQueue {
             $table->primary('id');
         });
         
-        $this->createTableSequence($table_name);
+        $this->createTableSequence($table_full_name);
     }
     
     /**
@@ -608,9 +661,11 @@ class CreateSourceSchema implements ShouldQueue {
      * @return void
      */
     protected function createSeedsTable() {
-        $table_name = "{$this->leaderboard_source->name}.seeds";
+        $table_short_name = "seeds";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->bigInteger('id');
             $table->string('name', 255)->unique();
 
@@ -618,7 +673,7 @@ class CreateSourceSchema implements ShouldQueue {
             $table->primary('id');
         });
         
-        $this->createTableSequence($table_name);
+        $this->createTableSequence($table_full_name);
     }
     
     /**
@@ -627,9 +682,11 @@ class CreateSourceSchema implements ShouldQueue {
      * @return void
      */
     protected function createReplaysTable() {
-        $table_name = "{$this->leaderboard_source->name}.replays";
+        $table_short_name = "replays";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->bigInteger('seed_id')->nullable();
             $table->integer('player_pb_id');
             $table->integer('player_id');
@@ -658,17 +715,19 @@ class CreateSourceSchema implements ShouldQueue {
             $table->index('uploaded_to_s3');
         });
         
+        $constraint_prefix = "{$this->leaderboard_source->name}_{$table_short_name}";
+        
         DB::statement("
-            ALTER TABLE {$table_name}
-                ADD CONSTRAINT {$this->leaderboard_source->name}_replays_seed_id_foreign
+            ALTER TABLE {$table_full_name}
+                ADD CONSTRAINT {$constraint_prefix}_seed_id_foreign
                     FOREIGN KEY (seed_id) REFERENCES {$this->leaderboard_source->name}.seeds (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_replays_player_pb_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_player_pb_id_foreign
                     FOREIGN KEY (player_pb_id) REFERENCES {$this->leaderboard_source->name}.player_pbs (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_replays_player_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_player_id_foreign
                     FOREIGN KEY (player_id) REFERENCES {$this->leaderboard_source->name}.players (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_replays_run_result_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_run_result_id_foreign
                     FOREIGN KEY (run_result_id) REFERENCES {$this->leaderboard_source->name}.run_results (id) ON DELETE CASCADE,
-                ADD CONSTRAINT {$this->leaderboard_source->name}_replays_replay_version_id_foreign
+                ADD CONSTRAINT {$constraint_prefix}_replay_version_id_foreign
                     FOREIGN KEY (replay_version_id) REFERENCES {$this->leaderboard_source->name}.replay_versions (id) ON DELETE CASCADE;
         ");
     }
@@ -679,9 +738,11 @@ class CreateSourceSchema implements ShouldQueue {
      * @return void
      */
     protected function createEntryIndexesTable() {
-        $table_name = "{$this->leaderboard_source->name}.entry_indexes";
+        $table_short_name = "entry_indexes";
         
-        Schema::create($table_name, function (Blueprint $table) {
+        $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
+        
+        Schema::create($table_full_name, function (Blueprint $table) {
             $table->string('name', 255);
             $table->string('sub_name', 255);
             $table->binary('data');
@@ -691,6 +752,33 @@ class CreateSourceSchema implements ShouldQueue {
                 'sub_name'
             ]);
         });
+    }
+    
+    /**
+     * Creates the table that links necrolab users to their respective source player.
+     *
+     * @return void
+     */
+    protected function createPlayersLinkTable() {
+        $table_name = "user_{$this->leaderboard_source->name}_player";
+    
+        Schema::create($table_name, function (Blueprint $table) {
+            $table->timestamp('created');
+            $table->integer('user_id');
+            $table->integer('player_id');
+
+            $table->primary('user_id');
+            
+            $table->index('player_id');
+        });
+        
+        DB::statement("
+            ALTER TABLE {$table_name}
+                ADD CONSTRAINT {$table_name}_user_id_foreign
+                    FOREIGN KEY (user_id) REFERENCES public.users (id) ON DELETE CASCADE,
+                ADD CONSTRAINT {$table_name}_player_id_foreign
+                    FOREIGN KEY (player_id) REFERENCES {$this->leaderboard_source->name}.players (id) ON DELETE CASCADE;
+        ");
     }
 
     /**
@@ -736,5 +824,33 @@ class CreateSourceSchema implements ShouldQueue {
         $this->createReplaysTable();
         
         $this->createEntryIndexesTable();
+        
+        $this->createPlayersLinkTable();
+        
+        $start_date = new DateTime($this->leaderboard_source->start_date);
+        
+        $end_date = new DateTime($this->leaderboard_source->end_date);
+        $end_date->modify('last day of this month');
+        
+        LeaderboardEntries::dispatchRangePartitionCreationJob(
+            CreateLeaderboardEntriesPartitionJob::class,
+            $this->leaderboard_source, 
+            $start_date,
+            $end_date
+        );
+        
+        PowerRankingEntries::dispatchRangePartitionCreationJob(
+            CreatePowerRankingEntriesPartitionJob::class,
+            $this->leaderboard_source, 
+            $start_date,
+            $end_date
+        );
+        
+        DailyRankingEntries::dispatchRangePartitionCreationJob(
+            CreateDailyRankingEntriesPartitionJob::class,
+            $this->leaderboard_source, 
+            $start_date,
+            $end_date
+        );
     }
 }

@@ -43,11 +43,13 @@ trait HasPartitions {
         return $table_names;
     }
     
-    public static function dispatchPartitionCreationJob(string $job_class, $leaderboard_source_name, DateTime $date) {
+    public static function dispatchPartitionCreationJob(string $job_class, $leaderboard_source, DateTime $date) {
         $leaderboard_sources = [];
         
-        if(!empty($leaderboard_source_name)) {
-            $leaderboard_source = LeaderboardSources::where('name', $leaderboard_source_name)->first();
+        if(!empty($leaderboard_source)) {
+            if(!$leaderboard_source instanceof LeaderboardSources) {
+                $leaderboard_source = LeaderboardSources::where('name', $leaderboard_source)->first();
+            }
             
             if(!empty($leaderboard_source)) {
                 $leaderboard_sources[] = $leaderboard_source;
@@ -65,13 +67,15 @@ trait HasPartitions {
         }
     }
     
-    public static function dispatchRangePartitionCreationJob(string $job_class, $leaderboard_source_name, DateTime $start_date, DateTime $end_date) {
+    public static function dispatchRangePartitionCreationJob(string $job_class, $leaderboard_source, DateTime $start_date, DateTime $end_date) {
         /* ---------- Retrieve the leaderboard sources that will have partitions added to it ---------- */
     
         $leaderboard_sources = [];
     
-        if(!empty($leaderboard_source_name)) {
-            $leaderboard_source = LeaderboardSources::where('name', $leaderboard_source_name)->first();
+        if(!empty($leaderboard_source)) {
+            if(!$leaderboard_source instanceof LeaderboardSources) {
+                $leaderboard_source = LeaderboardSources::where('name', $leaderboard_source)->first();
+            }
             
             if(!empty($leaderboard_source)) {
                 $leaderboard_sources[] = $leaderboard_source;
