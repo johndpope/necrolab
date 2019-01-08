@@ -10,7 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
-use App\Components\SteamDataManager\Players as PlayersManager;
+use App\Components\DataManagers\Steam\Players as PlayersManager;
 use App\Players;
 
 class SaveImported implements ShouldQueue {
@@ -26,8 +26,6 @@ class SaveImported implements ShouldQueue {
     protected $date;
     
     protected $data_manager;
-    
-    protected $steam_api;
     
     protected $group_number = 1;
 

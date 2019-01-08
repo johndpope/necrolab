@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Console\Commands\Players;
+namespace App\Console\Commands\Steam\Replays;
 
 use Illuminate\Console\Command;
-use App\Jobs\Players\Cache as CacheJob;
+use App\Jobs\Replays\UploadToS3 as UploadToS3Job;
 
-class Cache extends Command {
+class UploadToS3 extends Command {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'players:cache';
+    protected $signature = 'steam:replays:s3:upload';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Loads users of the specified leaderboard source into cache.";
+    protected $description = "Uploads all Steam replays to S3 that have not been uploaded yet.";
 
     /**
      * Create a new command instance.
@@ -34,7 +34,7 @@ class Cache extends Command {
      *
      * @return mixed
      */
-    public function handle() {
-        CacheJob::dispatch()->onConnection('sync');
+    public function handle() {    
+        UploadToS3Job::dispatch()->onConnection('sync');
     }
 }

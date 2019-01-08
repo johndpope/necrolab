@@ -1,24 +1,25 @@
 <?php
 
-namespace App\Console\Commands\Players;
+namespace App\Console\Commands\Steam\Leaderboards\Xml;
 
+use DateTime;
 use Illuminate\Console\Command;
-use App\Jobs\Players\Cache as CacheJob;
+use App\Jobs\Steam\Leaderboards\Xml\Import as ImportJob;
 
-class Cache extends Command {
+class Import extends Command {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'players:cache';
+    protected $signature = 'steam:leaderboards:xml:import';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Loads users of the specified leaderboard source into cache.";
+    protected $description = 'Imports leaderboard entries XML data from the Steam web API for the current date.';
 
     /**
      * Create a new command instance.
@@ -35,6 +36,6 @@ class Cache extends Command {
      * @return mixed
      */
     public function handle() {
-        CacheJob::dispatch()->onConnection('sync');
+        ImportJob::dispatch(new DateTime())->onConnection('sync');
     }
 }

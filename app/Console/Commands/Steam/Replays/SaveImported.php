@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Console\Commands\Players;
+namespace App\Console\Commands\Steam\Replays;
 
 use Illuminate\Console\Command;
-use App\Jobs\Players\Cache as CacheJob;
+use App\Jobs\Replays\SaveImported as SaveImportedJob;
 
-class Cache extends Command {
+class SaveImported extends Command {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'players:cache';
+    protected $signature = 'steam:replays:save_imported';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Loads users of the specified leaderboard source into cache.";
+    protected $description = "Saves properties from imported Steam replays into the database.";
 
     /**
      * Create a new command instance.
@@ -35,6 +35,6 @@ class Cache extends Command {
      * @return mixed
      */
     public function handle() {
-        CacheJob::dispatch()->onConnection('sync');
+        SaveImportedJob::dispatch()->onConnection('sync');
     }
 }
