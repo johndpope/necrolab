@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs\Leaderboards\Steam\Xml;
+namespace App\Jobs\Steam\Leaderboards\Xml;
 
 use DateTime;
 use Illuminate\Bus\Queueable;

@@ -10,7 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
-use App\Components\DataManagers\Core as DataManager;
+use App\Components\DataManagers\Leaderboards as DataManager;
 use App\Leaderboards;
 use App\LeaderboardRankingTypes;
 use App\LeaderboardSnapshots;

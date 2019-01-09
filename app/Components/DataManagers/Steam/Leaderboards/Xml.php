@@ -24,7 +24,9 @@ extends LeaderboardsManager {
         return simplexml_load_string($leaderboards_xml);
     }
     
-    public function __construct(DateTime $date) {    
+    public function __construct(DateTime $date) {
+        $leaderboard_source = LeaderboardSources::where('name', 'steam')->first();
+    
         parent::__construct($leaderboard_source, 'xml', $date);
         
         $this->leaderboards_path = "{$this->getSavedBasePath()}/leaderboards.xml";
@@ -167,4 +169,6 @@ extends LeaderboardsManager {
             $saved_zip_archive->close();
         }
     }
+    
+    public function getTempFile() {}
 }

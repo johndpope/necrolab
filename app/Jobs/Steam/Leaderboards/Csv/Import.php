@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs\Leaderboards\Steam\Csv;
+namespace App\Jobs\Steam\Leaderboards\Csv;
 
 use DateTime;
 use Illuminate\Bus\Queueable;

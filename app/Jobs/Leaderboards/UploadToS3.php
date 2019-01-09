@@ -9,7 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Storage;
-use App\Components\DataManagers\Core as DataManager;
+use App\Components\DataManagers\Leaderboards as DataManager;
 
 class UploadToS3 implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;

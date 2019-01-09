@@ -7,7 +7,7 @@ use ZipArchive;
 use Illuminate\Support\Facades\Storage;
 use App\LeaderboardSources;
 
-class Leaderboards
+abstract class Leaderboards
 extends Core {
     protected $date;
     
@@ -32,10 +32,14 @@ extends Core {
     }
     
     public function getTempBasePath() {
-        return $this->getTempBasePath() . "/{$this->date->format('Y-m-d')}";
+        return parent::getTempBasePath() . "/{$this->date->format('Y-m-d')}";
     }
     
-    abstract public function getTempLeaderboard() {}
+    public function getDate() {
+        return $this->date;
+    }
     
-    abstract public function getTempEntry() {}
+    abstract public function getTempLeaderboard();
+    
+    abstract public function getTempEntry(string $leaderboard_id);
 }

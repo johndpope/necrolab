@@ -23,7 +23,9 @@ extends LeaderboardsManager {
         unset($password);
     }
     
-    public function __construct(LeaderboardSources $leaderboard_source, DateTime $date) {        
+    public function __construct(DateTime $date) {
+        $leaderboard_source = LeaderboardSources::where('name', 'steam')->first();
+    
         parent::__construct($leaderboard_source, 'csv', $date);
         
         $this->names_path = "{$this->getSavedBasePath()}/leaderboards.txt";
@@ -54,16 +56,16 @@ extends LeaderboardsManager {
                 $file_name = basename($temp_file);
                 $file_name_split = explode('.', $file_name);
                 
-                $lbid = NULL;
+                $leaderboard_id = NULL;
                 
                 if($file_name_split[0] == 'leaderboards') {
-                    $lbid = 'leaderboards';
+                    $leaderboard_id = 'leaderboards';
                 }
                 else {
-                    $lbid = (int)$file_name_split[0];
+                    $leaderboard_id = (int)$file_name_split[0];
                 }
                     
-                $this->temp_files[$lbid] = [
+                $this->temp_files[$leaderboard_id] = [
                     'path' => $temp_file,
                     'full_path' => "{$this->storage_path}/{$temp_file}"
                 ];
@@ -75,8 +77,8 @@ extends LeaderboardsManager {
         $temp_files = $this->getTempFiles();
         
         if(!empty($temp_files)) {
-            foreach($temp_files as $lbid => $temp_file) {    
-                if($lbid != 'leaderboards') {
+            foreach($temp_files as $leaderboard_id => $temp_file) {    
+                if($leaderboard_id != 'leaderboards') {
                     $file_handle = fopen($temp_file['full_path'], 'r');
                     
                     $leaderboard_name_row = fgetcsv($file_handle);
@@ -87,7 +89,7 @@ extends LeaderboardsManager {
                     
                     $leaderboard = new stdClass();
                     
-                    $leaderboard->lbid = $lbid;
+                    $leaderboard->leaderboard_id = $leaderboard_id;
                     $leaderboard->name = $leaderboard_name;
                     $leaderboard->display_name = NULL;
                     $leaderboard->url = NULL;
@@ -98,11 +100,11 @@ extends LeaderboardsManager {
         }
     }
     
-    public function getTempEntry($lbid) {
+    public function getTempEntry($leaderboard_id) {
         $temp_files = $this->getTempFiles();
         
-        if(!empty($temp_files[$lbid])) {
-            $file_handle = fopen($temp_files[$lbid]['full_path'], 'r');
+        if(!empty($temp_files[$leaderboard_id])) {
+            $file_handle = fopen($temp_files[$leaderboard_id]['full_path'], 'r');
             
             //Discard the first row since it only contains the leaderboard name
             fgetcsv($file_handle);
@@ -132,7 +134,7 @@ extends LeaderboardsManager {
 
             $saved_zip_archive->open("{$this->getFullSavedBasePath()}.zip", ZipArchive::CREATE | ZipArchive::OVERWRITE);
         
-            foreach($temp_files as $lbid => $temp_file) {
+            foreach($temp_files as $leaderboard_id => $temp_file) {
                 $full_path = $temp_file['full_path'];
             
                 $relative_path = basename($full_path);
@@ -143,4 +145,6 @@ extends LeaderboardsManager {
             $saved_zip_archive->close();
         }
     }
+    
+    public function getTempFile() {}
 }

@@ -7,7 +7,7 @@ use ZipArchive;
 use Illuminate\Support\Facades\Storage;
 use App\LeaderboardSources;
 
-class Core {
+abstract class Core {
     protected $leaderboard_source;
     
     protected $file_storage_engine;
@@ -24,6 +24,10 @@ class Core {
         $this->addBasePathSegment($this->leaderboard_source->name);
         
         $this->storage_path = rtrim($this->file_storage_engine->getAdapter()->getPathPrefix(), '/\\');
+    }
+    
+    public function getLeaderboardSource() {
+        return $this->leaderboard_source;
     }
     
     protected function addBasePathSegment(string $segment_name) {
@@ -58,7 +62,7 @@ class Core {
         $this->file_storage_engine->deleteDirectory($this->getTempBasePath());
     }
     
-    abstract protected function loadTempFiles() {}
+    abstract protected function loadTempFiles();
     
     public function getTempFiles() {
         if(empty($this->temp_files)) {
@@ -68,7 +72,7 @@ class Core {
         return $this->temp_files;
     }
     
-    abstract public function compressTempToSaved() {}
+    abstract public function compressTempToSaved();
     
     public function decompressToTemp() {
         $saved_zip_archive = new ZipArchive();
@@ -80,7 +84,7 @@ class Core {
         }
     }
     
-    abstract public function getTempFile() {}
+    abstract public function getTempFile();
 
     public function copySavedToS3() {        
         $saved_file_path = "{$this->getSavedBasePath()}.zip";
