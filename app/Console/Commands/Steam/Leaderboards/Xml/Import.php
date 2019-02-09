@@ -5,6 +5,7 @@ namespace App\Console\Commands\Steam\Leaderboards\Xml;
 use DateTime;
 use Illuminate\Console\Command;
 use App\Jobs\Steam\Leaderboards\Xml\Import as ImportJob;
+use App\Dates;
 
 class Import extends Command {
     /**
@@ -19,7 +20,7 @@ class Import extends Command {
      *
      * @var string
      */
-    protected $description = 'Imports leaderboard entries XML data from the Steam web API for the current date.';
+    protected $description = "Imports Steam leaderboard entries as XML data from the Steam web API for today's date.";
 
     /**
      * Create a new command instance.
@@ -36,6 +37,8 @@ class Import extends Command {
      * @return mixed
      */
     public function handle() {
-        ImportJob::dispatch(new DateTime())->onConnection('sync');
+        $date = Dates::where('name', (new DateTime())->format('Y-m-d'))->firstOrFail();
+    
+        ImportJob::dispatch($date)->onConnection('sync');
     }
 }

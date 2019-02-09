@@ -2,11 +2,7 @@
 
 namespace App\Console\Commands\Rankings\Daily;
 
-use DateTime;
-use DateInterval;
-use Illuminate\Console\Command;
-use App\Components\CallbackHandler;
-use App\Components\DateIncrementor;
+use App\Console\Commands\DateRange as Command;
 use App\Jobs\Rankings\Daily\Generate as GenerateJob;
 
 class GenerateRange extends Command {
@@ -15,7 +11,7 @@ class GenerateRange extends Command {
      *
      * @var string
      */
-    protected $signature = 'rankings:daily:generate_range {start_date} {end_date}';
+    protected $signature = 'rankings:daily:generate_range';
 
     /**
      * The console command description.
@@ -30,27 +26,8 @@ class GenerateRange extends Command {
      * @return void
      */
     public function __construct() {
-        parent::__construct();
-    }
-
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle() {
-        $callback_handler = new CallbackHandler();
-        
-        $callback_handler->setCallback(function(DateTime $date) {
-            GenerateJob::dispatch($date)->onConnection('sync');
-        });
+        $this->job_class = GenerateJob::class;
     
-        $date_incrementor = new DateIncrementor(
-            new DateTime($this->argument('start_date')), 
-            new DateTime($this->argument('end_date')), 
-            new DateInterval('P1M')
-        );
-        
-        $date_incrementor->run($callback_handler);
+        parent::__construct();
     }
 }

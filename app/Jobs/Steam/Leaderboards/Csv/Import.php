@@ -13,6 +13,7 @@ use App\Components\LeaderboardNameGenerator;
 use App\Components\DataManagers\Steam\Leaderboards\Csv as CsvManager;
 use App\Jobs\Leaderboards\UploadToS3;
 use App\Jobs\Leaderboards\SaveToDatabase;
+use App\Dates;
 
 class Import implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -24,6 +25,11 @@ class Import implements ShouldQueue {
      */
     public $tries = 1;
     
+    /**
+     * The date that leaderboard entries will be imported for.
+     *
+     * @var \App\Dates
+     */
     protected $date;
 
     /**
@@ -31,7 +37,7 @@ class Import implements ShouldQueue {
      *
      * @return void
      */
-    public function __construct(DateTime $date) {
+    public function __construct(Dates $date) {
         $this->date = $date;
     }
 
@@ -41,7 +47,7 @@ class Import implements ShouldQueue {
      * @return void
      */
     public function handle() {
-        $leaderboard_name_generator = new LeaderboardNameGenerator($this->date);
+        $leaderboard_name_generator = new LeaderboardNameGenerator(new DateTime($this->date->name));
         $steam_leaderboard_data_manager = new CsvManager($this->date);
         
         $leaderboard_names = array_merge($leaderboard_name_generator->getNonDailyNames(), $leaderboard_name_generator->getDailyNames());

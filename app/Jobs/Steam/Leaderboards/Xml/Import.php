@@ -15,6 +15,7 @@ use App\Components\DataManagers\Steam\Leaderboards\Xml as XmlManager;
 use App\Components\CallbackHandler;
 use App\Jobs\Leaderboards\UploadToS3;
 use App\Jobs\Leaderboards\SaveToDatabase;
+use App\Dates;
 
 class Import implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -33,7 +34,7 @@ class Import implements ShouldQueue {
      *
      * @return void
      */
-    public function __construct(DateTime $date) {
+    public function __construct(Dates $date) {
         $this->date = $date;
     }
 

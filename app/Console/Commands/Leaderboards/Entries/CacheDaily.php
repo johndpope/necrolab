@@ -2,8 +2,7 @@
 
 namespace App\Console\Commands\Leaderboards\Entries;
 
-use DateTime;
-use Illuminate\Console\Command;
+use App\Console\Commands\Date as Command;
 use App\Jobs\Leaderboards\Entries\CacheDaily as CacheDailyJob;
 
 class CacheDaily extends Command {
@@ -12,14 +11,14 @@ class CacheDaily extends Command {
      *
      * @var string
      */
-    protected $signature = 'leaderboards:entries:daily:cache {date?}';
+    protected $signature = 'leaderboards:entries:daily:cache';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Loads daily leaderboard entries into cache for the specified date. Defaults to today's date when none is specified.";
+    protected $description = "Loads daily leaderboard entries into cache for the specified date.";
 
     /**
      * Create a new command instance.
@@ -27,15 +26,8 @@ class CacheDaily extends Command {
      * @return void
      */
     public function __construct() {
+        $this->job_class = CacheDailyJob::class;
+    
         parent::__construct();
-    }
-
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle() {
-        CacheDailyJob::dispatch(new DateTime($this->argument('date')))->onConnection('sync');
     }
 }

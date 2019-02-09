@@ -18,14 +18,7 @@ class CharactersResource extends JsonResource {
             'id' => (int)$this->id,
             'name' => $this->name,
             'display_name' => $this->display_name,
-            $this->mergeWhen(!empty($authenticated_user) && $authenticated_user->hasAnyPermission([
-                'permission:characters:store',
-                'permission:characters:update'
-            ]), [
-                'is_active' => $this->is_active,
-                'steam_match' => $this->steam_match,
-                'sort_order' => $this->sort_order
-            ])
+            'is_default' => $this->is_default
         ];
     }
 }

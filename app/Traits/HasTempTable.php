@@ -5,30 +5,31 @@ namespace App\Traits;
 use PDO;
 use App\Components\RecordQueue;
 use App\Components\InsertQueue;
+use App\LeaderboardSources;
 
 trait HasTempTable {    
-    protected static $temp_table_name;
+    protected static $temp_table_name = [];
     
-    public static function loadTempTableName() {
-        if(!isset(static::$temp_table_name)) {        
-            static::$temp_table_name = (new static())->getTable() . '_temp';
+    public static function loadTempTableName(LeaderboardSources $leaderboard_source): void {
+        if(!isset(static::$temp_table_name[$leaderboard_source->name])) {        
+            static::$temp_table_name[$leaderboard_source->name] = "{$leaderboard_source->name}_" . (new static())->getTable() . '_temp';
         }
     }
     
-    public static function getTempTableName() {
-        static::loadTempTableName();
+    public static function getTempTableName(LeaderboardSources $leaderboard_source): string {
+        static::loadTempTableName($leaderboard_source);
         
-        return static::$temp_table_name;
+        return static::$temp_table_name[$leaderboard_source->name];
     }
     
-    public static function getTempInsertQueueBindFlags() {
+    public static function getTempInsertQueueBindFlags(): array {
         return [];
     }
     
-    public static function getTempInsertQueue(int $commit_count) {        
+    public static function getTempInsertQueue(LeaderboardSources $leaderboard_source, int $commit_count): RecordQueue {        
         $record_queue = new RecordQueue($commit_count);
         
-        $insert_queue = new InsertQueue(static::getTempTableName());
+        $insert_queue = new InsertQueue(static::getTempTableName($leaderboard_source));
         
         $insert_queue->setParameterBindings(static::getTempInsertQueueBindFlags());
         
@@ -36,4 +37,10 @@ trait HasTempTable {
     
         return $record_queue;
     }
+    
+    abstract public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void;
+    
+    abstract public static function saveNewTemp(LeaderboardSources $leaderboard_source): void;
+    
+    abstract public static function updateFromTemp(LeaderboardSources $leaderboard_source): void;
 }

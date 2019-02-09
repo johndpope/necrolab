@@ -4,10 +4,9 @@ namespace App\Console\Commands\Dates;
 
 use DateTime;
 use DateInterval;
+use DatePeriod;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
-use App\Components\CallbackHandler;
-use App\Components\DateIncrementor;
 use App\Jobs\Dates\Add as AddJob;
 
 class AddRange extends Command {
@@ -39,22 +38,23 @@ class AddRange extends Command {
      *
      * @return mixed
      */
-    public function handle() {
-        $callback_handler = new CallbackHandler();
+    public function handle() {        
+        $start_date = new DateTime($this->option('start_date'));
+        $end_date = new DateTime($this->option('end_date'));
         
-        $callback_handler->setCallback(function(DateTime $date) {
-            AddJob::dispatch($date)->onConnection('sync');
-        });
-
-        $date_incrementor = new DateIncrementor(
-            new DateTime($this->option('start_date')), 
-            new DateTime($this->option('end_date')), 
-            new DateInterval('P1D')
+        $end_date->modify('+1 day');
+        
+        $date_period = new DatePeriod(
+            $start_date,
+            new DateInterval('P1D'),
+            $end_date
         );
         
         DB::beginTransaction();
         
-        $date_incrementor->run($callback_handler);
+        foreach($date_period as $date) {
+            AddJob::dispatch($date)->onConnection('sync');
+        }
         
         DB::commit();
     }

@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\DB;
 use App\Components\PostgresCursor;
 use App\Components\Encoder;
 use App\Components\CacheNames\Players as CacheNames;
+use App\LeaderboardSources;
 use App\Players;
 use App\ExternalSites;
 use App\EntryIndexes;
@@ -26,11 +27,20 @@ class Cache implements ShouldQueue {
     public $tries = 1;
 
     /**
+     * The leaderboard source used to determine the schema to generate rankings on.
+     *
+     * @var \App\LeaderboardSources
+     */
+    protected $leaderboard_source;
+
+    /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct() {}
+    public function __construct(LeaderboardSources $leaderboard_source) {
+        $this->leaderboard_source = $leaderboard_source;
+    }
 
     /**
      * Execute the job.
@@ -41,8 +51,8 @@ class Cache implements ShouldQueue {
         DB::beginTransaction();
     
         $cursor = new PostgresCursor(
-            'steam_users_cache', 
-            Players::getCacheQuery(),
+            'players_cache', 
+            Players::getCacheQuery($this->leaderboard_source),
             20000
         );
 
@@ -50,21 +60,21 @@ class Cache implements ShouldQueue {
         
         $indexes = [];
         
-        foreach($cursor->getRecord() as $steam_user) {
-            $steam_user_id = (int)$steam_user->steam_user_id;
+        foreach($cursor->getRecord() as $player) {
+            $player_id = (int)$player->id;
             
-            ExternalSites::addToSiteIdIndexes($indexes, $steam_user, $users_index_base_name, $steam_user_id);
+            ExternalSites::addToSiteIdIndexes($indexes, $player, $users_index_base_name, $player_id);
         }
         
         
         /* ---------- Setup for inserting into the entry_indexes table ----------*/
         
-        EntryIndexes::createTemporaryTable();
+        EntryIndexes::createTemporaryTable($this->leaderboard_source);
         
-        $entry_indexes_insert_queue = EntryIndexes::getTempInsertQueue(2000);
+        $entry_indexes_insert_queue = EntryIndexes::getTempInsertQueue($this->leaderboard_source, 2000);
         
         
-        /* ---------- Store the steam_user_id indexes for all sites ----------*/
+        /* ---------- Store the player_id indexes for all sites ----------*/
         
         if(!empty($indexes)) {
             foreach($indexes as $key => $index_data) {                
@@ -78,7 +88,7 @@ class Cache implements ShouldQueue {
         
         $entry_indexes_insert_queue->commit();
         
-        EntryIndexes::saveTemp();
+        EntryIndexes::saveNewTemp($this->leaderboard_source);
         
         DB::commit();
     }

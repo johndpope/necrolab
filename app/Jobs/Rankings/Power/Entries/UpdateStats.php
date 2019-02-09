@@ -12,8 +12,8 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
 use App\Components\PostgresCursor;
 use App\Components\Encoder;
-use App\Components\RecordQueue;
-use App\Components\InsertQueue;
+use App\LeaderboardSources;
+use App\Dates;
 use App\PowerRankings;
 use App\PowerRankingEntries;
 use App\LeaderboardTypes;
@@ -28,6 +28,18 @@ class UpdateStats implements ShouldQueue {
      */
     public $tries = 1;
     
+    /**
+     * The leaderboard source used to determine the schema to generate rankings on.
+     *
+     * @var \App\LeaderboardSources
+     */
+    protected $leaderboard_source;
+    
+    /**
+     * The date that rankings will be generated for.
+     *
+     * @var \App\Dates
+     */
     protected $date;
 
     /**
@@ -35,7 +47,9 @@ class UpdateStats implements ShouldQueue {
      *
      * @return void
      */
-    public function __construct(DateTime $date) {
+    public function __construct(LeaderboardSources $leaderboard_source, Dates $date) {
+        $this->leaderboard_source = $leaderboard_source;
+    
         $this->date = $date;
     }
 
@@ -51,7 +65,7 @@ class UpdateStats implements ShouldQueue {
         
         $cursor = new PostgresCursor(
             'power_rankings_stats_update', 
-            PowerRankingEntries::getStatsReadQuery($this->date),
+            PowerRankingEntries::getStatsReadQuery($this->leaderboard_source, $this->date),
             10000
         );
         
@@ -71,96 +85,92 @@ class UpdateStats implements ShouldQueue {
         
             $players[$power_ranking_id] += 1;
         
-            /* ---------- Summarize category players ---------- */
         
-            foreach($leaderboard_types_by_name as $leaderboard_type) {
-                $rank_field_name = "{$leaderboard_type->name}_rank";
-                
-                if(!empty($power_ranking_entry->$rank_field_name)) {
-                    if(!isset($category_summary[$power_ranking_id][$leaderboard_type->name]['players'])) {
-                        $category_summary[$power_ranking_id][$leaderboard_type->name]['players'] = 0;
+            /* ---------- Summarize category players ---------- */
+            
+            $category_ranks = Encoder::decode(stream_get_contents($power_ranking_entry->category_ranks));
+
+            if(!empty($category_ranks)) {
+                foreach($category_ranks as $leaderboard_type_name => $category_rank) {
+                    if(!isset($category_summary[$power_ranking_id][$leaderboard_type_name]['players'])) {
+                        $category_summary[$power_ranking_id][$leaderboard_type_name]['players'] = 0;
                     }
                     
-                    $category_summary[$power_ranking_id][$leaderboard_type->name]['players'] += 1;
+                    $category_summary[$power_ranking_id][$leaderboard_type_name]['players'] += 1;
                 }
             }
         
             $character_rankings = Encoder::decode(stream_get_contents($power_ranking_entry->characters));
-            
-            foreach($character_rankings as $character_name => $character_ranking) {
-                /* ---------- Summarize character players ---------- */
-            
-                if(!isset($character_summary[$power_ranking_id][$character_name]['players'])) {
-                    $character_summary[$power_ranking_id][$character_name]['players'] = 0;
-                }
-                
-                $character_summary[$power_ranking_id][$character_name]['players'] += 1;
-            
-                foreach($character_ranking as $category_name => $category_data) {
-                    if(isset($leaderboard_types_by_name[$category_name])) {
-                        $details_field_name = $leaderboard_types_by_name[$category_name]->details_field_name;
-                    
-                    
-                        /* ---------- Summarize character category players ---------- */
-                        
-                        if(!isset($character_summary[$power_ranking_id][$character_name][$category_name]['players'])) {
-                            $character_summary[$power_ranking_id][$character_name][$category_name]['players'] = 0;
-                        }
-                        
-                        $character_summary[$power_ranking_id][$character_name][$category_name]['players'] += 1;
 
-                        $category_details = $category_data[$details_field_name];
+            if(!empty($character_rankings)) {
+                foreach($character_rankings as $character_name => $character_ranking) {
+                    /* ---------- Summarize character players ---------- */
+                
+                    if(!isset($character_summary[$power_ranking_id][$character_name]['players'])) {
+                        $character_summary[$power_ranking_id][$character_name]['players'] = 0;
+                    }
+                    
+                    $character_summary[$power_ranking_id][$character_name]['players'] += 1;
                     
                     
-                        /* ---------- Summarize category details (score, time, win_count, etc.) ---------- */
+                    $character_categories = $character_ranking['categories'] ?? [];
+                
+                    if(!empty($character_categories)) {
+                        foreach($character_categories as $leaderboard_type_name => $category_data) {
+                            /* ---------- Summarize character category players ---------- */
+                                
+                            if(!isset($character_summary[$power_ranking_id][$character_name][$leaderboard_type_name]['players'])) {
+                                $character_summary[$power_ranking_id][$character_name][$leaderboard_type_name]['players'] = 0;
+                            }
+                            
+                            $character_summary[$power_ranking_id][$character_name][$leaderboard_type_name]['players'] += 1;
+                            
                         
-                        if(!isset($category_summary[$power_ranking_id][$category_name][$details_field_name])) {
-                            $category_summary[$power_ranking_id][$category_name][$details_field_name] = 0;
+                            $character_details = $category_data['details'] ?? [];
+                        
+                            if(!empty($character_details)) {
+                                foreach($character_details as $details_name => $details_value) {
+                                    /* ---------- Summarize category details ---------- */
+                                
+                                    if(!isset($category_summary[$power_ranking_id][$leaderboard_type_name]['details'][$details_name])) {
+                                        $category_summary[$power_ranking_id][$leaderboard_type_name]['details'][$details_name] = 0;
+                                    }
+                                    
+                                    $category_summary[$power_ranking_id][$leaderboard_type_name]['details'][$details_name] += $details_value;
+                                
+                                
+                                    /* ---------- Summarize character category details ---------- */
+                                
+                                    if(!isset($character_summary[$power_ranking_id][$character_name][$leaderboard_type_name]['details'][$details_name])) {
+                                        $character_summary[$power_ranking_id][$character_name][$leaderboard_type_name]['details'][$details_name] = 0;
+                                    }
+                                    
+                                    $character_summary[$power_ranking_id][$character_name][$leaderboard_type_name]['details'][$details_name] += $details_value;
+                                }
+                            }
                         }
-                        
-                        $category_summary[$power_ranking_id][$category_name][$details_field_name] += $category_details;
-                        
-                        
-                        /* ---------- Summarize character category details (score, time, win_count, etc.) ---------- */
-                        
-                        if(!isset($character_summary[$power_ranking_id][$character_name][$category_name][$details_field_name])) {
-                            $character_summary[$power_ranking_id][$character_name][$category_name][$details_field_name] = 0;
-                        }
-                        
-                        $character_summary[$power_ranking_id][$character_name][$category_name][$details_field_name] += $category_details;
                     }
                 }
             }
         }
         
-        PowerRankings::createTemporaryTable();
+        PowerRankings::createTemporaryTable($this->leaderboard_source);
         
         
         /* ---------- Configure the record queue and insert queue ---------- */
-        
-        $record_queue = new RecordQueue(10000);
-        
-        $insert_queue = new InsertQueue(PowerRankings::getTempTableName());
-        
-        $insert_queue->setParameterBindings([
-            PDO::PARAM_INT,
-            PDO::PARAM_INT,
-            PDO::PARAM_LOB,
-            PDO::PARAM_LOB
-        ]);
-        
-        $insert_queue->addToRecordQueue($record_queue);
+
+        $insert_queue = PowerRankings::getTempInsertQueue($this->leaderboard_source, 8000);
         
         
         /* ---------- Add all records into the record queue ---------- */
         
         if(!empty($power_ranking_ids)) {
             foreach($power_ranking_ids as $power_ranking_id) {
-                $record_queue->addRecord([
-                    'power_ranking_id' => $power_ranking_id,
+                $insert_queue->addRecord([
+                    'id' => $power_ranking_id,
                     'players' => $players[$power_ranking_id],
-                    'categories' => Encoder::encode($category_summary[$power_ranking_id]),
-                    'characters' => Encoder::encode($character_summary[$power_ranking_id])
+                    'categories' => json_encode($category_summary[$power_ranking_id] ?? []),
+                    'characters' => json_encode($character_summary[$power_ranking_id] ?? [])
                 ]);
             }
         }
@@ -168,9 +178,9 @@ class UpdateStats implements ShouldQueue {
         
         /* ---------- Save and commit ---------- */
         
-        $record_queue->commit();
-        
-        PowerRankings::updateFromTemp();
+        $insert_queue->commit();
+
+        PowerRankings::updateFromTemp($this->leaderboard_source);
         
         DB::commit();
     }

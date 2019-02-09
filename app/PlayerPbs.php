@@ -8,27 +8,30 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\Builder;
 use App\Components\PostgresCursor;
+use App\Traits\IsSchemaTable;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
 use App\Traits\AddsSqlCriteria;
+use App\LeaderboardSources;
 use App\Releases;
+use App\Players;
+use App\Leaderboards;
+use App\LeaderboardSnapshots;
+use App\LeaderboardEntryDetails;
+use App\Replays;
+use App\RunResults;
+use App\ReplayVersions;
+use App\Seeds;
 
 class PlayerPbs extends Model {
-    use HasTempTable, HasManualSequence, AddsSqlCriteria;
+    use IsSchemaTable, HasTempTable, HasManualSequence, AddsSqlCriteria;
 
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'steam_user_pbs';
-    
-    /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'steam_user_pb_id';
+    protected $table = 'player_pbs';
     
     /**
      * Indicates if the model should be timestamped.
@@ -37,7 +40,7 @@ class PlayerPbs extends Model {
      */
     public $timestamps = false;
     
-    public static function getHighestZoneLevel(string $details) {
+    public static function getHighestZoneLevel(string $details): object {
         $details_split = explode('0000000', $details);
         
         $highest_zone_level = new stdClass();
@@ -48,7 +51,7 @@ class PlayerPbs extends Model {
         return $highest_zone_level;
     } 
     
-    public static function getIfWin(DateTime $date, Releases $release, $zone, $level) {    
+    public static function getIfWin(Releases $release, $zone, $level): int {    
         $is_win = 0;
         
         if($zone == $release->win_zone && $level == $release->win_level) {
@@ -58,18 +61,14 @@ class PlayerPbs extends Model {
         return $is_win;
     }
     
-    public static function getWinCount(int $score) {
-        $win_count = NULL;
-    
-        if(!empty($score)) {
-            $win_count = $score / 100;
-            $win_count = round($win_count);
-        }
+    public static function getWinCount(int $score): int {
+        $win_count = $score / 100;
+        $win_count = round($win_count);
         
         return $win_count;
     }
     
-    public static function getTime(int $score) {
+    public static function getTime(int $score): ?float {
         $time = NULL;
     
         if(!empty($score)) {
@@ -79,14 +78,8 @@ class PlayerPbs extends Model {
         return $time;
     }
     
-    public static function setPropertiesFromEntry(object $entry, object $leaderboard, DateTime $date) {
-        $entry->time = NULL;
-    
-        if($leaderboard->leaderboard_type->name == 'speed') {            
-            $entry->time = (float)static::getTime($entry->score);
-        }
-        
-        //This logic path is for importing XML.
+    public static function setPropertiesFromEntry(object $entry, object $leaderboard, DateTime $date): void {        
+        // This logic path is for importing XML.
         if(!empty($entry->details)) {
             $highest_zone_level = static::getHighestZoneLevel($entry->details);
         
@@ -97,22 +90,29 @@ class PlayerPbs extends Model {
         }
         
         $entry->is_win = 0;
-
-        if(empty($leaderboard->leaderboard_type->name == 'score')) {
-            $entry->is_win = static::getIfWin($date, $leaderboard->release, $entry->zone, $entry->level);
-        }
-        else {        
-            $entry->is_win = 1;
-        }
+        $entry->details = [];
         
-        $entry->win_count = NULL;
-        
-        if($leaderboard->leaderboard_type->name == 'deathless') {
-            $entry->win_count = static::getWinCount($entry->score);
+        switch($leaderboard->leaderboard_type->name) {
+            case 'score':
+            case 'daily':
+                $entry->details['score'] = (int)$entry->raw_score;
+                
+                $entry->is_win = static::getIfWin($leaderboard->release, $entry->zone, $entry->level);
+                break;
+            case 'speed':
+                $entry->details['time'] = (float)static::getTime($entry->raw_score);
+                
+                $entry->is_win = 1;
+                break;
+            case 'deathless':
+                $entry->details['win_count'] = static::getWinCount($entry->raw_score);
+                
+                $entry->is_win = 1;
+                break;
         }
     }
     
-    public static function isValid(object $leaderboard, $score) {
+    public static function isValid(object $leaderboard, $score): bool {
         $is_valid = false;
     
         switch($leaderboard->leaderboard_type->name) {
@@ -131,69 +131,67 @@ class PlayerPbs extends Model {
         return $is_valid;
     }
     
-    public static function createTemporaryTable() {
+    public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void {
         DB::statement("
-            CREATE TEMPORARY TABLE steam_user_pbs_temp (
-                steam_user_pb_id integer NOT NULL,
-                leaderboard_id smallint NOT NULL,
-                steam_user_id integer NOT NULL,
-                score integer,
-                first_leaderboard_snapshot_id integer NOT NULL,
-                first_rank integer NOT NULL,
-                \"time\" double precision,
-                win_count smallint,
+            CREATE TEMPORARY TABLE " . static::getTempTableName($leaderboard_source) . " (
+                id integer,
+                player_id integer,
+                leaderboard_id integer,
+                first_leaderboard_snapshot_id integer,
+                first_rank integer,
+                leaderboard_entry_details_id smallint,
                 zone smallint,
                 level smallint,
                 is_win smallint,
-                leaderboard_entry_details_id smallint NOT NULL
+                raw_score character varying(255),
+                details jsonb
             )
             ON COMMIT DROP;
         ");
     }
     
-    public static function saveNewTemp() {    
+    public static function saveNewTemp(LeaderboardSources $leaderboard_source): void {    
         DB::statement("
-            INSERT INTO steam_user_pbs (
-                steam_user_pb_id,
+            INSERT INTO " . static::getSchemaTableName($leaderboard_source) . " (
+                id,
+                player_id,
                 leaderboard_id,
-                steam_user_id,
-                score,
                 first_leaderboard_snapshot_id,
                 first_rank,
-                time,
-                win_count,
+                leaderboard_entry_details_id,
                 zone,
                 level,
                 is_win,
-                leaderboard_entry_details_id
+                raw_score,
+                details
             )
             SELECT 
-                steam_user_pb_id,
+                id,
+                player_id,
                 leaderboard_id,
-                steam_user_id,
-                score,
                 first_leaderboard_snapshot_id,
                 first_rank,
-                time,
-                win_count,
+                leaderboard_entry_details_id,
                 zone,
                 level,
                 is_win,
-                leaderboard_entry_details_id
-            FROM steam_user_pbs_temp
+                raw_score,
+                details
+            FROM " . static::getTempTableName($leaderboard_source) . "
         ");
     }
     
-    public static function addSelects(Builder $query) {
+    public static function updateFromTemp(LeaderboardSources $leaderboard_source): void {}
+    
+    public static function addSelects(Builder $query): void {
         $query->addSelect([
             'led.name AS details',
             'sup.zone',
             'sup.level',
             'sup.is_win',
-            'sup.score',
-            'sup.time',
-            'sup.win_count',
-            'sr.ugcid',
+            'sup.raw_score',
+            'sup.details',
+            'sr.external_id AS replay_external_id',
             'se.name AS seed',
             'sr.downloaded',
             'sr.uploaded_to_s3',
@@ -207,38 +205,38 @@ class PlayerPbs extends Model {
         ]);
     }
     
-    public static function addJoins(Builder $query) {
-        $query->join("leaderboard_entry_details AS led", 'led.id', '=', 'sup.leaderboard_entry_details_id');
+    public static function addJoins(LeaderboardSources $leaderboard_source, Builder $query): void {
+        $query->join(LeaderboardEntryDetails::getSchemaTableName($leaderboard_source) . " AS led", 'led.id', '=', 'sup.leaderboard_entry_details_id');
         $query->join('leaderboard_types AS lt', 'lt.id', '=', 'l.leaderboard_type_id');
         $query->join('leaderboard_details_columns AS ldc', 'ldc.id', '=', 'lt.leaderboard_details_column_id');
         $query->join('data_types AS dt', 'dt.id', '=', 'ldc.data_type_id');
     }
     
-    public static function addLeftJoins(Builder $query) {    
-        $query->leftJoin('steam_replays AS sr', 'sr.steam_user_pb_id', '=', 'sup.steam_user_pb_id');
-        $query->leftJoin('run_results AS rr',  'rr.run_result_id', '=', 'sr.run_result_id');
-        $query->leftJoin('steam_replay_versions AS srv', 'srv.steam_replay_version_id', '=', 'sr.steam_replay_version_id');
-        $query->leftJoin('seeds AS se', 'se.id', '=', 'sr.seed_id');
+    public static function addLeftJoins(LeaderboardSources $leaderboard_source, Builder $query): void {    
+        $query->leftJoin(Replays::getSchemaTableName($leaderboard_source) . ' AS sr', 'sr.player_pb_id', '=', 'sup.id');
+        $query->leftJoin(RunResults::getSchemaTableName($leaderboard_source) . ' AS rr',  'rr.run_result_id', '=', 'sr.run_result_id');
+        $query->leftJoin(ReplayVersions::getSchemaTableName($leaderboard_source) . ' AS srv', 'srv.id', '=', 'sr.replay_version_id');
+        $query->leftJoin(Seeds::getSchemaTableName($leaderboard_source) . ' AS se', 'se.id', '=', 'sr.seed_id');
     }
     
-    public static function getAllIdsByUnique() {        
-        $query = DB::table('steam_user_pbs')->select([
-            'steam_user_pb_id',
+    public static function getAllIdsByUnique(LeaderboardSources $leaderboard_source): array {        
+        $query = DB::table(static::getSchemaTableName($leaderboard_source))->select([
+            'id',
             'leaderboard_id',
-            'steam_user_id',
-            'score'
+            'player_id',
+            'raw_score'
         ]);
         
         $cursor = new PostgresCursor(
-            'steam_user_pbs_by_unique', 
+            "{$leaderboard_source->name}_player_pb_ids_by_unique", 
             $query,
             20000
         );
         
         $all_ids_by_unique = [];
         
-        foreach($cursor->getRecord() as $steam_user_pb) {
-            $all_ids_by_unique[$steam_user_pb->leaderboard_id][$steam_user_pb->steam_user_id][$steam_user_pb->score] = $steam_user_pb->steam_user_pb_id;
+        foreach($cursor->getRecord() as $player_pb) {
+            $all_ids_by_unique[$player_pb->leaderboard_id][$player_pb->player_id][$player_pb->raw_score] = $player_pb->id;
         }
         
         return $all_ids_by_unique;
@@ -254,23 +252,24 @@ class PlayerPbs extends Model {
         int $seeded_type_id, 
         int $multiplayer_type_id, 
         int $soundtrack_id
-    ) {
+    ): Builder {
     
-        $query = DB::table('steam_user_pbs AS sup')
+        $query = DB::table(static::getSchemaTableName($leaderboard_source) . ' AS sup')
             ->select([
-                'l.lbid',                
+                'l.leaderboard_id',                
                 'ls.date AS first_snapshot_date',
                 'sup.first_rank'
             ])
-            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
-            ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id')
-            ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_snapshot_id', '=', 'sup.first_leaderboard_snapshot_id');
+            ->join(Players::getSchemaTableName($leaderboard_source) . ' AS su', 'su.id', '=', 'sup.player_id')
+            ->join(Leaderboards::getSchemaTableName($leaderboard_source) . ' AS l', 'l.id', '=', 'sup.leaderboard_id')
+            ->join(LeaderboardSnapshots::getSchemaTableName($leaderboard_source) . ' AS ls', 'ls.id', '=', 'sup.first_leaderboard_snapshot_id')
+            ->join('dates AS d', 'd.id', '=', 'ls.date_id');
         
         static::addSelects($query);
         static::addJoins($query);
         static::addLeftJoins($query);
 
-        $query->where('su.steamid', $player_id)
+        $query->where('su.external_id', $player_id)
             ->where('l.character_id', $character_id)
             ->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
@@ -278,8 +277,8 @@ class PlayerPbs extends Model {
             ->where('l.seeded_type_id', $seeded_type_id)
             ->where('l.multiplayer_type_id', $multiplayer_type_id)
             ->where('l.soundtrack_id', $soundtrack_id)
-            ->orderBy('ls.date', 'desc')
-            ->orderBy('sup.steam_user_pb_id', 'desc');
+            ->orderBy('d.name', 'desc')
+            ->orderBy('sup.player_pb_id', 'desc');
         
         return $query;
     }

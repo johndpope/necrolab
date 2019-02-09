@@ -9,6 +9,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Support\Facades\DB;
 use GuzzleHttp\Client as GuzzleClient;
 use Steam\Configuration as SteamApiConfiguration;
 use Steam\Runner\GuzzleRunner;
@@ -18,9 +19,9 @@ use Steam\Utility\GuzzleUrlBuilder;
 use Steam\Command\RemoteStorage\GetUGCFileDetails;
 use App\Components\CallbackHandler;
 use App\Components\PostgresCursor;
-use App\Components\DataManagers\Steam\Replays as SteamReplaysManager;
-use App\SteamReplays;
+use App\Components\DataManagers\Steam\Replays as DataManager;
 use App\Jobs\Replays\SaveImported as SaveImportedJob;
+use App\Replays;
 
 class Import implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -59,7 +60,7 @@ class Import implements ShouldQueue {
         
         /* ---------- Configure Data Manager ---------- */ 
         
-        $this->data_manager = new SteamReplaysManager();
+        $this->data_manager = new DataManager();
         
         $this->data_manager->deleteTemp();
         
@@ -105,19 +106,22 @@ class Import implements ShouldQueue {
         
         /* ---------- Retrieve outdated record ids and add to record queue ---------- */ 
         
+        
+        DB::beginTransaction();
+        
         $cursor = new PostgresCursor(
             'get_unsaved_replays', 
-            SteamReplays::getUnsavedQuery(),
+            Replays::getUnsavedQuery($this->data_manager->getLeaderboardSource()),
             3000
         );
         
         foreach($cursor->getRecord() as $unsaved_record) {
             $file_data = NULL;
         
-            if($unsaved_record->ugcid != '-1') {
+            if($unsaved_record->external_id != '-1') {
                 try {
                     $ugc_callback_handler->setArguments([
-                        new GetUGCFileDetails($application_id, $unsaved_record->ugcid)
+                        new GetUGCFileDetails($application_id, $unsaved_record->external_id)
                     ]);
                 
                     $ugc_meta_data = $ugc_callback_handler->execute();
@@ -141,13 +145,15 @@ class Import implements ShouldQueue {
             }
 
             if(!empty($file_data)) {            
-                $this->data_manager->saveTempFile($unsaved_record->steam_user_pb_id, (string)$unsaved_record->ugcid, $file_data);
+                $this->data_manager->saveTempFile($unsaved_record->player_pb_id, (string)$unsaved_record->external_id, $file_data);
             }
             else {
-                $this->data_manager->saveInvalidFile($unsaved_record->steam_user_pb_id);
+                $this->data_manager->saveInvalidFile($unsaved_record->player_pb_id);
             }
         }
         
-        SaveImportedJob::dispatch();
+        DB::commit();
+        
+        SaveImportedJob::dispatch($this->data_manager);
     }
 }

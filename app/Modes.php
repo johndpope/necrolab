@@ -3,13 +3,18 @@
 namespace App;
 
 use Illuminate\Support\Facades\DB;
+use ElcoBvg\Opcache\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use ElcoBvg\Opcache\Model;
 use App\Traits\GetByName;
 use App\Traits\GetById;
+use App\Traits\MatchesOnString;
+use App\Traits\HasDefaultRecord;
 use App\Traits\StoredInCache;
+use App\ModeMatches;
 
 class Modes extends Model {
-    use GetByName, GetById, StoredInCache;
+    use GetByName, GetById, MatchesOnString, HasDefaultRecord, StoredInCache;
 
     /**
      * The table associated with the model.
@@ -19,28 +24,13 @@ class Modes extends Model {
     protected $table = 'modes';
     
     /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-    
-    /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
     public $timestamps = false;
     
-    public static function getValidationRules() {
-        return [
-            'name' => 'required|max:100|unique:modes',
-            'display_name' => 'required|max:100',
-            'sort_order' => 'required|integer|min:1',
-        ];
-    }
-    
-    public static function getStoredInCacheQuery() {
+    public static function getStoredInCacheQuery(): Builder {
         $leaderboard_types_query = DB::table('leaderboard_type_modes AS ltm')
             ->select([
                 'ltm.mode_id',
@@ -61,6 +51,7 @@ class Modes extends Model {
             'm.id',
             'm.name',
             'm.display_name',
+            'm.is_default',
             'leaderboard_types',
             'mode_leaderboard_types.leaderboard_types',
             'mode_characters.characters'
@@ -75,32 +66,38 @@ class Modes extends Model {
             ->orderBy('m.sort_order', 'asc');
     }
     
-    public static function getModeFromString($string) {
-        $mode = Modes::getByName('normal');
-        
-        if(substr_count($string, 'hard') > 1) {
-            $mode = static::getByName('hard');
+    protected static function processDataBeforeCache(Collection $records): void {    
+        if(!empty($records)) {
+            foreach($records as $record) {                
+                /* ---------- Leaderboard types ---------- */ 
+            
+                $leaderboard_types = explode(',', $record->leaderboard_types);
+                
+                if(empty($leaderboard_types)) {
+                    $leaderboard_types = [];
+                }
+                
+                $record->leaderboard_types = $leaderboard_types;
+                
+                
+                /* ---------- Characters ---------- */ 
+            
+                $characters = explode(',', $record->characters);
+                
+                if(empty($characters)) {
+                    $characters = [];
+                }
+                
+                $record->characters = $characters;
+            }
         }
-        elseif(stripos($string, 'hard') !== false && stripos($string, 'hardcore') === false) { 
-            $mode = static::getByName('hard');
-        }
-        
-        if(stripos($string, 'no return') !== false) {            
-            $mode = static::getByName('no_return');
-        }
-        
-        if(stripos($string, 'phasing') !== false) {            
-            $mode = static::getByName('phasing');
-        }
-        
-        if(stripos($string, 'randomizer') !== false) {            
-            $mode = static::getByName('randomizer');
-        }
-        
-        if(stripos($string, 'mystery') !== false) {            
-            $mode = static::getByName('mystery');
-        }
-        
-        return $mode;
+    }
+    
+    protected static function getMatchModel(): string {
+        return ModeMatches::class;
+    }
+    
+    protected static function getMatchFieldIdName(): string {
+        return 'mode_id';
     }
 }

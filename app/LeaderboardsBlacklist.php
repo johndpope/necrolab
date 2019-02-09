@@ -3,8 +3,11 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\IsSchemaTable;
 
 class LeaderboardsBlacklist extends Model {
+    use IsSchemaTable;
+
     /**
      * The table associated with the model.
      *
@@ -17,12 +20,12 @@ class LeaderboardsBlacklist extends Model {
      *
      * @var string
      */
-    protected $primaryKey = 'leaderboards_blacklist_id';
+    protected $primaryKey = 'leaderboard_id';
     
     /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
-    public $timestamps = false;
+    public $timestamps = true;
 }

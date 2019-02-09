@@ -4,10 +4,12 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use App\Traits\IsSchemaTable;
 use App\Traits\HasTempTable;
+use App\LeaderboardSources;
 
 class LeaderboardRankingTypes extends Model {
-    use HasTempTable;
+    use IsSchemaTable, HasTempTable;
 
     /**
      * The table associated with the model.
@@ -33,9 +35,9 @@ class LeaderboardRankingTypes extends Model {
      */
     public $timestamps = false;
     
-    public static function createTemporaryTable() {    
+    public static function createTemporaryTable(LeaderboardSources $leaderboard_source) {    
         DB::statement("
-            CREATE TEMPORARY TABLE leaderboard_ranking_types_temp (
+            CREATE TEMPORARY TABLE " . static::getTempTableName($leaderboard_source) . " (
                 leaderboard_id integer,
                 ranking_type_id smallint
             )
@@ -43,16 +45,18 @@ class LeaderboardRankingTypes extends Model {
         ");
     }
     
-    public static function saveTemp() {
+    public static function saveNewTemp(LeaderboardSources $leaderboard_source) {
         DB::statement("
-            INSERT INTO leaderboard_ranking_types (
+            INSERT INTO " . static::getSchemaTableName($leaderboard_source) . " (
                 leaderboard_id, 
                 ranking_type_id
             )
             SELECT 
                 leaderboard_id, 
                 ranking_type_id
-            FROM leaderboard_ranking_types_temp
+            FROM " . static::getTempTableName($leaderboard_source) . "
         ");
     }
+    
+    public static function updateFromTemp(LeaderboardSources $leaderboard_source) {}
 }

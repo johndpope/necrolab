@@ -15,6 +15,8 @@ use App\Releases;
 use App\Players;
 use App\LeaderboardSources;
 use App\LeaderboardTypes;
+use App\Dates;
+use App\PowerRankings;
 
 class PowerRankingEntries extends Model {
     use HasPartitions, HasTempTable;
@@ -43,48 +45,46 @@ class PowerRankingEntries extends Model {
      */
     public $timestamps = false;
     
-    public static function getTempInsertQueueBindFlags() {
+    public static function getTempInsertQueueBindFlags(): array {
         return [
             PDO::PARAM_INT,
             PDO::PARAM_INT,
+            PDO::PARAM_INT,
             PDO::PARAM_LOB,
-            PDO::PARAM_INT,
-            PDO::PARAM_INT,
-            PDO::PARAM_INT,
-            PDO::PARAM_INT
+            PDO::PARAM_LOB
         ];
     }
     
-    public static function serializeCharacters(array $entry, array $characters) {
+    public static function serializeCharacters(array $entry, array $characters, array $leaderboard_types): string {
         $character_data = [];
     
         if(!empty($characters)) {
             foreach($characters as $character) {
                 $rank_name = "{$character->name}_rank";
                 
-                if(isset($entry[$rank_name])) {                
-                    $score_rank = "{$character->name}_score_rank";
-                    
-                    if(isset($entry[$score_rank])) {
-                        $character_data[$character->name]['score']['pb_id'] = (int)$entry["{$character->name}_score_pb_id"];
-                        $character_data[$character->name]['score']['rank'] = (int)$entry[$score_rank];
-                        $character_data[$character->name]['score']['score'] = (int)$entry["{$character->name}_score"];
-                    }
-                    
-                    $speed_rank = "{$character->name}_speed_rank";
-                    
-                    if(isset($entry[$speed_rank])) {
-                        $character_data[$character->name]['speed']['pb_id'] = (int)$entry["{$character->name}_speed_pb_id"];
-                        $character_data[$character->name]['speed']['rank'] = (int)$entry[$speed_rank];
-                        $character_data[$character->name]['speed']['time'] = (float)$entry["{$character->name}_time"];
-                    }
-                    
-                    $deathless_rank = "{$character->name}_deathless_rank";
-                    
-                    if(isset($entry[$deathless_rank])) {
-                        $character_data[$character->name]['deathless']['pb_id'] = (int)$entry["{$character->name}_deathless_pb_id"];
-                        $character_data[$character->name]['deathless']['rank'] = (int)$entry[$deathless_rank];
-                        $character_data[$character->name]['deathless']['win_count'] = (int)$entry["{$character->name}_win_count"];
+                if(isset($entry[$rank_name])) {
+                    if(!empty($leaderboard_types)) {
+                        foreach($leaderboard_types as $leaderboard_type) {                            
+                            $category_rank_name = "{$character->name}_{$leaderboard_type->name}_rank";
+                            
+                            if(isset($entry[$category_rank_name])) {
+                                $pb_id_name = "{$character->name}_{$leaderboard_type->name}_pb_id";
+                            
+                                $character_data[$character->name]['categories'][$leaderboard_type->name]['pb_id'] = (int)$entry[$pb_id_name];
+                                $character_data[$character->name]['categories'][$leaderboard_type->name]['rank'] = (int)$entry[$category_rank_name];
+                                $character_data[$character->name]['categories'][$leaderboard_type->name]['details'] = [];
+                                
+                                if(!empty($leaderboard_type->details_columns)) {
+                                    foreach($leaderboard_type->details_columns as $details_column_name) {
+                                        $details_name = "{$character->name}_{$leaderboard_type->name}_{$details_column_name}";
+                                    
+                                        if(isset($entry[$details_name])) {
+                                            $character_data[$character->name]['categories'][$leaderboard_type->name]['details'][$details_column_name] = $entry[$details_name];
+                                        }
+                                    }
+                                }
+                            }
+                        }
                     }
                     
                     $character_data[$character->name]['rank'] = (int)$entry[$rank_name];
@@ -95,131 +95,134 @@ class PowerRankingEntries extends Model {
         return Encoder::encode($character_data);
     }
     
-    public static function createTemporaryTable() {
+    public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void {
         DB::statement("
-            CREATE TEMPORARY TABLE " . static::getTempTableName() . " (
+            CREATE TEMPORARY TABLE " . static::getTempTableName($leaderboard_source) . " (
                 power_ranking_id integer,
-                steam_user_id integer,
-                score_rank integer,
-                deathless_rank integer,
-                speed_rank integer,
+                player_id integer,
                 rank integer,
-                characters bytea
+                characters bytea,
+                category_ranks bytea
             )
             ON COMMIT DROP;
         ");
     }
     
-    public static function clear(DateTime $date) {    
+    public static function clear(LeaderboardSources $leaderboard_source, Dates $date): void {    
         DB::delete("
-            DELETE FROM " . static::getTableName($date) . " pre
-            USING  power_rankings pr
-            WHERE  pre.power_ranking_id = pr.power_ranking_id
-            AND    pr.date = :date
+            DELETE FROM " . static::getTableName($leaderboard_source, new DateTime($date->name)) . " pre
+            USING  " . PowerRankings::getSchemaTableName($leaderboard_source) . " pr
+            WHERE  pre.power_ranking_id = pr.id
+            AND    pr.date_id = :date_id
         ", [
-            ':date' => $date->format('Y-m-d')
+            ':date_id' => $date->id
         ]);
     }
     
-    public static function saveTemp(DateTime $date) {
+    public static function saveNewTemp(LeaderboardSources $leaderboard_source, Dates $date): void {
         DB::statement("
-            INSERT INTO " . static::getTableName($date) . " (
+            INSERT INTO " . static::getTableName($leaderboard_source, new DateTime($date->name)) . " (
                 power_ranking_id,
-                steam_user_id,
-                score_rank,
-                deathless_rank,
-                speed_rank,
+                player_id,
                 rank,
-                characters
+                characters,
+                category_ranks
             )
             SELECT 
                 power_ranking_id,
-                steam_user_id,
-                score_rank,
-                deathless_rank,
-                speed_rank,
+                player_id,
                 rank,
-                characters
-            FROM " . static::getTempTableName() . "
+                characters,
+                category_ranks
+            FROM " . static::getTempTableName($leaderboard_source) . "
         ");
     }
     
-    public static function getCacheQuery(DateTime $date) {
-        $entries_table_name = static::getTableName($date);
+    public static function updateFromTemp(LeaderboardSources $leaderboard_source) {}
+    
+    public static function getCacheQuery(LeaderboardSources $leaderboard_source, Dates $date): Builder {
+        $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->name));
 
-        $query = DB::table('power_rankings AS pr')
+        $query = DB::table(PowerRankings::getSchemaTableName($leaderboard_source) . ' AS pr')
             ->select([
-                'pr.date',
                 'pr.release_id',
                 'pr.mode_id',
                 'pr.seeded_type_id',
-                'pre.steam_user_id',
+                'pr.multiplayer_type_id',
+                'pr.soundtrack_id',
+                'pre.player_id',
                 'pre.rank',
-                'pre.score_rank',
-                'pre.deathless_rank',
-                'pre.speed_rank',
-                'pre.characters'
+                'pre.characters',
+                'pre.category_ranks'
             ])
-            ->join("{$entries_table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.power_ranking_id')
-            ->join('steam_users AS su', 'su.steam_user_id', '=', 'pre.steam_user_id')
-            ->leftJoin('users AS u', 'u.steam_user_id', '=', 'su.steam_user_id')
-            ->where('pr.date', $date->format('Y-m-d'));
+            ->join("{$entries_table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.id')
+            ->leftJoin("user_{$leaderboard_source->name}_player AS up", 'up.player_id', '=', 'pre.player_id')
+            ->leftJoin('users AS u', 'u.id', '=', 'up.user_id')
+            ->where('pr.date_id', $date->id);
             
         ExternalSites::addSiteIdSelectFields($query);
         
         return $query;
     }
     
-    public static function getStatsReadQuery(DateTime $date) {
-        $entries_table_name = static::getTableName($date);
+    public static function getStatsReadQuery(LeaderboardSources $leaderboard_source, Dates $date): Builder {
+        $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->name));
 
-        $query = DB::table("{$entries_table_name} AS pre")
+        $query = DB::table(PowerRankings::getSchemaTableName($leaderboard_source) . ' AS pr')
             ->select([
                 'pre.power_ranking_id',
                 'pre.rank',
-                'pre.score_rank',
-                'pre.deathless_rank',
-                'pre.speed_rank',
-                'pre.characters'
+                'pre.characters',
+                'pre.category_ranks'
             ])
-            ->join("power_rankings AS pr", 'pr.power_ranking_id', '=', 'pre.power_ranking_id')
-            ->where('pr.date', $date->format('Y-m-d'));
+            ->join("{$entries_table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.id')
+            ->where('pr.date_id', $date->id);
         
         return $query;
     }
     
-    public static function getApiReadQuery(int $release_id, int $mode_id, int $seeded_type_id, DateTime $date) {
-        $entries_table_name = static::getTableName($date);
+    public static function getApiReadQuery(
+        LeaderboardSources $leaderboard_source,
+        int $release_id, 
+        int $mode_id, 
+        int $seeded_type_id, 
+        int $multiplayer_type_id, 
+        int $soundtrack_id, 
+        Dates $date
+    ): Builder {
+        $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->name));
     
-        $query = DB::table('power_rankings AS pr')
+        $query = DB::table(PowerRankings::getSchemaTableName($leaderboard_source) . ' AS pr')
             ->select([
                 'pre.rank',
-                'pre.score_rank',
-                'pre.deathless_rank',
-                'pre.speed_rank',
-                'pre.characters'
+                'pre.characters',
+                'pre.category_ranks'
             ])
-            ->join("{$entries_table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.power_ranking_id')
-            ->join('steam_users AS su', 'su.steam_user_id', '=', 'pre.steam_user_id')
-            ->where('pr.date', $date->format('Y-m-d'))
+            ->join("{$entries_table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.id')
+            ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'pre.player_id')
             ->where('pr.release_id', $release_id)
             ->where('pr.mode_id', $mode_id)
-            ->where('pr.seeded_type_id', $seeded_type_id);
+            ->where('pr.seeded_type_id', $seeded_type_id)
+            ->where('pr.multiplayer_type_id', $multiplayer_type_id)
+            ->where('pr.soundtrack_id', $soundtrack_id)
+            ->where('pr.date_id', $date->id);
         
         Players::addSelects($query);
-        Players::addLeftJoins($query);
+        Players::addLeftJoins($leaderboard_source, $query);
         
         return $query;
     }
     
     public static function getPlayerApiReadQuery(
         string $player_id, 
-        LeaderboardSources $leaderboard_source, 
+        LeaderboardSources $leaderboard_source,
         int $release_id, 
-        int $mode_id,  
-        int $seeded_type_id,
+        int $mode_id, 
+        int $seeded_type_id, 
+        int $multiplayer_type_id, 
+        int $soundtrack_id,
         callable $additional_criteria = NULL
-    ) {
+    ): Builder {
         $release = Releases::getById($release_id);
         
         $start_date = new DateTime($release['start_date']);
@@ -227,29 +230,29 @@ class PowerRankingEntries extends Model {
     
         $query = NULL;
         
-        $table_names = static::getTableNames($start_date, $end_date);
+        $table_names = static::getTableNames($leaderboard_source, $start_date, $end_date);
         
         if(!empty($table_names)) {
             foreach($table_names as $table_name) {                    
-                $partition_query = DB::table('power_rankings AS pr')
+                $partition_query = DB::table(PowerRankings::getSchemaTableName($leaderboard_source) . ' AS pr')
                     ->select([
-                        'pr.date',
+                        'd.name AS date',
                         'pre.rank',
-                        'pre.score_rank',
-                        'pre.deathless_rank',
-                        'pre.speed_rank',
-                        'pre.characters'
+                        'pre.characters',
+                        'pre.category_ranks'
                     ])
-                    ->join("{$table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.power_ranking_id')
-                    ->join('steam_users AS su', 'su.steam_user_id', '=', 'pre.steam_user_id')
-                    ->where('su.steamid', $player_id)
-                    ->whereBetween('pr.date', [
+                    ->join("{$table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.id')
+                    ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'pre.player_id')
+                    ->where('pr.release_id', $release_id)
+                    ->where('pr.mode_id', $mode_id)
+                    ->where('pr.seeded_type_id', $seeded_type_id)
+                    ->where('pr.multiplayer_type_id', $multiplayer_type_id)
+                    ->where('pr.soundtrack_id', $soundtrack_id)
+                    ->whereBetween('d.name', [
                         $start_date->format('Y-m-d'),
                         $end_date->format('Y-m-d')
                     ])
-                    ->where('pr.release_id', $release_id)
-                    ->where('pr.mode_id', $mode_id)
-                    ->where('pr.seeded_type_id', $seeded_type_id);
+                    ->where('p.external_id', $player_id);
                 
                 if(!empty($additional_criteria)) {
                     call_user_func_array($additional_criteria, [
@@ -274,15 +277,29 @@ class PowerRankingEntries extends Model {
         LeaderboardSources $leaderboard_source, 
         LeaderboardTypes $leaderboard_type, 
         int $release_id, 
-        int $mode_id,  
-        int $seeded_type_id
-    ) { 
+        int $mode_id, 
+        int $seeded_type_id, 
+        int $multiplayer_type_id, 
+        int $soundtrack_id
+    ): Builder { 
+        /*
+        TODO: This isn't possible right now since category_ranks is a binary field.
+        
         $additional_criteria = function(Builder $query) use ($leaderboard_type) {
             $rank_name = "{$leaderboard_type->name}_rank";
         
             $query->whereNotNull("pre.{$rank_name}");
-        };
+        };*/
     
-        return static::getPlayerApiReadQuery($player_id, $leaderboard_source, $release_id, $mode_id, $seeded_type_id, $additional_criteria);
+        return static::getPlayerApiReadQuery(
+            $player_id, 
+            $leaderboard_source, 
+            $release_id, 
+            $mode_id, 
+            $seeded_type_id, 
+            $multiplayer_type_id, 
+            $soundtrack_id
+            //$additional_criteria
+        );
     }
 }

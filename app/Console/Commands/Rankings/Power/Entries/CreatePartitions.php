@@ -2,13 +2,8 @@
 
 namespace App\Console\Commands\Rankings\Power\Entries;
 
-use DateTime;
-use DateInterval;
-use Illuminate\Console\Command;
-use App\Components\CallbackHandler;
-use App\Components\DateIncrementor;
+use App\Console\Commands\CreatePartitions as Command;
 use App\Jobs\Rankings\Power\Entries\CreatePartition as CreatePartitionJob;
-use App\PowerRankingEntries;
 
 class CreatePartitions extends Command {
     /**
@@ -16,7 +11,7 @@ class CreatePartitions extends Command {
      *
      * @var string
      */
-    protected $signature = 'rankings:power:entries:create_partitions {--leaderboard_source=} {--start_date=} {--end_date=}';
+    protected $signature = 'rankings:power:entries:create_partitions';
 
     /**
      * The console command description.
@@ -31,19 +26,8 @@ class CreatePartitions extends Command {
      * @return void
      */
     public function __construct() {
+        $this->job_class = CreatePartitionJob::class;
+    
         parent::__construct();
-    }
-
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle() {
-        $leaderboard_source_name = $this->option('leaderboard_source');
-        $start_date = new DateTime($this->option('start_date'));
-        $end_date = new DateTime($this->option('end_date'));
-        
-        PowerRankingEntries::dispatchRangePartitionCreationJob(CreatePartitionJob::class, $leaderboard_source_name, $start_date, $end_date);
     }
 }

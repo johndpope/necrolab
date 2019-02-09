@@ -4,6 +4,7 @@ namespace App\Console\Commands\Players;
 
 use Illuminate\Console\Command;
 use App\Jobs\Players\Cache as CacheJob;
+use App\LeaderboardSources;
 
 class Cache extends Command {
     /**
@@ -11,7 +12,7 @@ class Cache extends Command {
      *
      * @var string
      */
-    protected $signature = 'players:cache';
+    protected $signature = 'players:cache {--leaderboard_source=}';
 
     /**
      * The console command description.
@@ -35,6 +36,8 @@ class Cache extends Command {
      * @return mixed
      */
     public function handle() {
-        CacheJob::dispatch()->onConnection('sync');
+        $leaderboard_source = LeaderboardSources::where('name', $this->option('leaderboard_source'))->firstOrFail();
+    
+        CacheJob::dispatch($leaderboard_source)->onConnection('sync');
     }
 }

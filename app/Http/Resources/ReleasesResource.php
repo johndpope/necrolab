@@ -11,27 +11,16 @@ class ReleasesResource extends JsonResource {
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request) {
-        $modes = [];
-        
-        if(!empty($this->modes)) {
-            $modes = explode(',', $this->modes);
-        }
-    
-        $characters = [];
-        
-        if(!empty($this->characters)) {
-            $characters = explode(',', $this->characters);
-        }
-    
+    public function toArray($request) {    
         return [
             'id' => (int)$this->id,
             'name' => $this->name,
             'display_name' => $this->display_name,
             'start_date' => $this->start_date,
             'end_date' => $this->end_date,
-            'modes' => $modes,
-            'characters' => $characters
+            'is_default' => $this->is_default,
+            'modes' => $this->modes,
+            'characters' => $this->characters
         ];
     }
 }

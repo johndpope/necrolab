@@ -232,7 +232,7 @@ class CreateSourceSchema implements ShouldQueue {
             $table->integer('leaderboard_id');
             $table->integer('players')->nullable();
             $table->smallInteger('date_id');
-            $table->binary('details')->nullable();
+            $table->jsonb('details')->nullable();
             
             $table->primary('id');
             
@@ -332,8 +332,8 @@ class CreateSourceSchema implements ShouldQueue {
             $table->smallInteger('multiplayer_type_id');
             $table->smallInteger('soundtrack_id');
             $table->smallInteger('date_id');
-            $table->binary('categories')->nullable();
-            $table->binary('characters')->nullable();
+            $table->jsonb('categories')->nullable();
+            $table->jsonb('characters')->nullable();
             
             $table->primary('id');
             
@@ -387,6 +387,8 @@ class CreateSourceSchema implements ShouldQueue {
         Schema::create($table_full_name, function (Blueprint $table) {
             $table->timestamp('created');
             $table->timestamp('updated')->nullable();
+            $table->bigInteger('dailies')->nullable();
+            $table->bigInteger('wins')->nullable();
             $table->integer('id');
             $table->integer('players')->nullable();
             $table->smallInteger('character_id');
@@ -396,9 +398,7 @@ class CreateSourceSchema implements ShouldQueue {
             $table->smallInteger('soundtrack_id');
             $table->smallInteger('daily_ranking_day_type_id');
             $table->smallInteger('date_id');
-            $table->smallInteger('dailies');
-            $table->smallInteger('wins');
-            $table->binary('totals')->nullable();
+            $table->jsonb('details')->nullable();
             
             $table->primary('id');
             
@@ -459,8 +459,8 @@ class CreateSourceSchema implements ShouldQueue {
             $table->integer('id');
             $table->string('external_id', 255)->unique();
             $table->string('username', 255);
-            $table->text('profile_url', 255);
-            $table->text('avatar_url', 255);
+            $table->text('profile_url');
+            $table->text('avatar_url');
             
             $table->primary('id');
         });
@@ -500,7 +500,7 @@ class CreateSourceSchema implements ShouldQueue {
             $table->smallInteger('level');
             $table->smallInteger('is_win');
             $table->string('raw_score', 255);
-            $table->binary('details');
+            $table->jsonb('details');
             
             $table->primary('id');
             
@@ -704,15 +704,18 @@ class CreateSourceSchema implements ShouldQueue {
             $table->index('run_result_id');
             $table->index('replay_version_id');
             
-            $table->index('downloaded');
-            
             $table->index([
                 'downloaded',
                 'invalid'
             ]);
             
+            $table->index([
+                'uploaded_to_s3',
+                'downloaded',
+                'invalid'
+            ]);
+            
             $table->index('invalid');
-            $table->index('uploaded_to_s3');
         });
         
         $constraint_prefix = "{$this->leaderboard_source->name}_{$table_short_name}";
@@ -832,6 +835,7 @@ class CreateSourceSchema implements ShouldQueue {
         $end_date = new DateTime($this->leaderboard_source->end_date);
         $end_date->modify('last day of this month');
         
+        //TODO: Need to update all three job dispatches
         LeaderboardEntries::dispatchRangePartitionCreationJob(
             CreateLeaderboardEntriesPartitionJob::class,
             $this->leaderboard_source, 

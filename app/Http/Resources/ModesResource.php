@@ -11,25 +11,14 @@ class ModesResource extends JsonResource {
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request) {
-        $leaderboard_types = [];
-        
-        if(!empty($this->leaderboard_types)) {
-            $leaderboard_types = explode(',', $this->leaderboard_types);
-        }
-    
-        $characters = [];
-        
-        if(!empty($this->characters)) {
-            $characters = explode(',', $this->characters);
-        }
-    
+    public function toArray($request) {    
         return [
             'id' => (int)$this->id,
             'name' => $this->name,
             'display_name' => $this->display_name,
-            'leaderboard_types' => $leaderboard_types,
-            'characters' => $characters
+            'is_default' => $this->is_default,
+            'leaderboard_types' => $this->leaderboard_types,
+            'characters' => $this->characters
         ];
     }
 }

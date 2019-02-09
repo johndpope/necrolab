@@ -64,6 +64,7 @@ class CreatePartition implements ShouldQueue {
         $table_full_name = "{$this->leaderboard_source->name}.{$table_short_name}";
         
         Schema::create($table_full_name, function (Blueprint $table) {
+            $table->bigInteger('sum_of_ranks');
             $table->integer('daily_ranking_id');
             $table->integer('player_id');
             $table->integer('rank');
@@ -73,9 +74,8 @@ class CreatePartition implements ShouldQueue {
             $table->smallInteger('top_20_ranks');
             $table->smallInteger('top_50_ranks');
             $table->smallInteger('top_100_ranks');
-            $table->smallInteger('total_dailies');
-            $table->smallInteger('total_wins');
-            $table->smallInteger('sum_of_ranks');
+            $table->smallInteger('dailies');
+            $table->smallInteger('wins');
             $table->binary('details');
 
             $table->primary([

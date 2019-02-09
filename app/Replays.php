@@ -5,25 +5,28 @@ namespace App;
 use stdClass;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Query\Builder;
+use App\Traits\IsSchemaTable;
 use App\Traits\HasTempTable;
+use App\LeaderboardSources;
 use App\Seeds;
 
-class SteamReplays extends Model {
-    use HasTempTable;
+class Replays extends Model {
+    use IsSchemaTable, HasTempTable;
 
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'steam_replays';
+    protected $table = 'replays';
     
     /**
      * The primary key associated with the model.
      *
      * @var string
      */
-    protected $primaryKey = 'steam_replay_id';
+    protected $primaryKey = 'player_pb_id';
     
     /**
      * Indicates if the model should be timestamped.
@@ -32,7 +35,7 @@ class SteamReplays extends Model {
      */
     public $timestamps = false;
     
-    public static function getParsedReplayProperties(string $replay_file_data) {
+    public static function getParsedReplayProperties(string $replay_file_data): ?object {
         $parsed_replay_properties = NULL;
     
         $replay_file_split = explode('%*#%*', $replay_file_data);
@@ -76,74 +79,81 @@ class SteamReplays extends Model {
         return $parsed_replay_properties;
     }
     
-    public static function createTemporaryTable() {
+    public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void {
         DB::statement("
-            CREATE TEMPORARY TABLE " . static::getTempTableName() . " (
-                steam_user_pb_id integer,
-                steam_user_id integer,
-                ugcid numeric,
+            CREATE TEMPORARY TABLE " . static::getTempTableName($leaderboard_source) . " (
+                seed_id bigint,
+                player_pb_id integer,
+                player_id integer,
+                run_result_id smallint,
+                replay_version_id smallint,
                 downloaded smallint,
                 invalid smallint,
-                seed bigint,
-                run_result_id smallint,
-                steam_replay_version_id smallint,
-                seed_id bigint,
-                uploaded_to_s3 smallint
+                uploaded_to_s3 smallint,
+                external_id character varying(255)
             )
             ON COMMIT DROP;
         ");
     }
     
-    public static function saveNewTemp() {
+    public static function saveNewTemp(LeaderboardSources $leaderboard_source): void {
         DB::statement("
-            INSERT INTO steam_replays (
-                steam_user_pb_id,
-                ugcid,
-                steam_user_id,
+            INSERT INTO " . static::getSchemaTableName($leaderboard_source) . " (
+                player_pb_id,
+                external_id,
+                player_id,
                 downloaded,
                 invalid,
                 uploaded_to_s3
             )
             SELECT 
-                steam_user_pb_id,
-                ugcid,
-                steam_user_id,
+                player_pb_id,
+                external_id,
+                player_id,
                 downloaded,
                 invalid,
                 uploaded_to_s3
-            FROM " . static::getTempTableName() . "
+            FROM " . static::getTempTableName($leaderboard_source) . "
         ");
     }
     
-    public static function updateDownloadedFromTemp() {
+    public static function updateFromTemp(LeaderboardSources $leaderboard_source): void {}
+    
+    public static function updateDownloadedFromTemp(LeaderboardSources $leaderboard_source): void {
         DB::update("
-            UPDATE steam_replays sr
+            UPDATE " . static::getSchemaTableName($leaderboard_source) . " sr
             SET 
                 downloaded = srt.downloaded,
                 invalid = srt.invalid,
                 run_result_id = srt.run_result_id,
-                steam_replay_version_id = srt.steam_replay_version_id,
+                replay_version_id = srt.replay_version_id,
                 seed_id = srt.seed_id
-            FROM " . static::getTempTableName() . " srt
-            WHERE sr.steam_user_pb_id = srt.steam_user_pb_id
+            FROM " . static::getTempTableName($leaderboard_source) . " srt
+            WHERE sr.player_pb_id = srt.player_pb_id
         ");
     }
     
-    public static function updateS3UploadedFromTemp() {
+    public static function updateS3UploadedFromTemp(LeaderboardSources $leaderboard_source): void {
         DB::update("
-            UPDATE steam_replays sr
+            UPDATE " . static::getSchemaTableName($leaderboard_source) . " sr
             SET 
                 uploaded_to_s3 = srt.uploaded_to_s3
-            FROM " . static::getTempTableName() . " srt
-            WHERE sr.steam_user_pb_id = srt.steam_user_pb_id
+            FROM " . static::getTempTableName($leaderboard_source) . " srt
+            WHERE sr.player_pb_id = srt.player_pb_id
         ");
     }
     
-    public static function getUnsavedQuery() {
-        return static::where('downloaded', 0)->where('invalid', 0);
+    public static function getUnsavedQuery(LeaderboardSources $leaderboard_source): Builder {
+        return DB::table(static::getSchemaTableName($leaderboard_source))
+            ->where('downloaded', 0)
+            ->where('invalid', 0)
+            ->limit(1000);
     }
     
-    public static function getNotS3UploadedQuery() {
-        return static::where('uploaded_to_s3', 0)->where('invalid', 0);
+    public static function getNotS3UploadedQuery(LeaderboardSources $leaderboard_source): Builder {
+        return DB::table(static::getSchemaTableName($leaderboard_source))
+            ->where('uploaded_to_s3', 0)
+            ->where('downloaded', 1)
+            ->where('invalid', 0);
     }
 }

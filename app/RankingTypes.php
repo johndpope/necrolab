@@ -16,13 +16,6 @@ class RankingTypes extends Model {
     protected $table = 'ranking_types';
     
     /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-    
-    /**
      * Indicates if the model should be timestamped.
      *
      * @var bool

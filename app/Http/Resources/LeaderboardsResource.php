@@ -26,8 +26,6 @@ class LeaderboardsResource extends JsonResource {
                 'name' => $this->name,
                 'display_name' => $this->display_name,
                 'rankings' => $rankings,
-                //TODO: make this dynamic when leaderboards are linked to sources
-                'leaderboard_source' => 'steam',
                 'leaderboard_type' => $this->leaderboard_type,
                 'release' => $this->release,
                 'mode' => $this->mode,

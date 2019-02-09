@@ -7,15 +7,22 @@ use DateTime;
 use DateInterval;
 use stdClass;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Query\Builder;
 use App\Components\PostgresCursor;
+use App\Traits\IsSchemaTable;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
 use App\LeaderboardSources;
 use App\LeaderboardEntries;
+use App\Dates;
+use App\Leaderboards;
+use App\PlayerPbs;
+use App\Players;
 
 class LeaderboardSnapshots extends Model {
-    use HasTempTable, HasManualSequence;
+    use IsSchemaTable, HasTempTable, HasManualSequence;
 
     /**
      * The table associated with the model.
@@ -25,97 +32,66 @@ class LeaderboardSnapshots extends Model {
     protected $table = 'leaderboard_snapshots';
     
     /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'leaderboard_snapshot_id';
-    
-    /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
     public $timestamps = false;
     
-    public static function createTemporaryTable() {    
+    public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void {    
         DB::statement("
-            CREATE TEMPORARY TABLE leaderboard_snapshots_temp (
-                leaderboard_snapshot_id integer,
-                leaderboard_id integer,
-                date date,
+            CREATE TEMPORARY TABLE " . static::getTempTableName($leaderboard_source) . " (
                 created timestamp without time zone,
-                updated timestamp without time zone
+                updated timestamp without time zone,
+                id integer,
+                leaderboard_id integer,
+                players integer,
+                date_id smallint,
+                details jsonb
             )
             ON COMMIT DROP;
         ");
     }
     
-    public static function saveTemp() {
+    public static function saveNewTemp(LeaderboardSources $leaderboard_source): void {
         DB::statement("
-            INSERT INTO leaderboard_snapshots (
-                leaderboard_snapshot_id, 
-                leaderboard_id, 
-                date, 
+            INSERT INTO " . static::getSchemaTableName($leaderboard_source) . " (
                 created,
-                updated
+                updated,
+                id,
+                leaderboard_id,
+                date_id
             )
             SELECT 
-                leaderboard_snapshot_id,
-                leaderboard_id,
-                date,
                 created,
-                updated
-            FROM leaderboard_snapshots_temp
-            ON CONFLICT (leaderboard_snapshot_id) DO 
+                updated,
+                id,
+                leaderboard_id,
+                date_id
+            FROM " . static::getTempTableName($leaderboard_source) . "
+            ON CONFLICT (id) DO 
             UPDATE 
             SET 
                 updated = excluded.updated
         ");
     }
     
-    public static function updateStats(DateTime $date) {
-        $table_name = LeaderboardEntries::getTableName($date);
-    
+    public static function updateFromTemp(LeaderboardSources $leaderboard_source): void {    
         DB::update("
-            WITH leaderboard_snapshot_stats AS (
-                SELECT 
-                        ls.leaderboard_snapshot_id,
-                        COUNT(le.steam_user_id) AS players,
-                        SUM(
-                            CASE
-                                WHEN lt.name = 'score' OR lt.name = 'daily' THEN sup.score
-                                ELSE 0
-                            END
-                        ) AS score,
-                        COALESCE(SUM(sup.time), 0) AS time,
-                        COALESCE(SUM(sup.win_count), 0) AS win_count
-                FROM leaderboard_snapshots ls
-                JOIN leaderboards l ON l.leaderboard_id = ls.leaderboard_id
-                JOIN leaderboard_types lt ON lt.id = l.leaderboard_type_id
-                JOIN {$table_name} le ON le.leaderboard_snapshot_id = ls.leaderboard_snapshot_id
-                JOIN steam_user_pbs sup ON sup.steam_user_pb_id = le.steam_user_pb_id
-                WHERE ls.date = :date
-                GROUP BY ls.leaderboard_snapshot_id
-            )
-            UPDATE leaderboard_snapshots ls
+            UPDATE " . static::getSchemaTableName($leaderboard_source) . " ls
             SET 
-                players = lss.players,
-                score = lss.score,
-                time = lss.time,
-                win_count = lss.win_count
-            FROM leaderboard_snapshot_stats lss
-            WHERE lss.leaderboard_snapshot_id = ls.leaderboard_snapshot_id
-        ", [
-            ':date' => $date->format('Y-m-d')
-        ]);
+                players = lst.players,
+                details = lst.details
+            FROM " . static::getTempTableName($leaderboard_source) . " lst
+            WHERE ls.id = lst.id
+        ");
     }
     
-    public static function getAllByLeaderboardIdForDate(DateTime $date) {
-        $query = DB::table('leaderboard_snapshots')->where('date', $date->format('Y-m-d'));
+    public static function getAllByLeaderboardIdForDate(LeaderboardSources $leaderboard_source, Dates $date): array {
+        $query = DB::table(static::getSchemaTableName($leaderboard_source))->where('date_id', $date->id);
         
         $cursor = new PostgresCursor(
-            'leaderboard_snapshots_by_leaderboard', 
+            "{$leaderboard_source->name}_leaderboard_snapshots_by_id", 
             $query,
             1000
         );
@@ -123,43 +99,43 @@ class LeaderboardSnapshots extends Model {
         $snapshots_by_leaderboard_id = [];
         
         foreach($cursor->getRecord() as $snapshot) {
-            $snapshots_by_leaderboard_id[$snapshot->leaderboard_id] = $snapshot->leaderboard_snapshot_id;
+            $snapshots_by_leaderboard_id[$snapshot->leaderboard_id] = $snapshot->id;
         }
         
         return $snapshots_by_leaderboard_id;
     }
     
-    public static function getApiReadQuery(LeaderboardSources $leaderboard_source, int $leaderboard_id) {
-        return DB::table('leaderboards AS l')
+    public static function getApiReadQuery(LeaderboardSources $leaderboard_source, string $leaderboard_id): Builder {
+        return DB::table(Leaderboards::getSchemaTableName($leaderboard_source) . ' AS l')
             ->select([
-                'ls.date',
+                'd.name AS date',
                 'ls.players',
-                'ls.score',
-                'ls.time',
-                'ls.win_count'
+                'ls.details'
             ])
-            ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_id', '=', 'l.leaderboard_id')
-            ->where('l.lbid', $leaderboard_id)
-            ->orderBy('date', 'desc');
+            ->join(static::getSchemaTableName($leaderboard_source) . ' AS ls', 'ls.leaderboard_id', '=', 'l.id')
+            ->join('dates AS d', 'd.id', '=', 'ls.date_id')
+            ->where('l.external_id', $leaderboard_id)
+            ->orderBy('d.name', 'desc');
     }
     
-    public static function getPlayerApiDates(string $player_id, LeaderboardSources $leaderboard_source, int $leaderboard_id) {
+    public static function getPlayerApiDates(string $player_id, LeaderboardSources $leaderboard_source, string $leaderboard_id): Collection {
         // Attempt to look up the earliest snapshot that this player has an entry for via their PBs.
-        $earliest_snapshot = DB::table('steam_user_pbs AS sup')
+        $earliest_snapshot = DB::table(PlayerPbs::getSchemaTableName($leaderboard_source) . ' AS ppb')
             ->selectRaw("
-                sup.leaderboard_id,
+                ppb.leaderboard_id,
                 l.release_id,
-                MIN(ls.date) AS first_snapshot_date,
+                MIN(d.name) AS first_snapshot_date,
                 r.end_date AS release_end_date
             ")
-            ->join('steam_users AS su', 'su.steam_user_id', '=', 'sup.steam_user_id')
-            ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id')
+            ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'ppb.player_id')
+            ->join(Leaderboards::getSchemaTableName($leaderboard_source) . ' AS l', 'l.id', '=', 'ppb.leaderboard_id')
             ->join('releases AS r', 'r.id', '=', 'l.release_id')
-            ->join('leaderboard_snapshots AS ls', 'ls.leaderboard_snapshot_id', '=', 'sup.first_leaderboard_snapshot_id')
-            ->where('su.steamid', $player_id)
-            ->where('l.lbid', $leaderboard_id)
+            ->join(static::getSchemaTableName($leaderboard_source) . ' AS ls', 'ls.id', '=', 'ppb.first_leaderboard_snapshot_id')
+            ->join('dates AS d', 'd.id', '=', 'ls.date_id')
+            ->where('p.external_id', $player_id)
+            ->where('l.external_id', $leaderboard_id)
             ->groupBy(
-                'sup.leaderboard_id',
+                'ppb.leaderboard_id',
                 'l.release_id',
                 'r.end_date'
             )
@@ -174,6 +150,9 @@ class LeaderboardSnapshots extends Model {
         if(!empty($earliest_snapshot)) {
             $start_date = new DateTime($earliest_snapshot->first_snapshot_date);
             $end_date = new DateTime($earliest_snapshot->release_end_date);
+            
+            // Make the end date inclusive
+            $end_date->modify('+1 day');
             
             $snapshot_date_range = new DatePeriod(
                 $start_date,

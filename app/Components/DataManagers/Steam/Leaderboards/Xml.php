@@ -8,6 +8,7 @@ use stdClass;
 use Illuminate\Support\Facades\Storage;
 use App\Components\DataManagers\Leaderboards as LeaderboardsManager;
 use App\LeaderboardSources;
+use App\Dates;
 
 class Xml
 extends LeaderboardsManager {    
@@ -24,8 +25,8 @@ extends LeaderboardsManager {
         return simplexml_load_string($leaderboards_xml);
     }
     
-    public function __construct(DateTime $date) {
-        $leaderboard_source = LeaderboardSources::where('name', 'steam')->first();
+    public function __construct(Dates $date) {
+        $leaderboard_source = LeaderboardSources::where('name', 'steam')->firstOrFail();
     
         parent::__construct($leaderboard_source, 'xml', $date);
         
@@ -46,8 +47,8 @@ extends LeaderboardsManager {
         $this->file_storage_engine->put($this->temp_leaderboards_path, $xml);
     }
     
-    public function saveTempEntries($lbid, $page_number, $xml) {        
-        $this->file_storage_engine->put("{$this->getTempBasePath()}/{$lbid}/page_{$page_number}.xml", $xml);
+    public function saveTempEntries($leaderboard_id, $page_number, $xml) {        
+        $this->file_storage_engine->put("{$this->getTempBasePath()}/{$leaderboard_id}/page_{$page_number}.xml", $xml);
     }
     
     protected function loadTempFiles() {
@@ -60,7 +61,7 @@ extends LeaderboardsManager {
                 $file_name = basename($temp_file);
                 $file_name_split = explode('.', $file_name);
                 
-                $lbid = NULL;
+                $leaderboard_id = NULL;
                 $page_number = 0;
                 
                 $temp_file_entry = [
@@ -72,10 +73,10 @@ extends LeaderboardsManager {
                     $this->temp_files['leaderboards'] = $temp_file_entry;
                 }
                 else {
-                    $lbid = (int)basename(dirname($temp_file));
+                    $leaderboard_id = (int)basename(dirname($temp_file));
                     $page_number = str_replace('page_', '', $file_name_split[0]);
                     
-                    $this->temp_files[$lbid][$page_number] = $temp_file_entry;
+                    $this->temp_files[$leaderboard_id][$page_number] = $temp_file_entry;
                 }
             }
         }
@@ -95,7 +96,7 @@ extends LeaderboardsManager {
                 foreach($leaderboards_xml->leaderboard as $leaderboard_xml) {                    
                     $leaderboard = new stdClass();
                     
-                    $leaderboard->lbid = (string)$leaderboard_xml->lbid;
+                    $leaderboard->external_id = (string)$leaderboard_xml->lbid;
                     $leaderboard->name = (string)$leaderboard_xml->name;
                     $leaderboard->display_name = (string)$leaderboard_xml->display_name;
                     $leaderboard->url = (string)$leaderboard_xml->url;
@@ -106,11 +107,11 @@ extends LeaderboardsManager {
         }
     }
     
-    public function getTempEntry($lbid) {
+    public function getTempEntry($leaderboard_id) {
         $temp_files = $this->getTempFiles();
         
-        if(!empty($temp_files[$lbid])) {
-            $entry_pages = $temp_files[$lbid];
+        if(!empty($temp_files[$leaderboard_id])) {
+            $entry_pages = $temp_files[$leaderboard_id];
         
             foreach($entry_pages as $entry_file) {
                 $entries_xml_string = file_get_contents($entry_file['full_path']);
@@ -125,9 +126,9 @@ extends LeaderboardsManager {
                     foreach($xml_entries as $xml_entry) {                    
                         $entry = new stdClass();
                         
-                        $entry->steamid = (string)$xml_entry->steamid;
-                        $entry->score = (string)$xml_entry->score;
-                        $entry->ugcid = (string)$xml_entry->ugcid;
+                        $entry->player_external_id = (string)$xml_entry->steamid;
+                        $entry->raw_score = (string)$xml_entry->score;
+                        $entry->replay_external_id = (string)$xml_entry->ugcid;
                         $entry->zone = NULL;
                         $entry->level = NULL;
                         $entry->details = (string)$xml_entry->details;
@@ -147,8 +148,8 @@ extends LeaderboardsManager {
 
             $saved_zip_archive->open("{$this->getFullSavedBasePath()}.zip", ZipArchive::CREATE | ZipArchive::OVERWRITE);
         
-            foreach($temp_files as $lbid => $temp_file_group) {
-                if($lbid == 'leaderboards') {
+            foreach($temp_files as $leaderboard_id => $temp_file_group) {
+                if($leaderboard_id == 'leaderboards') {
                     $temp_file = $temp_file_group;
                 
                     $full_path = $temp_file['full_path'];
@@ -159,7 +160,7 @@ extends LeaderboardsManager {
                     foreach($temp_file_group as $temp_file) {
                         $full_path = $temp_file['full_path'];
                         
-                        $relative_path = "{$lbid}/" . basename($full_path);
+                        $relative_path = "{$leaderboard_id}/" . basename($full_path);
                         
                         $saved_zip_archive->addFile($full_path, $relative_path);
                     }

@@ -5,10 +5,13 @@ namespace App;
 use ElcoBvg\Opcache\Model;
 use App\Traits\GetByName;
 use App\Traits\GetById;
+use App\Traits\MatchesOnString;
+use App\Traits\HasDefaultRecord;
 use App\Traits\StoredInCache;
+use App\SeededTypeMatches;
 
 class SeededTypes extends Model {
-    use GetByName, GetById, StoredInCache;
+    use GetByName, GetById, MatchesOnString, HasDefaultRecord, StoredInCache;
 
     /**
      * The table associated with the model.
@@ -24,13 +27,11 @@ class SeededTypes extends Model {
      */
     public $timestamps = false;
     
-    public static function getFromString($string) {
-        $record = static::getByName('unseeded');
-
-        if(stripos($string, 'seeded') !== false) {            
-            $record = static::getByName('seeded');
-        }
-        
-        return $record;
+    protected static function getMatchModel(): string {
+        return SeededTypeMatches::class;
+    }
+    
+    protected static function getMatchFieldIdName(): string {
+        return 'seeded_type_id';
     }
 }

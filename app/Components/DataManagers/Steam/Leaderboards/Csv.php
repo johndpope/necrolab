@@ -2,12 +2,12 @@
 
 namespace App\Components\DataManagers\Steam\Leaderboards;
 
-use DateTime;
 use ZipArchive;
 use stdClass;
 use Illuminate\Support\Facades\Storage;
 use App\Components\DataManagers\Leaderboards as LeaderboardsManager;
 use App\LeaderboardSources;
+use App\Dates;
 
 class Csv
 extends LeaderboardsManager {        
@@ -23,8 +23,8 @@ extends LeaderboardsManager {
         unset($password);
     }
     
-    public function __construct(DateTime $date) {
-        $leaderboard_source = LeaderboardSources::where('name', 'steam')->first();
+    public function __construct(Dates $date) {
+        $leaderboard_source = LeaderboardSources::where('name', 'steam')->firstOrFail();
     
         parent::__construct($leaderboard_source, 'csv', $date);
         
@@ -89,7 +89,7 @@ extends LeaderboardsManager {
                     
                     $leaderboard = new stdClass();
                     
-                    $leaderboard->leaderboard_id = $leaderboard_id;
+                    $leaderboard->external_id = $leaderboard_id;
                     $leaderboard->name = $leaderboard_name;
                     $leaderboard->display_name = NULL;
                     $leaderboard->url = NULL;
@@ -112,9 +112,9 @@ extends LeaderboardsManager {
             while($entry_row = fgetcsv($file_handle)) {
                 $entry = new stdClass();
                         
-                $entry->steamid = $entry_row[0];
-                $entry->score = (int)$entry_row[2];
-                $entry->ugcid = $entry_row[3];
+                $entry->player_external_id = (string)$entry_row[0];
+                $entry->raw_score = (int)$entry_row[2];
+                $entry->replay_external_id = (string)$entry_row[3];
                 $entry->zone = (int)$entry_row[4];
                 $entry->level = (int)$entry_row[5];
                 $entry->details = '';

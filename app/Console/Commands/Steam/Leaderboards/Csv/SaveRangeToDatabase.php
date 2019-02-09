@@ -2,11 +2,7 @@
 
 namespace App\Console\Commands\Steam\Leaderboards\Csv;
 
-use DateTime;
-use DateInterval;
-use Illuminate\Console\Command;
-use App\Components\CallbackHandler;
-use App\Components\DateIncrementor;
+use App\Console\Commands\DataManagerDateRange as Command;
 use App\Components\DataManagers\Steam\Leaderboards\Csv as CsvManager;
 use App\Jobs\Leaderboards\SaveToDatabase as SaveToDatabaseJob;
 
@@ -16,7 +12,7 @@ class SaveRangeToDatabase extends Command {
      *
      * @var string
      */
-    protected $signature = 'steam:leaderboards:csv:database:save_range {--start_date=} {--end_date=}';
+    protected $signature = 'steam:leaderboards:csv:database:save_range';
 
     /**
      * The console command description.
@@ -31,29 +27,10 @@ class SaveRangeToDatabase extends Command {
      * @return void
      */
     public function __construct() {
-        parent::__construct();
-    }
-
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle() {        
-        $callback_handler = new CallbackHandler();
+        $this->data_manager_class = CsvManager::class;
         
-        $callback_handler->setCallback(function(DateTime $date) {
-            $data_manager = new CsvManager($date);
-            
-            SaveToDatabaseJob::dispatch($data_manager)->onConnection('sync');
-        });
+        $this->job_class = SaveToDatabaseJob::class;
     
-        $date_incrementor = new DateIncrementor(
-            new DateTime($this->option('start_date')), 
-            new DateTime($this->option('end_date')), 
-            new DateInterval('P1D')
-        );
-        
-        $date_incrementor->run($callback_handler);
+        parent::__construct();
     }
 }

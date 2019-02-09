@@ -8,102 +8,85 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Database\Query\Builder;
 use App\Components\PostgresCursor;
+use App\Traits\IsSchemaTable;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
 use App\Traits\AddsSqlCriteria;
 use App\ExternalSites;
+use App\LeaderboardSources;
 
 class Players extends Model {
-    use HasTempTable, HasManualSequence, AddsSqlCriteria;
+    use IsSchemaTable, HasTempTable, HasManualSequence, AddsSqlCriteria;
 
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'steam_users';
+    protected $table = 'players';
     
     /**
-     * The primary key associated with the model.
+     * Indicates if the model should be timestamped.
      *
-     * @var string
+     * @var bool
      */
-    protected $primaryKey = 'steam_user_id';
+    public $timestamps = false;
     
-    /**
-     * The name of the "created at" column. Disabled in this class.
-     *
-     * @var string
-     */
-    const CREATED_AT = NULL;
-    
-    /**
-     * The name of the "updated at" column.
-     *
-     * @var string
-     */
-    const UPDATED_AT = 'updated';
-    
-    public static function createTemporaryTable() {    
+    public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void {
         DB::statement("
-            CREATE TEMPORARY TABLE " . static::getTempTableName() . "
+            CREATE TEMPORARY TABLE " . static::getTempTableName($leaderboard_source) . "
             (
-                steam_user_id integer,
-                steamid bigint,
-                communityvisibilitystate smallint,
-                profilestate smallint,
-                personaname character varying(255),
-                profileurl text,
-                avatar text,
-                avatarmedium text,
-                avatarfull text,
-                updated timestamp without time zone
+                created timestamp without time zone,
+                updated timestamp without time zone,
+                id integer,
+                external_id character varying(255),
+                username character varying(255),
+                profile_url text,
+                avatar_url text
             )
             ON COMMIT DROP;
         ");
     }
     
-    public static function saveNewTemp() {
+    public static function saveNewTemp(LeaderboardSources $leaderboard_source): void {
         DB::statement("
-            INSERT INTO steam_users (
-                steam_user_id, 
-                steamid, 
+            INSERT INTO " . static::getSchemaTableName($leaderboard_source) . " (
+                id, 
+                external_id, 
+                created,
                 updated
             )
             SELECT 
-                steam_user_id,
-                steamid,
+                id,
+                external_id,
+                created,
                 updated
-            FROM " . static::getTempTableName() . "
+            FROM " . static::getTempTableName($leaderboard_source) . "
         ");
     }
     
-    public static function updateFromTemp() {    
+    public static function updateFromTemp(LeaderboardSources $leaderboard_source): void {    
         DB::update("
-            UPDATE steam_users su
+            UPDATE " . static::getSchemaTableName($leaderboard_source) . " p
             SET 
-                communityvisibilitystate = sut.communityvisibilitystate,
-                profilestate = sut.profilestate,
-                personaname = sut.personaname,
-                personaname_search_index = to_tsvector(sut.personaname),
-                profileurl = sut.profileurl,
-                avatar = sut.avatar,
-                avatarmedium = sut.avatarmedium,
-                avatarfull = sut.avatarfull,
-                updated = sut.updated
-            FROM " . static::getTempTableName() . " sut
-            WHERE su.steam_user_id = sut.steam_user_id
+                updated = pt.updated,
+                username = pt.username,
+                username_search_index = to_tsvector(pt.username),
+                profile_url = pt.profile_url,
+                avatar_url = pt.avatar_url
+            FROM " . static::getTempTableName($leaderboard_source) . " pt
+            WHERE p.id = pt.id
         ");
     }
     
-    public static function updateRecordSearchIndex(\App\Players $record) {    
+    public static function updateRecordSearchIndex(LeaderboardSources $leaderboard_source, \App\Players $record): void {    
         DB::update("
-            UPDATE steam_users
-            SET personaname_search_index = to_tsvector(:personaname)
-            WHERE steam_user_id = :steam_user_id
+            UPDATE " . static::getSchemaTableName($leaderboard_source) . "
+            SET username_search_index = to_tsvector(:username)
+            WHERE id = :id
         ", [
-            ':personaname' => $record->personaname,
-            ':steam_user_id' => $record->steam_user_id
+            ':username' => $record->username,
+            ':id' => $record->id
         ]);
     }
     
@@ -111,9 +94,9 @@ class Players extends Model {
         $query->addSelect([
             'u.id AS necrolab_id',
             'u.name AS necrolab_username',
-            'su.steamid',
-            'su.personaname AS steam_username',
-            'su.profileurl AS steam_profile_url',
+            'p.external_id AS player_id',
+            'p..username AS player_username',
+            'p.profile_url AS player_profile_url',
             'mu.external_id AS mixer_id',
             'mu.username AS mixer_username',
             'du.discord_id',
@@ -131,8 +114,9 @@ class Players extends Model {
         ]);
     }
     
-    public static function addLeftJoins(Builder $query) {    
-        $query->leftJoin('users AS u', 'u.steam_user_id', '=', 'su.steam_user_id');
+    public static function addLeftJoins(LeaderboardSources $leaderboard_source, Builder $query): void {    
+        $query->leftJoin("users_{$leaderboard_source->name}_player up", 'up.player_id', '=', 'p.id');
+        $query->leftJoin('users AS u', 'u.id', '=', 'up.user_id');
         $query->leftJoin('mixer_users AS mu', 'mu.id', '=', 'u.mixer_user_id');
         $query->leftJoin('discord_users AS du', 'du.discord_user_id', '=', 'u.discord_user_id');
         $query->leftJoin('reddit_users AS ru', 'ru.reddit_user_id', '=', 'u.reddit_user_id');
@@ -141,71 +125,76 @@ class Players extends Model {
         $query->leftJoin('youtube_users AS yu', 'yu.youtube_user_id', '=', 'u.youtube_user_id');
     }
     
-    public static function getAllIdsBySteamid() {
-        $query = DB::table('steam_users AS su')
+    public static function getAllIdsByPlayerid(LeaderboardSources $leaderboard_source): array {
+        $query = DB::table(static::getSchemaTableName($leaderboard_source))
             ->select([
-                'steam_user_id',
-                'steamid'
+                'id',
+                'external_id'
             ]);
         
         $cursor = new PostgresCursor(
-            'steam_user_ids', 
+            "{$leaderboard_source->name}_player_ids", 
             $query,
             20000
         );
         
-        $ids_by_steamid = [];
+        $ids_by_player_id = [];
         
-        foreach($cursor->getRecord() as $steam_user) {
-            $ids_by_steamid[$steam_user->steamid] = $steam_user->steam_user_id;
+        foreach($cursor->getRecord() as $player) {
+            $ids_by_player_id[$player->external_id] = $player->id;
         }
         
-        return $ids_by_steamid;
+        return $ids_by_player_id;
     }
     
-    public static function getOutdatedIdsQuery() {        
+    public static function getOutdatedIdsQuery(LeaderboardSources $leaderboard_source): Builder {        
         $thirty_days_ago = new DateTime('-30 day');
         
-        return static::select([
-            'steam_user_id',
-            'steamid'
-        ])->where('updated', '<', $thirty_days_ago->format('Y-m-d H:i:s'));
+        return DB::table(static::getSchemaTableName($leaderboard_source))->select([
+            'id',
+            'external_id'
+        ])->where('updated', '<', $thirty_days_ago->format('Y-m-d H:i:s'))
+        ->limit(100000);
     }
     
-    public static function getIdsBySearchTerm(string $search_term) {
+    public static function getIdsBySearchTerm(LeaderboardSources $leaderboard_source, string $search_term): array {
         $term_hash_name = sha1($search_term);
     
-        return Cache::store('opcache')->remember("steam_users:search:{$term_hash_name}", 5, function() use($search_term) {                            
-            return static::select([
-                'steam_user_id'
+        return Cache::store('opcache')->remember("{$leaderboard_source->name}:players:search:{$term_hash_name}", 5, function() use(
+            $leaderboard_source,
+            $search_term
+        ) {                            
+            return DB::table(static::getSchemaTableName($leaderboard_source))->select([
+                'id'
             ])
-            ->whereRaw('personaname_search_index @@ to_tsquery(?)', [
+            ->whereRaw('username_search_index @@ to_tsquery(?)', [
                 $search_term
             ])
-            ->pluck('steam_user_id', 'steam_user_id');
+            ->pluck('id', 'id');
         });
     }
     
-    public static function getCacheQuery() {        
-        $query = DB::table('steam_users AS su')
+    public static function getCacheQuery(LeaderboardSources $leaderboard_source): Builder {        
+        $query = DB::table(static::getSchemaTableName($leaderboard_source) . ' AS p')
             ->select([
-                'su.steam_user_id'
+                'p.id'
             ])
-            ->leftJoin('users AS u', 'u.steam_user_id', '=', 'su.steam_user_id')
-            ->orderBy('su.personaname', 'asc');
+            ->leftJoin("user_{$leaderboard_source->name}_player AS up", 'up.player_id', '=', 'p.id')
+            ->leftJoin('users AS u', 'u.id', '=', 'up.user_id')
+            ->orderBy('p.username', 'asc');
         
         ExternalSites::addSiteIdSelectFields($query);
         
         return $query;
     }
     
-    public static function getApiReadQuery() {
-        $query = DB::table('steam_users AS su');
+    public static function getApiReadQuery(LeaderboardSources $leaderboard_source): Builder {
+        $query = DB::table(static::getSchemaTableName($leaderboard_source) . ' AS p');
         
         static::addSelects($query);
-        static::addLeftJoins($query);
+        static::addLeftJoins($leaderboard_source, $query);
         
-        $query->orderBy('su.personaname', 'asc');
+        $query->orderBy('p.username', 'asc');
         
         return $query;
     }

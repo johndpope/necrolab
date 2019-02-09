@@ -3,13 +3,18 @@
 namespace App;
 
 use Illuminate\Support\Facades\DB;
+use ElcoBvg\Opcache\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use ElcoBvg\Opcache\Model;
 use App\Traits\GetById;
 use App\Traits\GetByName;
+use App\Traits\MatchesOnString;
+use App\Traits\HasDefaultRecord;
 use App\Traits\StoredInCache;
+use App\LeaderboardTypeMatches;
 
 class LeaderboardTypes extends Model {
-    use GetById, GetByName, StoredInCache;
+    use GetById, GetByName, MatchesOnString, HasDefaultRecord, StoredInCache;
 
     /**
      * The table associated with the model.
@@ -19,20 +24,21 @@ class LeaderboardTypes extends Model {
     protected $table = 'leaderboard_types';
     
     /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-    
-    /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
     public $timestamps = false;
     
-    public static function getStoredInCacheQuery() {
+    public static function getStoredInCacheQuery(): Builder {
+        $details_columns_query = DB::table('leaderboard_type_details_columns AS ltdc')
+            ->select([
+                'ltdc.leaderboard_type_id',
+                DB::raw('string_agg(ldc.name, \',\' ORDER BY ldc.sort_order) AS details_columns')
+            ])
+            ->join('leaderboard_details_columns AS ldc', 'ldc.id', '=', 'ltdc.leaderboard_details_column_id')
+            ->groupBy('ltdc.leaderboard_type_id');
+    
         $modes_query = DB::table('leaderboard_type_modes AS ltm')
             ->select([
                 'ltm.leaderboard_type_id',
@@ -53,12 +59,15 @@ class LeaderboardTypes extends Model {
             'lt.id',
             'lt.name',
             'lt.display_name',
-            'ldc.name AS details_column',
+            'lt.is_default',
+            'details_columns.details_columns',
             'leaderboard_type_modes.modes',
             'leaderboard_type_characters.characters'
         ])
             ->from('leaderboard_types AS lt')
-            ->join('leaderboard_details_columns AS ldc', 'ldc.id', 'lt.leaderboard_details_column_id')
+            ->leftJoinSub($details_columns_query, 'details_columns', function($join) {
+                $join->on('details_columns.leaderboard_type_id', '=', 'lt.id');
+            })
             ->leftJoinSub($modes_query, 'leaderboard_type_modes', function($join) {
                 $join->on('leaderboard_type_modes.leaderboard_type_id', '=', 'lt.id');
             })
@@ -68,21 +77,49 @@ class LeaderboardTypes extends Model {
             ->orderBy('lt.id', 'asc');
     }
     
-    public static function getTypeFromString($string) {
-        $leaderboard_type = NULL;
+    protected static function processDataBeforeCache(Collection $records): void {    
+        if(!empty($records)) {
+            foreach($records as $record) {
+                /* ---------- Details Columns ---------- */ 
+            
+                $details_columns = explode(',', $record->details_columns);
+                
+                if(empty($details_columns)) {
+                    $details_columns = [];
+                }
+                
+                $record->details_columns = $details_columns;
+                
+                
+                /* ---------- Modes ---------- */ 
+            
+                $modes = explode(',', $record->modes);
+                
+                if(empty($modes)) {
+                    $modes = [];
+                }
+                
+                $record->modes = $modes;
+                
+                
+                /* ---------- Characters ---------- */ 
+            
+                $characters = explode(',', $record->characters);
+                
+                if(empty($characters)) {
+                    $characters = [];
+                }
+                
+                $record->characters = $characters;
+            }
+        }
+    }
     
-        if(stripos($string, 'speedrun') !== false) {            
-            $leaderboard_type = static::getByName('speed');
-        }
-        
-        if(stripos($string, 'hardcore') !== false || stripos($string, 'core') !== false || stripos($string, 'all zones') !== false) {            
-            $leaderboard_type = static::getByName('score');
-        }
-        
-        if(stripos($string, 'deathless') !== false) {            
-            $leaderboard_type = static::getByName('deathless');
-        }
-        
-        return $leaderboard_type;
+    protected static function getMatchModel(): string {
+        return LeaderboardTypeMatches::class;
+    }
+    
+    protected static function getMatchFieldIdName(): string {
+        return 'leaderboard_type_id';
     }
 }

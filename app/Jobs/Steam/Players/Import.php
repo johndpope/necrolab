@@ -8,6 +8,7 @@ use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
+use Illuminate\Support\Facades\DB;
 use GuzzleHttp\Client;
 use Steam\Configuration as SteamApiConfiguration;
 use Steam\Runner\GuzzleRunner;
@@ -18,8 +19,9 @@ use App\Components\RecordQueue;
 use App\Components\CallbackHandler;
 use App\Components\DataManagers\Steam\Players as PlayersManager;
 use App\Components\PostgresCursor;
+use App\LeaderboardSources;
 use App\Players;
-use App\Jobs\Players\SaveImported as SaveImportedJob;
+use App\Jobs\Steam\Players\SaveImported as SaveImportedJob;
 
 class Import implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -105,18 +107,23 @@ class Import implements ShouldQueue {
         $record_queue->addCommitCallback($callback_handler);
         
         
+        DB::beginTransaction();
+        
+        
         /* ---------- Retrieve outdated record ids and add to record queue ---------- */ 
         
         $cursor = new PostgresCursor(
             'get_outdated_steam_users', 
-            Players::getOutdatedIdsQuery(),
+            Players::getOutdatedIdsQuery($this->data_manager->getLeaderboardSource()),
             20000
         );
         
         foreach($cursor->getRecord() as $outdated_record) {
-            $record_queue->addRecord([$outdated_record->steamid]);
+            $record_queue->addRecord([$outdated_record->external_id]);
         }
         
-        SaveImportedJob::dispatch();
+        DB::commit();
+        
+        SaveImportedJob::dispatch($this->data_manager);
     }
 }

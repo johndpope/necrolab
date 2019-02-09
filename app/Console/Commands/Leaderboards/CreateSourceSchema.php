@@ -36,13 +36,8 @@ class CreateSourceSchema extends Command {
      *
      * @return mixed
      */
-    public function handle() {
-        $leaderboard_source_name = $this->option('leaderboard_source');
-        $leaderboard_source = LeaderboardSources::getByName($leaderboard_source_name);
-        
-        if(empty($leaderboard_source)) {
-            throw new InvalidArgumentException("Specified leaderboard_source '{$leaderboard_source_name}' is not a valid leaderboard source.");
-        }
+    public function handle() {        
+        $leaderboard_source = LeaderboardSources::where('name', $this->option('leaderboard_source'))->firstOrFail();
     
         CreateSourceSchemaJob::dispatch($leaderboard_source)->onConnection('sync');
     }

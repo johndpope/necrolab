@@ -4,12 +4,14 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use App\Traits\GetByName;
+use App\Traits\SchemaGetByName;
+use App\Traits\IsSchemaTable;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
+use App\LeaderboardSources;
 
 class LeaderboardEntryDetails extends Model {
-    use GetByName, HasTempTable, HasManualSequence;
+    use SchemaGetByName, IsSchemaTable, HasTempTable, HasManualSequence;
     
     /**
      * The table associated with the model.
@@ -19,22 +21,15 @@ class LeaderboardEntryDetails extends Model {
     protected $table = 'leaderboard_entry_details';
     
     /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-    
-    /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
     public $timestamps = false;
     
-    public static function createTemporaryTable() {
+    public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void {
         DB::statement("
-            CREATE TEMPORARY TABLE leaderboard_entry_details_temp (
+            CREATE TEMPORARY TABLE " . static::getTempTableName($leaderboard_source) . " (
                 id smallint,
                 \"name\" character varying(25)
             )
@@ -42,16 +37,18 @@ class LeaderboardEntryDetails extends Model {
         ");
     }
     
-    public static function saveTemp() {
+    public static function saveNewTemp(LeaderboardSources $leaderboard_source): void {
         DB::statement("
-            INSERT INTO leaderboard_entry_details (
+            INSERT INTO " . static::getSchemaTableName($leaderboard_source) . " (
                 id, 
                 name
             )
             SELECT 
                 id, 
                 name
-            FROM leaderboard_entry_details_temp
+            FROM " . static::getTempTableName($leaderboard_source) . "
         ");
-    } 
+    }
+    
+    public static function updateFromTemp(LeaderboardSources $leaderboard_source): void {}
 }

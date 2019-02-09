@@ -2,8 +2,7 @@
 
 namespace App\Console\Commands\Rankings\Daily;
 
-use DateTime;
-use Illuminate\Console\Command;
+use App\Console\Commands\Date as Command;
 use App\Jobs\Rankings\Daily\Generate as GenerateJob;
 
 class Generate extends Command {
@@ -12,14 +11,14 @@ class Generate extends Command {
      *
      * @var string
      */
-    protected $signature = 'rankings:daily:generate {date?}';
+    protected $signature = 'rankings:daily:generate';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Generates daily rankings for the specified date. Defaults to today's date when none is specified.";
+    protected $description = "Generates daily rankings for the specified date.";
 
     /**
      * Create a new command instance.
@@ -27,15 +26,8 @@ class Generate extends Command {
      * @return void
      */
     public function __construct() {
+        $this->job_class = GenerateJob::class;
+    
         parent::__construct();
-    }
-
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle() {
-        GenerateJob::dispatch(new DateTime($this->argument('date')))->onConnection('sync');
     }
 }

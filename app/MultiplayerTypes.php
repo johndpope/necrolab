@@ -5,10 +5,13 @@ namespace App;
 use ElcoBvg\Opcache\Model;
 use App\Traits\GetByName;
 use App\Traits\GetById;
+use App\Traits\MatchesOnString;
+use App\Traits\HasDefaultRecord;
 use App\Traits\StoredInCache;
+use App\MultiplayerTypeMatches;
 
 class MultiplayerTypes extends Model {
-    use GetByName, GetById, StoredInCache;
+    use GetByName, GetById, MatchesOnString, HasDefaultRecord, StoredInCache;
 
     /**
      * The table associated with the model.
@@ -24,13 +27,11 @@ class MultiplayerTypes extends Model {
      */
     public $timestamps = false;
     
-    public static function getFromString($string) {
-        $record = static::getByName('single');
-
-        if(stripos($string, 'co-op') !== false) {            
-            $record = static::getByName('co_op');
-        }
-        
-        return $record;
+    protected static function getMatchModel(): string {
+        return MultiplayerTypeMatches::class;
+    }
+    
+    protected static function getMatchFieldIdName(): string {
+        return 'multiplayer_type_id';
     }
 }

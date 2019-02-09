@@ -5,13 +5,15 @@ namespace App;
 use stdClass;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
-use App\Traits\GetByName;
+use App\Traits\IsSchemaTable;
+use App\Traits\SchemaGetByName;
 use App\Traits\GetById;
 use App\Traits\HasManualSequence;
 use App\Traits\HasTempTable;
+use App\LeaderboardSources;
 
 class Seeds extends Model {
-    use GetByName, GetById, HasManualSequence, HasTempTable;
+    use IsSchemaTable, SchemaGetByName, GetById, HasManualSequence, HasTempTable;
 
     /**
      * The table associated with the model.
@@ -19,13 +21,6 @@ class Seeds extends Model {
      * @var string
      */
     protected $table = 'seeds';
-    
-    /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
     
     /**
      * Indicates if the model should be timestamped.
@@ -39,7 +34,7 @@ class Seeds extends Model {
         
         All credit goes to blueblimp. Thank you!
     */
-    public static function getSeedFromZ1Seed(int $zone_1_seed) {
+    public static function getSeedFromZ1Seed(int $zone_1_seed): int {
         $base = 6;
         $mul = 23987;
         $invmul = 492935547;
@@ -65,7 +60,7 @@ class Seeds extends Model {
         return $seed;
     }
     
-    public static function getOldDLCSeedFromZ1Seed(int $zone_1_seed) {
+    public static function getOldDLCSeedFromZ1Seed(int $zone_1_seed): int {
         $multiplied_seed = $zone_1_seed * 1899818559;
         
         $seed = $multiplied_seed % 2147483647;
@@ -78,7 +73,7 @@ class Seeds extends Model {
         
         All credit goes to AlexisYJ and Grimy. Thank you!
     */
-    public static function getDLCSeedFromZ1Seed(int $zone_1_seed) {
+    public static function getDLCSeedFromZ1Seed(int $zone_1_seed): int {
         $added_seed = $zone_1_seed + 1073765959;
         
         $multiplied_seed = $added_seed * 225371434;
@@ -90,18 +85,19 @@ class Seeds extends Model {
         return $seed;
     }
     
-    public static function generateNew() {
+    public static function generateNew(LeaderboardSources $leaderboard_source): int {
         $new_seed = NULL;
         
         do {
             $random_seed = random_int(0, PHP_INT_MAX);
             
-            $existing_record = static::where('name', $random_seed)->first();
+            $existing_record = DB::table(static::getSchemaTableName($leaderboard_source))->where('name', $random_seed)->first();
             
             if(empty($existing_record)) {
+                //TODO: Adjust this to work with the new schema structure
                 $new_record = new static();
                 
-                $new_record->id = static::getNewRecordId();
+                $new_record->id = static::getNewRecordId($leaderboard_source);
                 $new_record->name = $random_seed;
                 
                 $new_record->save();
@@ -114,26 +110,28 @@ class Seeds extends Model {
         return $new_seed;
     }
     
-    public static function createTemporaryTable() {
+    public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void {
         DB::statement("
-            CREATE TEMPORARY TABLE " . static::getTempTableName() . " (
+            CREATE TEMPORARY TABLE " . static::getTempTableName($leaderboard_source) . " (
                 id bigint,
-                name character varying(100)
+                name character varying(255)
             )
             ON COMMIT DROP;
         ");
     }
     
-    public static function saveNewFromTemp() {
+    public static function saveNewTemp(LeaderboardSources $leaderboard_source): void {
         DB::statement("
-            INSERT INTO seeds (
+            INSERT INTO " . static::getSchemaTableName($leaderboard_source) . " (
                 id,
                 name
             )
             SELECT 
                 id,
                 name
-            FROM " . static::getTempTableName() . "
+            FROM " . static::getTempTableName($leaderboard_source) . "
         ");
     }
+    
+    public static function updateFromTemp(): void {}
 }

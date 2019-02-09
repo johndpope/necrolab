@@ -5,6 +5,7 @@ namespace App\Console\Commands\Steam\Leaderboards\Csv;
 use DateTime;
 use Illuminate\Console\Command;
 use App\Jobs\Steam\Leaderboards\Csv\Import as ImportJob;
+use App\Dates;
 
 class Import extends Command {
     /**
@@ -36,6 +37,8 @@ class Import extends Command {
      * @return mixed
      */
     public function handle() {
-        ImportJob::dispatch(new DateTime())->onConnection('sync');
+        $date = Dates::where('name', (new DateTime())->format('Y-m-d'))->firstOrFail();
+    
+        ImportJob::dispatch($date)->onConnection('sync');
     }
 }

@@ -2,8 +2,7 @@
 
 namespace App\Console\Commands\Steam\Leaderboards\Csv;
 
-use DateTime;
-use Illuminate\Console\Command;
+use App\Console\Commands\DataManagerDate as Command;
 use App\Components\DataManagers\Steam\Leaderboards\Csv as CsvManager;
 use App\Jobs\Leaderboards\UploadToS3 as UploadToS3Job;
 
@@ -13,14 +12,14 @@ class UploadToS3 extends Command {
      *
      * @var string
      */
-    protected $signature = 'steam:leaderboards:csv:s3:upload {--date=}';
+    protected $signature = 'steam:leaderboards:csv:s3:upload';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Uploads Steam leaderboard CSV data to S3 for the specified date. Defaults to today's date when none is specified.";
+    protected $description = "Uploads Steam leaderboard CSV data to S3 for the specified date.";
 
     /**
      * Create a new command instance.
@@ -28,17 +27,10 @@ class UploadToS3 extends Command {
      * @return void
      */
     public function __construct() {
-        parent::__construct();
-    }
-
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle() {
-        $data_manager = new CsvManager(new DateTime($this->option('date')));
+        $this->data_manager_class = CsvManager::class;
+        
+        $this->job_class = UploadToS3Job::class;
     
-        UploadToS3Job::dispatch($data_manager)->onConnection('sync');
+        parent::__construct();
     }
 }

@@ -15,7 +15,8 @@ class MultiplayerTypesResource extends JsonResource {
         return [
             'id' => (int)$this->id,
             'name' => $this->name,
-            'display_name' => $this->display_name
+            'display_name' => $this->display_name,
+            'is_default' => $this->is_default
         ];
     }
 }

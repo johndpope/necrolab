@@ -3,21 +3,20 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\IsSchemaTable;
+use App\Traits\GetById;
+use App\Traits\GetByName;
+use App\Traits\StoredInCache;
 
 class Achievements extends Model {
+    use IsSchemaTable, GetById, GetByName, StoredInCache;
+    
     /**
      * The table associated with the model.
      *
      * @var string
      */
     protected $table = 'achievements';
-    
-    /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'achievement_id';
     
     /**
      * Indicates if the model should be timestamped.

@@ -33,14 +33,6 @@ class ExternalSites extends Model {
      */
     public $timestamps = false;
     
-    public static function getValidationRules() {
-        return [
-            'name' => 'required|max:100|unique:modes',
-            'display_name' => 'required|max:100',
-            'active' => 'required|integer|min:0|max:1',
-        ];
-    }
-    
     public static function getStoredInCacheQuery() {
         return static::where('active', 1)
             ->orderBy('name', 'asc');

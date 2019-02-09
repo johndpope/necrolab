@@ -2,14 +2,17 @@
 
 namespace App;
 
-use Illuminate\Support\Facades\Auth;
+use ElcoBvg\Opcache\Builder;
 use ElcoBvg\Opcache\Model;
 use App\Traits\GetById;
 use App\Traits\GetByName;
+use App\Traits\MatchesOnString;
+use App\Traits\HasDefaultRecord;
 use App\Traits\StoredInCache;
+use App\CharacterMatches;
 
 class Characters extends Model {
-    use GetById, GetByName, StoredInCache;
+    use GetById, GetByName, MatchesOnString, HasDefaultRecord, StoredInCache;
 
     /**
      * The table associated with the model.
@@ -19,31 +22,23 @@ class Characters extends Model {
     protected $table = 'characters';
     
     /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-    
-    /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
     public $timestamps = false;
     
-    public static function getValidationRules() {
-        return [
-            'name' => 'required|max:100|unique:characters',
-            'display_name' => 'required|max:255',
-            'is_active' => 'required|integer|min:0|max:1',
-            'sort_order' => 'required|integer|min:1',
-        ];
-    }
-    
-    public static function getStoredInCacheQuery() {
+    public static function getStoredInCacheQuery(): Builder {
         return static::where('is_active', 1)
             ->orderBy('sort_order', 'asc');
+    }
+    
+    protected static function getMatchModel(): string {
+        return CharacterMatches::class;
+    }
+    
+    protected static function getMatchFieldIdName(): string {
+        return 'character_id';
     }
     
     public static function isCoOpCharacter($character_name) {
@@ -171,42 +166,5 @@ class Characters extends Model {
         );
         
         return in_array($character_name, $dlc_characters, true);
-    }
-    
-    public static function getRecordFromMatch($string, array $characters) {
-        $matched_character = NULL;
-        $default_character = NULL;
-    
-        if(!empty($characters)) {
-            foreach($characters as $character) {
-                if($character->name == 'cadence') {
-                    $default_character = $character;
-                }
-            
-                if(stripos($string, $character->steam_match) !== false) {
-                    $matched_character = $character;
-                }
-            }
-        }
-        
-        if(empty($matched_character)) {
-            $matched_character = $default_character;
-        }
-        
-        return $matched_character;
-    }
-    
-    public static function getAllActive() {
-        $characters = static::all();
-        
-        $active_characters = [];
-        
-        foreach($characters as $character) {
-            if(!empty($character->is_active)) {
-                $active_characters[$character->name] = $character;
-            }
-        }
-        
-        return $active_characters;
     }
 }

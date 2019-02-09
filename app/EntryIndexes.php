@@ -7,11 +7,13 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Cache;
 use App\Components\Encoder;
-use App\Components\CacheNames\Users\Steam as PlayersCacheNames;
+use App\Traits\IsSchemaTable;
 use App\Traits\HasTempTable;
+use App\Traits\HasCompositePrimaryKey;
+use App\LeaderboardSources;
 
 class EntryIndexes extends Model {
-    use HasTempTable;
+    use IsSchemaTable, HasTempTable, HasCompositePrimaryKey;
 
     /**
      * The table associated with the model.
@@ -25,7 +27,10 @@ class EntryIndexes extends Model {
      *
      * @var string
      */
-    protected $primaryKey = '';
+    protected $primaryKey = [
+        'name',
+        'sub_name'
+    ];
     
     /**
      * Indicates if the model should be timestamped.
@@ -42,9 +47,9 @@ class EntryIndexes extends Model {
         ];
     }
     
-    public static function createTemporaryTable() {        
+    public static function createTemporaryTable(LeaderboardSources $leaderboard_sources) {        
         DB::statement("
-            CREATE TEMPORARY TABLE " . static::getTempTableName() . " (
+            CREATE TEMPORARY TABLE " . static::getTempTableName($leaderboard_sources) . " (
                 data bytea NOT NULL,
                 name character varying(255) NOT NULL,
                 sub_name character varying(255) NOT NULL
@@ -53,9 +58,9 @@ class EntryIndexes extends Model {
         ");
     }
     
-    public static function saveTemp() {
+    public static function saveNewTemp(LeaderboardSources $leaderboard_sources) {
         DB::statement("
-            INSERT INTO entry_indexes (
+            INSERT INTO " . static::getSchemaTableName($leaderboard_sources) . " (
                 data,
                 name,
                 sub_name
@@ -64,7 +69,7 @@ class EntryIndexes extends Model {
                 data,
                 name,
                 sub_name
-            FROM " . static::getTempTableName() . "
+            FROM " . static::getTempTableName($leaderboard_sources) . "
             ON CONFLICT (name, sub_name) DO 
             UPDATE 
             SET 
@@ -72,9 +77,11 @@ class EntryIndexes extends Model {
         ");
     }
     
-    public static function getDecodedRecord(string $name, string $sub_name = '') {
+    public static function updateFromTemp(LeaderboardSources $leaderboard_sources) {}
+    
+    public static function getDecodedRecord(LeaderboardSources $leaderboard_sources, string $name, string $sub_name = '') {
         return Cache::store('opcache')->remember("{$name}:{$sub_name}", 5, function() use($name, $sub_name) {                            
-            $encoded_data = static::where('name', $name)
+            $encoded_data = DB::table(static::getSchemaTableName($leaderboard_sources))->where('name', $name)
                 ->where('sub_name', $sub_name)
                 ->first();
             

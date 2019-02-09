@@ -3,12 +3,17 @@
 namespace App;
 
 use DateTime;
+use PDO;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Query\Builder;
 use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
 use App\Players;
 use App\LeaderboardSources;
+use App\Dates;
+use App\DailyRankings;
+use App\Releases;
 
 class DailyRankingEntries extends Model {
     use HasPartitions, HasTempTable;
@@ -27,7 +32,7 @@ class DailyRankingEntries extends Model {
      */
     protected $primaryKey = [
         'daily_ranking_id',
-        'steam_user_id'
+        'player_id'
     ];
     
     /**
@@ -37,99 +42,145 @@ class DailyRankingEntries extends Model {
      */
     public $timestamps = false;
     
-    public static function createTemporaryTable() {
+    public static function getTempInsertQueueBindFlags(): array {
+        return [
+            PDO::PARAM_INT,
+            PDO::PARAM_INT,
+            PDO::PARAM_INT,
+            PDO::PARAM_INT,
+            PDO::PARAM_INT,
+            PDO::PARAM_INT,
+            PDO::PARAM_INT,
+            PDO::PARAM_INT,
+            PDO::PARAM_INT,
+            PDO::PARAM_INT,
+            PDO::PARAM_INT,
+            PDO::PARAM_INT,
+            PDO::PARAM_LOB
+        ];
+    }
+    
+    public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void {
         DB::statement("
-            CREATE TEMPORARY TABLE " . static::getTempTableName() . " (
+            CREATE TEMPORARY TABLE " . static::getTempTableName($leaderboard_source) . " (
+                sum_of_ranks bigint,
                 daily_ranking_id integer,
-                steam_user_id integer,
+                player_id integer,
+                rank integer,
                 first_place_ranks smallint,
                 top_5_ranks smallint,
                 top_10_ranks smallint,
                 top_20_ranks smallint,
                 top_50_ranks smallint,
                 top_100_ranks smallint,
-                total_points double precision,
-                total_dailies smallint,
-                total_wins smallint,
-                sum_of_ranks integer,
-                total_score integer,
-                rank integer
+                dailies smallint,
+                wins smallint,
+                details bytea
             )
             ON COMMIT DROP;
         ");
     }
     
-    public static function clear(DateTime $date) {    
+    public static function clear(LeaderboardSources $leaderboard_source, Dates $date): void {    
         DB::delete("
-            DELETE FROM " . static::getTableName($date) . " dre
-            USING  daily_rankings dr
-            WHERE  dre.daily_ranking_id = dr.daily_ranking_id
-            AND    dr.date = :date
+            DELETE FROM " . static::getTableName($leaderboard_source, new DateTime($date->name)) . " dre
+            USING  " . DailyRankings::getSchemaTableName($leaderboard_source) . " dr
+            WHERE  dre.daily_ranking_id = dr.id
+            AND    dr.date_id = :date_id
         ", [
-            ':date' => $date->format('Y-m-d')
+            ':date_id' => $date->id
         ]);
     }
     
-    public static function saveTemp(DateTime $date) {
+    public static function saveNewTemp(LeaderboardSources $leaderboard_source, Dates $date): void {
         DB::statement("
-            INSERT INTO " . static::getTableName($date) . " (
+            INSERT INTO " . static::getTableName($leaderboard_source, new DateTime($date->name)) . " (
+                sum_of_ranks,
                 daily_ranking_id,
-                steam_user_id,
+                player_id,
+                rank,
                 first_place_ranks,
                 top_5_ranks,
                 top_10_ranks,
                 top_20_ranks,
                 top_50_ranks,
                 top_100_ranks,
-                total_points,
-                total_dailies,
-                total_wins,
-                sum_of_ranks,
-                total_score,
-                rank
+                dailies,
+                wins,
+                details
             )
             SELECT 
+                sum_of_ranks,
                 daily_ranking_id,
-                steam_user_id,
+                player_id,
+                rank,
                 first_place_ranks,
                 top_5_ranks,
                 top_10_ranks,
                 top_20_ranks,
                 top_50_ranks,
                 top_100_ranks,
-                total_points,
-                total_dailies,
-                total_wins,
-                sum_of_ranks,
-                total_score,
-                rank
-            FROM " . static::getTempTableName() . "
+                dailies,
+                wins,
+                details
+            FROM " . static::getTempTableName($leaderboard_source) . "
         ");
     }
     
-    public static function getCacheQuery(DateTime $date) {
-        $entries_table_name = static::getTableName($date);
+    public static function updateFromTemp(): void {}
+    
+    public static function getCacheQuery(LeaderboardSources $leaderboard_source, Dates $date): Builder {
+        $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->name));
 
-        $query = DB::table('daily_rankings AS dr')
+        $query = DB::table(DailyRankings::getSchemaTableName($leaderboard_source) . ' AS dr')
             ->select([
+                'dr.character_id',
                 'dr.release_id',
                 'dr.mode_id',
+                'dr.multiplayer_type_id',
+                'dr.soundtrack_id',
                 'dr.daily_ranking_day_type_id',
-                'dre.steam_user_id',
+                'dre.player_id',
                 'dre.rank'
             ])
-            ->join("{$entries_table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.daily_ranking_id')
-            ->join('steam_users AS su', 'su.steam_user_id', '=', 'dre.steam_user_id')
-            ->leftJoin('users AS u', 'u.steam_user_id', '=', 'su.steam_user_id')
-            ->where('dr.date', $date->format('Y-m-d'));
+            ->join("{$entries_table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.id')
+            ->leftJoin("user_{$leaderboard_source->name}_player AS up", 'up.player_id', '=', 'dre.player_id')
+            ->leftJoin('users AS u', 'u.id', '=', 'up.user_id')
+            ->where('dr.date_id', $date->id);
             
         ExternalSites::addSiteIdSelectFields($query);
         
         return $query;
     }
     
-    public static function getApiReadQuery(int $release_id, int $mode_id, int $daily_ranking_day_type_id, DateTime $date) {
-        $entries_table_name = static::getTableName($date);
+    public static function getStatsReadQuery(LeaderboardSources $leaderboard_source, Dates $date): Builder {
+        $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->name));
+
+        $query = DB::table(DailyRankings::getSchemaTableName($leaderboard_source) . " AS dr")
+            ->select([
+                'dr.id AS daily_ranking_id',
+                'dre.rank',
+                'dre.dailies',
+                'dre.wins',
+                'dre.details'
+            ])
+            ->join("{$entries_table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.id')
+            ->where('dr.date_id', $date->id);
+        
+        return $query;
+    }
+    
+    public static function getApiReadQuery(
+        LeaderboardSources $leaderboard_source,
+        int $character_id,
+        int $release_id, 
+        int $mode_id, 
+        int $multiplayer_type_id,
+        int $soundtrack_id,
+        int $daily_ranking_day_type_id, 
+        Dates $date
+    ): Builder {
+        $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->name));
 
         $query = DB::table('daily_rankings AS dr')
             ->select([
@@ -140,33 +191,38 @@ class DailyRankingEntries extends Model {
                 'dre.top_20_ranks',
                 'dre.top_50_ranks',
                 'dre.top_100_ranks',
-                'dre.total_points',
-                'dre.total_score',
-                'dre.total_dailies',
-                'dre.total_wins',
+                'dre.dailies',
+                'dre.wins',
                 'dre.sum_of_ranks',
-                'dre.steam_user_id'
+                'dre.details',
+                'dre.player_id'
             ])
-            ->join("{$entries_table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.daily_ranking_id')
-            ->join('steam_users AS su', 'su.steam_user_id', '=', 'dre.steam_user_id')
-            ->where('dr.date', $date->format('Y-m-d'))
+            ->join("{$entries_table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.id')
+            ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'dre.player_id')
+            ->where('dr.character_id', $character_id)
             ->where('dr.release_id', $release_id)
             ->where('dr.mode_id', $mode_id)
-            ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type_id);
+            ->where('dr.multiplayer_type_id', $multiplayer_type_id)
+            ->where('dr.soundtrack_id', $soundtrack_id)
+            ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type_id)
+            ->where('dr.date_id', $date->id);
             
         Players::addSelects($query);
-        Players::addLeftJoins($query);
+        Players::addLeftJoins($leaderboard_source, $query);
         
         return $query;
     }
     
     public static function getPlayerApiReadQuery(
+        LeaderboardSources $leaderboard_source,
         string $player_id, 
-        LeaderboardSources $leaderboard_source, 
+        int $character_id,
         int $release_id, 
         int $mode_id, 
+        int $multiplayer_type_id,
+        int $soundtrack_id,
         int $daily_ranking_day_type_id
-    ) {
+    ): Builder {
         $release = Releases::getById($release_id);
         
         $start_date = new DateTime($release['start_date']);
@@ -174,13 +230,13 @@ class DailyRankingEntries extends Model {
     
         $query = NULL;
         
-        $table_names = static::getTableNames($start_date, $end_date);
+        $table_names = static::getTableNames($leaderboard_source, $start_date, $end_date);
         
         if(!empty($table_names)) {
             foreach($table_names as $table_name) {                    
                 $partition_query = DB::table('daily_rankings AS dr')
                     ->select([
-                        'dr.date',
+                        'd.name AS date',
                         'dre.rank',
                         'dre.first_place_ranks',
                         'dre.top_5_ranks',
@@ -188,22 +244,25 @@ class DailyRankingEntries extends Model {
                         'dre.top_20_ranks',
                         'dre.top_50_ranks',
                         'dre.top_100_ranks',
-                        'dre.total_points',
-                        'dre.total_score',
                         'dre.total_dailies',
                         'dre.total_wins',
-                        'dre.sum_of_ranks'
+                        'dre.sum_of_ranks',
+                        'dre.details'
                     ])
-                    ->join("{$table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.daily_ranking_id')
-                    ->join('steam_users AS su', 'su.steam_user_id', '=', 'dre.steam_user_id')
-                    ->where('su.steamid', $player_id)
-                    ->whereBetween('dr.date', [
+                    ->join("dates AS d", 'd.id', '=', 'dr.date_id')
+                    ->join("{$table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.id')
+                    ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'pre.player_id')
+                    ->where('dr.character_id', $character_id)
+                    ->where('dr.release_id', $release_id)
+                    ->where('dr.mode_id', $mode_id)
+                    ->where('dr.multiplayer_type_id', $multiplayer_type_id)
+                    ->where('dr.soundtrack_id', $soundtrack_id)
+                    ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type_id)
+                    ->whereBetween('d.name', [
                         $start_date->format('Y-m-d'),
                         $end_date->format('Y-m-d')
                     ])
-                    ->where('dr.release_id', $release_id)
-                    ->where('dr.mode_id', $mode_id)
-                    ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type_id);
+                    ->where('p.external_id', $player_id);
                 
                 if(!isset($query)) {
                     $query = $partition_query;

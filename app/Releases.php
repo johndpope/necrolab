@@ -4,13 +4,18 @@ namespace App;
 
 use DateTime;
 use Illuminate\Support\Facades\DB;
+use ElcoBvg\Opcache\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use ElcoBvg\Opcache\Model;
 use App\Traits\GetByName;
 use App\Traits\GetById;
+use App\Traits\MatchesOnString;
+use App\Traits\HasDefaultRecord;
 use App\Traits\StoredInCache;
+use App\ReleaseMatches;
 
 class Releases extends Model {
-    use GetByName, GetById, StoredInCache;
+    use GetByName, GetById, MatchesOnString, HasDefaultRecord, StoredInCache;
 
     /**
      * The table associated with the model.
@@ -20,20 +25,13 @@ class Releases extends Model {
     protected $table = 'releases';
     
     /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
-    
-    /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
     public $timestamps = false;
     
-    public static function getStoredInCacheQuery() {
+    public static function getStoredInCacheQuery(): Builder {
         $modes_query = DB::table('release_modes AS rm')
             ->select([
                 'rm.release_id',
@@ -56,6 +54,7 @@ class Releases extends Model {
             'r.display_name',
             'r.start_date',
             'r.end_date',
+            'r.is_default',
             'release_modes.modes',
             'release_characters.characters'
         ])
@@ -69,23 +68,42 @@ class Releases extends Model {
             ->orderBy('r.start_date', 'asc');
     }
     
-    public static function getEarliestStartDate(array $releases) {
-        $earliest_start_date = NULL;
-        
-        if(!empty($releases)) {
-            foreach($releases as $release) {
-                $start_date = new DateTime($release['start_date']);
+    protected static function processDataBeforeCache(Collection $records): void {    
+        if(!empty($records)) {
+            foreach($records as $record) {                
+                /* ---------- Modes ---------- */ 
+            
+                $modes = explode(',', $record->modes);
                 
-                if(empty($earliest_start_date) || $start_date < $earliest_start_date) {
-                    $earliest_start_date = $start_date;
+                if(empty($modes)) {
+                    $modes = [];
                 }
+                
+                $record->modes = $modes;
+                
+                
+                /* ---------- Characters ---------- */ 
+            
+                $characters = explode(',', $record->characters);
+                
+                if(empty($characters)) {
+                    $characters = [];
+                }
+                
+                $record->characters = $characters;
             }
         }
-        
-        return $earliest_start_date;
     }
     
-    public static function getAllByDate(DateTime $date) {
+    protected static function getMatchModel(): string {
+        return ReleaseMatches::class;
+    }
+    
+    protected static function getMatchFieldIdName(): string {
+        return 'release_id';
+    }
+    
+    public static function getAllByDate(DateTime $date): array {
         $releases = static::all();
         
         $release_records = [];
@@ -102,23 +120,5 @@ class Releases extends Model {
         }
         
         return $release_records;
-    }
-    
-    public static function getReleaseFromString($string) {
-        $release = NULL;
-    
-        if(stripos($string, 'dev') !== false) {
-            $release = static::getByName('early_access');
-        }
-        elseif(stripos($string, 'prod') !== false) {
-            if(stripos($string, 'dlc') !== false) {
-                $release = static::getByName('amplified_dlc');
-            }
-            else {
-                $release = static::getByName('original');
-            }
-        }
-        
-        return $release;
     }
 }

@@ -2,8 +2,7 @@
 
 namespace App\Console\Commands\Leaderboards\Entries;
 
-use DateTime;
-use Illuminate\Console\Command;
+use App\Console\Commands\Date as Command;
 use App\Jobs\Leaderboards\Entries\UpdateStats as UpdateStatsJob;
 
 class UpdateStats extends Command {
@@ -12,7 +11,7 @@ class UpdateStats extends Command {
      *
      * @var string
      */
-    protected $signature = 'leaderboards:entries:stats:update {date?}';
+    protected $signature = 'leaderboards:entries:stats:update';
 
     /**
      * The console command description.
@@ -27,15 +26,8 @@ class UpdateStats extends Command {
      * @return void
      */
     public function __construct() {
+        $this->job_class = UpdateStatsJob::class;
+    
         parent::__construct();
-    }
-
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle() {
-        UpdateStatsJob::dispatch(new DateTime($this->argument('date')))->onConnection('sync');
     }
 }

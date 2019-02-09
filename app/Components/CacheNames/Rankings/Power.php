@@ -4,62 +4,57 @@ namespace App\Components\CacheNames\Rankings;
 
 use App\Components\CacheNames\Core;
 use App\Components\CacheNames\Players as PlayerCacheNames;
+use App\Components\CacheNames\Prefix;
 
 class Power
 extends Core {            
     protected const POWER_RANKING = 'pr';
     
+    protected const CATEGORY = 'ca';
+    
     protected const TOTAL_POINTS = 'tp';
     
-    public static function getModes($leaderboard_source_id, $release_id, $seeded) {
-        return static::POWER_RANKING . ":{$leaderboard_source_id}:{$release_id}:{$seeded}:" . static::MODES;
+    public static function getBase(Prefix $prefix) {
+        return static::POWER_RANKING . ':' . (string)$prefix;
     }
     
-    public static function getBase($leaderboard_source_id, $release_id, $mode_id, $seeded) {
-        return static::POWER_RANKING . ":{$leaderboard_source_id}:{$release_id}:{$mode_id}:{$seeded}";
+    public static function getPlayer($player_id, Prefix $prefix) {
+        return PlayerCacheNames::getPlayer($player_id) . ':' . static::getBase($prefix);
     }
     
-    public static function getPlayer($player_id, $leaderboard_source_id, $release_id, $mode_id, $seeded) {
-        return PlayerCacheNames::getPlayer($player_id) . ':' . static::getBase($leaderboard_source_id, $release_id, $mode_id, $seeded);
+    public static function getEntries(Prefix $prefix) {
+        return static::getBase($prefix) . ':' . static::ENTRIES;
     }
     
-    public static function getEntries($leaderboard_source_id, $release_id, $mode_id, $seeded) {
-        return static::getBase($leaderboard_source_id, $release_id, $mode_id, $seeded) . ':' . static::ENTRIES;
+    public static function getEntry(Prefix $prefix, $player_id) {
+        return static::getEntries($prefix) . ":{$player_id}";
     }
     
-    public static function getEntry($leaderboard_source_id, $release_id, $mode_id, $seeded, $steam_user_id) {
-        return static::getEntries($leaderboard_source_id, $release_id, $mode_id, $seeded) . ":{$steam_user_id}";
+    public static function getTotalPoints(Prefix $prefix) {
+        return static::getBase($prefix) . ':' . static::TOTAL_POINTS;
     }
     
-    public static function getTotalPoints($leaderboard_source_id, $release_id, $mode_id, $seeded) {
-        return static::getBase($leaderboard_source_id, $release_id, $mode_id, $seeded) . ':' . static::TOTAL_POINTS;
+    public static function getCategory(Prefix $prefix, $leaderboard_type_id) {
+        return static::getBase($prefix) . ':' . static::CATEGORY . ":{$leaderboard_type_id}";
     }
     
-    public static function getCategory($leaderboard_source_id, $leaderboard_type_id, $release_id, $mode_id, $seeded) {
-        return static::getBase($leaderboard_source_id, $release_id, $mode_id, $seeded) . ":{$leaderboard_type_id}";
+    public static function getPlayerCategory(Prefix $prefix, $player_id, $leaderboard_type_id) {
+        return PlayerCacheNames::getPlayer($player_id) . ':' . static::getCategory($prefix, $leaderboard_type_id);
     }
     
-    public static function getPlayerCategory($player_id, $leaderboard_source_id, $leaderboard_type_id, $release_id, $mode_id, $seeded) {
-        return PlayerCacheNames::getPlayer($player_id) . ':' . static::getCategory($leaderboard_source_id, $leaderboard_type_id, $release_id, $mode_id, $seeded);
+    public static function getCategoryPoints(Prefix $prefix, $leaderboard_type_id) {
+        return static::getCategory($prefix, $leaderboard_type_id) . ':' . static::TOTAL_POINTS;
     }
     
-    public static function getCategoryPoints($leaderboard_source_id, $release_id, $mode_id, $seeded) {
-        return static::getCategory($leaderboard_source_id, $leaderboard_type_id, $release_id, $mode_id, $seeded) . ':' . static::TOTAL_POINTS;
+    public static function getCharacter(Prefix $prefix, $character_name) {
+        return static::getBase($prefix) . ':' . static::CHARACTER . ":{$character_name}";
     }
     
-    public static function getCharacter($leaderboard_source_id, $release_id, $mode_id, $seeded, $character_name) {
-        return static::getBase($leaderboard_source_id, $release_id, $mode_id, $seeded) . ':' . static::CHARACTER . ":{$character_name}";
+    public static function getPlayerCharacter(Prefix $prefix, $player_id, $character_name) {
+        return PlayerCacheNames::getPlayer($player_id) . ':' . static::getCharacter($prefix, $character_name);
     }
     
-    public static function getPlayerCharacter($player_id, $leaderboard_source_id, $release_id, $mode_id, $seeded, $character_name) {
-        return PlayerCacheNames::getPlayer($player_id) . ':' . static::getCharacter($leaderboard_source_id, $release_id, $mode_id, $seeded, $character_name);
-    }
-    
-    public static function getCharacterPoints($leaderboard_source_id, $release_id, $mode_id, $seeded, $character_name) {
-        return static::getCharacter($leaderboard_source_id, $release_id, $mode_id, $seeded, $character_name) . ':' . static::TOTAL_POINTS;
-    }
-    
-    public static function getIndex($base_index_name, array $index_segments) {
-        return parent::getIndex("{$base_index_name}:" . static::INDEX, $index_segments);
+    public static function getCharacterPoints(Prefix $prefix, $character_name) {
+        return static::getCharacter($prefix, $character_name) . ':' . static::TOTAL_POINTS;
     }
 }

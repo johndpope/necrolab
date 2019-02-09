@@ -5,12 +5,16 @@ namespace App;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Query\Builder;
+use App\Traits\IsSchemaTable;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
 use App\DailyRankingEntries;
+use App\LeaderboardSources;
+use App\Dates;
 
 class DailyRankings extends Model {
-    use HasTempTable, HasManualSequence;
+    use IsSchemaTable, HasTempTable, HasManualSequence;
     
     /**
      * The table associated with the model.
@@ -20,113 +24,104 @@ class DailyRankings extends Model {
     protected $table = 'daily_rankings';
     
     /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'daily_ranking_id';
-    
-    /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
     public $timestamps = false;
     
-    public static function getAllIdsByGroupedForDate(DateTime $date) {
-        $query = DB::table('daily_rankings')->where('date', $date->format('Y-m-d'));
+    public static function getAllIdsByGroupedForDate(LeaderboardSources $leaderboard_source, Dates $date): array {
+        $query = DB::table(static::getSchemaTableName($leaderboard_source))->where('date_id', $date->id);
         
         $rankings_by_id = [];
         
         foreach($query->cursor() as $ranking) {
-            $rankings_by_id[$ranking->release_id][$ranking->mode_id][$ranking->daily_ranking_day_type_id] = $ranking->daily_ranking_id;
+            $rankings_by_id[$ranking->character_id][$ranking->release_id][$ranking->mode_id][$ranking->multiplayer_type_id][$ranking->soundtrack_id][$ranking->daily_ranking_day_type_id] = $ranking->id;
         }
         
         return $rankings_by_id;
     }
     
-    public static function createTemporaryTable() {    
+    public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void {    
         DB::statement("
-            CREATE TEMPORARY TABLE daily_rankings_temp (                
-                daily_ranking_id integer,
+            CREATE TEMPORARY TABLE " . static::getTempTableName($leaderboard_source) . " (                
                 created timestamp without time zone,
-                date date,
                 updated timestamp without time zone,
-                daily_ranking_day_type_id smallint,
+                dailies bigint,
+                wins bigint,
+                id integer,
+                players integer,
+                character_id smallint,
                 release_id smallint,
-                mode_id smallint
+                mode_id smallint,
+                multiplayer_type_id smallint,
+                soundtrack_id smallint,
+                daily_ranking_day_type_id smallint,
+                date_id smallint,
+                details jsonb
             )
             ON COMMIT DROP;
         ");
     }
     
-    public static function saveTemp() {
+    public static function saveNewTemp(LeaderboardSources $leaderboard_source): void {
         DB::statement("
-            INSERT INTO daily_rankings (
-                daily_ranking_id,
+            INSERT INTO " . static::getSchemaTableName($leaderboard_source) . " (                
                 created,
-                date,
                 updated,
-                daily_ranking_day_type_id,
+                id,
+                character_id,
                 release_id,
-                mode_id
+                mode_id,
+                multiplayer_type_id,
+                soundtrack_id,
+                daily_ranking_day_type_id,
+                date_id
             )
             SELECT 
-                daily_ranking_id,
                 created,
-                date,
                 updated,
-                daily_ranking_day_type_id,
+                id,
+                character_id,
                 release_id,
-                mode_id
-            FROM daily_rankings_temp
-            ON CONFLICT (daily_ranking_id) DO 
+                mode_id,
+                multiplayer_type_id,
+                soundtrack_id,
+                daily_ranking_day_type_id,
+                date_id
+            FROM " . static::getTempTableName($leaderboard_source) . "
+            ON CONFLICT (id) DO 
             UPDATE 
             SET 
                 updated = excluded.updated
         ");
     }
     
-    public static function updateStats(DateTime $date) {
-        $table_name = DailyRankingEntries::getTableName($date);
-    
+    public static function updateFromTemp(LeaderboardSources $leaderboard_source): void {    
         DB::update("
-            WITH daily_ranking_stats AS (
-                SELECT 
-                    dr.daily_ranking_id,
-                    COUNT(dre.steam_user_id) AS players,
-                    SUM(dre.total_dailies) AS total_dailies,
-                    SUM(dre.total_wins) AS total_wins,
-                    SUM(dre.total_score) AS total_score
-                FROM daily_rankings dr
-                JOIN {$table_name} dre ON dre.daily_ranking_id = dr.daily_ranking_id
-                WHERE dr.date = :date
-                GROUP BY dr.daily_ranking_id
-            )
-            UPDATE daily_rankings dr
+            UPDATE  " . static::getSchemaTableName($leaderboard_source) . " dr
             SET 
-                players = drs.players,
-                total_dailies = drs.total_dailies,
-                total_wins = drs.total_wins,
-                total_score = drs.total_score
-            FROM daily_ranking_stats drs
-            WHERE drs.daily_ranking_id = dr.daily_ranking_id
-        ", [
-            ':date' => $date->format('Y-m-d')
-        ]);
+                dailies = drt.dailies,
+                wins = drt.wins,
+                players = drt.players,
+                details = drt.details
+            FROM " . static::getTempTableName($leaderboard_source) . " drt
+            WHERE dr.id = drt.id
+        ");
     }
     
-    public static function getApiReadQuery(int $release_id, int $daily_ranking_day_type_id) {
-        return DB::table('daily_rankings')
+    public static function getApiReadQuery(LeaderboardSources $leaderboard_source, int $release_id, int $daily_ranking_day_type_id): Builder {
+        return DB::table(static::getSchemaTableName($leaderboard_source) . ' AS dr')
             ->select([
-                'date',
-                'players',
-                'total_dailies',
-                'total_wins',
-                'total_score'
+                'd.name AS date',
+                'dr.players',
+                'dr.dailies',
+                'dr.wins',
+                'dr.details'
             ])
-            ->where('release_id', $release_id)
-            ->where('daily_ranking_day_type_id', $daily_ranking_day_type_id)
-            ->orderBy('date', 'desc');
+            ->join('dates AS d', 'd.id', '=', 'dr.date_id')
+            ->where('rd.release_id', $release_id)
+            ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type_id)
+            ->orderBy('d.name', 'desc');
     }
 }

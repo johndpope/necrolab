@@ -39,7 +39,7 @@ class Add implements ShouldQueue {
      */
     public function handle() {
         Dates::firstOrCreate([
-            'date' => $this->date->format('Y-m-d')
+            'name' => $this->date->format('Y-m-d')
         ]);
     }
 }

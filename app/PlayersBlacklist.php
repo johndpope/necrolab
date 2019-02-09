@@ -11,14 +11,14 @@ class PlayersBlacklist extends Model
      *
      * @var string
      */
-    protected $table = 'steam_users_blacklist';
+    protected $table = 'players_blacklist';
     
     /**
      * The primary key associated with the model.
      *
      * @var string
      */
-    protected $primaryKey = 'steam_users_blacklist_id';
+    protected $primaryKey = 'player_id';
     
     /**
      * Indicates if the model should be timestamped.

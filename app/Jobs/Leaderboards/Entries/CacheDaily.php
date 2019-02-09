@@ -2,7 +2,6 @@
 
 namespace App\Jobs\Leaderboards\Entries;
 
-use DateTime;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -13,8 +12,10 @@ use Illuminate\Support\Facades\Redis;
 use App\Components\PostgresCursor;
 use App\Components\Redis\Transaction\Pipeline as PipelineTransaction;
 use App\Components\Encoder;
-use App\Components\CacheNames\Leaderboards\Steam as CacheNames;
+use App\Components\CacheNames\Leaderboards as CacheNames;
+use App\Components\CacheNames\Prefix as CacheNamesPrefix;
 use App\LeaderboardSources;
+use App\Dates;
 use App\LeaderboardEntries;
 use App\ExternalSites;
 use App\EntryIndexes;
@@ -29,6 +30,18 @@ class CacheDaily implements ShouldQueue {
      */
     public $tries = 1;
     
+    /**
+     * The leaderboard source used to determine the schema to generate rankings on.
+     *
+     * @var \App\LeaderboardSources
+     */
+    protected $leaderboard_source;
+    
+    /**
+     * The date that rankings will be generated for.
+     *
+     * @var \App\Dates
+     */
     protected $date;
 
     /**
@@ -36,7 +49,9 @@ class CacheDaily implements ShouldQueue {
      *
      * @return void
      */
-    public function __construct(DateTime $date) {
+    public function __construct(LeaderboardSources $leaderboard_source, Dates $date) {
+        $this->leaderboard_source = $leaderboard_source;
+    
         $this->date = $date;
     }
 
@@ -52,60 +67,51 @@ class CacheDaily implements ShouldQueue {
         
         $cursor = new PostgresCursor(
             'leaderboard_entries_daily_cache', 
-            LeaderboardEntries::getDailyCacheQuery($this->date),
+            LeaderboardEntries::getDailyCacheQuery($this->leaderboard_source, $this->date),
             10000
         );
         
         
         /* ---------- Add each entry into its respective index ----------*/
         
-        //TODO: Remove line below when leaderboard sources are linked to leaderboards
-        $leaderboard_source_id = LeaderboardSources::getByName('steam')->id;
+        $cache_names_prefix = new CacheNamesPrefix();
         
         $indexes = [];
         
         foreach($cursor->getRecord() as $entry) {
-            if(empty($indexes[$entry->daily_date])) {
-                $indexes[$entry->daily_date] = [];
-            }
+            $cache_names_prefix->character_id = $entry->character_id;
+            $cache_names_prefix->release_id = $entry->release_id;
+            $cache_names_prefix->mode_id = $entry->mode_id;
+            $cache_names_prefix->multiplayer_type_id = $entry->multiplayer_type_id;
+            $cache_names_prefix->soundtrack_id = $entry->soundtrack_id;
             
-            $users_index_base_name = CacheNames::getDailyIndex(new DateTime($entry->daily_date), [
-                //TODO: Remove $leaderboard_source_id and uncomment $entry->leaderboard_source_id when leaderboard sources are linked to leaderboards
-                $leaderboard_source_id,
-                //$entry->leaderboard_source_id,
-                $entry->character_id,
-                $entry->release_id,
-                $entry->mode_id,
-                $entry->multiplayer_type_id
-            ]);
+            $users_index_base_name = CacheNames::getDailyEntries($cache_names_prefix);
             
-            ExternalSites::addToSiteIdIndexes($indexes[$entry->daily_date], $entry, $users_index_base_name, $entry->steam_user_id, $entry->rank);
+            ExternalSites::addToSiteIdIndexes($indexes, $entry, $users_index_base_name, $entry->player_id, $entry->rank);
         }
         
         
-        /* ---------- Store all generated indexes in redis ----------*/
+        /* ---------- Store all generated indexes ----------*/
         
-        EntryIndexes::createTemporaryTable();
+        EntryIndexes::createTemporaryTable($this->leaderboard_source);
         
-        $entry_indexes_insert_queue = EntryIndexes::getTempInsertQueue(2000);
+        $entry_indexes_insert_queue = EntryIndexes::getTempInsertQueue($this->leaderboard_source, 2000);
         
         if(!empty($indexes)) {
-            foreach($indexes as $daily_date => $indexes_for_date) {
-                foreach($indexes_for_date as $key => $index_data) {
-                    ksort($index_data);
+            foreach($indexes as $key => $index_data) {
+                ksort($index_data);
                 
-                    $entry_indexes_insert_queue->addRecord([
-                        'data' => Encoder::encode($index_data),
-                        'name' => $key,
-                        'sub_name' => $daily_date
-                    ]);
-                }
+                $entry_indexes_insert_queue->addRecord([
+                    'data' => Encoder::encode($index_data),
+                    'name' => $key,
+                    'sub_name' => $this->date->name
+                ]);
             }
         }
         
         $entry_indexes_insert_queue->commit();
         
-        EntryIndexes::saveTemp();
+        EntryIndexes::saveNewTemp($this->leaderboard_source);
         
         DB::commit();
     }

@@ -2,8 +2,7 @@
 
 namespace App\Console\Commands\Leaderboards\Entries;
 
-use DateTime;
-use Illuminate\Console\Command;
+use App\Console\Commands\Date as Command;
 use App\Jobs\Leaderboards\Entries\CacheNonDaily as CacheNonDailyJob;
 
 class CacheNonDaily extends Command {
@@ -12,14 +11,14 @@ class CacheNonDaily extends Command {
      *
      * @var string
      */
-    protected $signature = 'leaderboards:entries:non_daily:cache {date?}';
+    protected $signature = 'leaderboards:entries:non_daily:cache';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Loads non daily leaderboard entries into cache for the specified date. Defaults to today's date when none is specified.";
+    protected $description = "Loads non daily leaderboard entries into cache for the specified date.";
 
     /**
      * Create a new command instance.
@@ -27,15 +26,8 @@ class CacheNonDaily extends Command {
      * @return void
      */
     public function __construct() {
+        $this->job_class = CacheNonDailyJob::class;
+    
         parent::__construct();
-    }
-
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle() {
-        CacheNonDailyJob::dispatch(new DateTime($this->argument('date')))->onConnection('sync');
     }
 }

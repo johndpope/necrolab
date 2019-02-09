@@ -2,8 +2,7 @@
 
 namespace App\Console\Commands\Steam\Leaderboards\Xml;
 
-use DateTime;
-use Illuminate\Console\Command;
+use App\Console\Commands\DataManagerDate as Command;
 use App\Components\DataManagers\Steam\Leaderboards\Xml as XmlManager;
 use App\Jobs\Leaderboards\SaveToDatabase as SaveToDatabaseJob;
 
@@ -13,14 +12,14 @@ class SaveToDatabase extends Command {
      *
      * @var string
      */
-    protected $signature = 'steam:leaderboards:xml:database:save {--date=}';
+    protected $signature = 'steam:leaderboards:xml:database:save';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Saves Steam leaderboard XML data to the database for the specified date. Defaults to today's date when none is specified.";
+    protected $description = "Saves Steam leaderboard XML data to the database for the specified date.";
 
     /**
      * Create a new command instance.
@@ -28,17 +27,10 @@ class SaveToDatabase extends Command {
      * @return void
      */
     public function __construct() {
-        parent::__construct();
-    }
-
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle() {
-        $data_manager = new XmlManager(new DateTime($this->option('date')));
+        $this->data_manager_class = XmlManager::class;
+        
+        $this->job_class = SaveToDatabaseJob::class;
     
-        SaveToDatabaseJob::dispatch($data_manager)->onConnection('sync');
+        parent::__construct();
     }
 }

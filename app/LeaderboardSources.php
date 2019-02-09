@@ -3,6 +3,8 @@
 namespace App;
 
 use Illuminate\Support\Facades\DB;
+use ElcoBvg\Opcache\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use ElcoBvg\Opcache\Model;
 use App\Traits\GetByName;
 use App\Traits\GetById;
@@ -25,7 +27,7 @@ class LeaderboardSources extends Model {
      */
     public $timestamps = false;
     
-    protected static function getStoredInCacheQuery() {
+    protected static function getStoredInCacheQuery(): Builder {
         $releases_query = DB::table('leaderboard_source_releases AS lsr')
             ->select([
                 'lsr.leaderboard_source_id',
@@ -69,5 +71,43 @@ class LeaderboardSources extends Model {
                 $join->on('leaderboard_source_multiplayer_types.leaderboard_source_id', '=', 'ls.id');
             })
             ->orderBy('ls.sort_order', 'asc');
+    }
+    
+    protected static function processDataBeforeCache(Collection $records): void {    
+        if(!empty($records)) {
+            foreach($records as $record) {
+                /* ---------- Releases ---------- */ 
+            
+                $releases = explode(',', $record->releases);
+                
+                if(empty($releases)) {
+                    $releases = [];
+                }
+                
+                $record->releases = $releases;
+                
+                
+                /* ---------- Characters ---------- */ 
+            
+                $characters = explode(',', $record->characters);
+                
+                if(empty($characters)) {
+                    $characters = [];
+                }
+                
+                $record->characters = $characters;
+                
+                
+                /* ---------- Multiplayer Types ---------- */ 
+            
+                $multiplayer_types = explode(',', $record->multiplayer_types);
+                
+                if(empty($multiplayer_types)) {
+                    $multiplayer_types = [];
+                }
+                
+                $record->multiplayer_types = $multiplayer_types;
+            }
+        }
     }
 }

@@ -2,8 +2,7 @@
 
 namespace App\Console\Commands\Rankings\Daily\Entries;
 
-use DateTime;
-use Illuminate\Console\Command;
+use App\Console\Commands\Date as Command;
 use App\Jobs\Rankings\Daily\Entries\Cache as CacheJob;
 
 class Cache extends Command {
@@ -12,14 +11,14 @@ class Cache extends Command {
      *
      * @var string
      */
-    protected $signature = 'rankings:daily:entries:cache {date?}';
+    protected $signature = 'rankings:daily:entries:cache';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Caches daily ranking entries for the specified date. Defaults to today's date when none is specified.";
+    protected $description = "Caches daily ranking entries for the specified date.";
 
     /**
      * Create a new command instance.
@@ -27,15 +26,8 @@ class Cache extends Command {
      * @return void
      */
     public function __construct() {
+        $this->job_class = CacheJob::class;
+    
         parent::__construct();
-    }
-
-    /**
-     * Execute the console command.
-     *
-     * @return mixed
-     */
-    public function handle() {
-        CacheJob::dispatch(new DateTime($this->argument('date')))->onConnection('sync');
     }
 }

@@ -2,8 +2,10 @@
 
 namespace App\Console\Commands\Steam\Players;
 
+use DateTime;
 use Illuminate\Console\Command;
-use App\Jobs\Players\SaveImported as SaveImportedJob;
+use App\Jobs\Steam\Players\SaveImported as SaveImportedJob;
+use App\Components\DataManagers\Steam\Players as PlayersManager;
 
 class SaveImported extends Command {
     /**
@@ -35,6 +37,8 @@ class SaveImported extends Command {
      * @return mixed
      */
     public function handle() {
-        SaveImportedJob::dispatch()->onConnection('sync');
+        $data_manager = new PlayersManager(new DateTime());
+    
+        SaveImportedJob::dispatch($data_manager)->onConnection('sync');
     }
 }

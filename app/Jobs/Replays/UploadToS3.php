@@ -1,8 +1,7 @@
 <?php
 
-namespace App\Jobs\SteamReplays;
+namespace App\Jobs\Replays;
 
-use Exception;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -10,8 +9,8 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
 use App\Components\PostgresCursor;
-use App\Components\DataManagers\Steam\Replays as SteamReplaysManager;
-use App\SteamReplays;
+use App\Components\DataManagers\Replays as DataManager;
+use App\Replays;
 
 class UploadToS3 implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -24,54 +23,58 @@ class UploadToS3 implements ShouldQueue {
     public $tries = 1;
 
     /**
+     * The replays data manager used to interact with imported replay files.
+     *
+     * @var \App\Components\DataManagers\Replays
+     */
+    protected $data_manager;
+
+    /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct() {}
+    public function __construct(DataManager $data_manager) {
+        $this->data_manager = $data_manager;
+    }
     
     /**
      * Execute the job.
      *
      * @return void
      */
-    public function handle() {    
-        /* ---------- Configure Data Manager ---------- */ 
-        
-        $data_manager = new SteamReplaysManager();
-        
-        $data_manager->deleteTemp();
-        
-        
+    public function handle() {
+        $leaderboard_source = $this->data_manager->getLeaderboardSource();
+    
         /* ---------- Database Setup ---------- */ 
         
         DB::beginTransaction();
         
-        SteamReplays::createTemporaryTable();
+        Replays::createTemporaryTable($leaderboard_source);
         
-        $insert_queue = SteamReplays::getTempInsertQueue(30000);
+        $insert_queue = Replays::getTempInsertQueue($leaderboard_source, 30000);
         
         
         /* ---------- Retrieve unuploaded records and add to record queue ---------- */ 
         
         $cursor = new PostgresCursor(
             'get_not_uploaded_replays', 
-            SteamReplays::getNotS3UploadedQuery(),
+            Replays::getNotS3UploadedQuery($leaderboard_source),
             3000
         );
         
         foreach($cursor->getRecord() as $not_uploaded_record) {
-            $data_manager->copySavedFileToS3($not_uploaded_record->ugcid);
+            $this->data_manager->copySavedFileToS3($not_uploaded_record->external_id);
 
             $insert_queue->addRecord([
-                'steam_user_pb_id' => $not_uploaded_record->steam_user_pb_id,
+                'player_pb_id' => $not_uploaded_record->player_pb_id,
                 'uploaded_to_s3' => 1
             ]);
         }
         
         $insert_queue->commit();
         
-        SteamReplays::updateS3UploadedFromTemp();
+        Replays::updateS3UploadedFromTemp($leaderboard_source);
         
         DB::commit();
     }

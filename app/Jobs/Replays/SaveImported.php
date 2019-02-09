@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs\SteamReplays;
+namespace App\Jobs\Replays;
 
 use DateTime;
 use Exception;
@@ -10,10 +10,10 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
-use App\Components\DataManagers\Steam\Replays as SteamReplaysManager;
-use App\SteamReplays;
+use App\Components\DataManagers\Replays as DataManager;
+use App\Replays;
 use App\RunResults;
-use App\SteamReplayVersions;
+use App\ReplayVersions;
 use App\Seeds;
 
 class SaveImported implements ShouldQueue {
@@ -26,55 +26,56 @@ class SaveImported implements ShouldQueue {
      */
     public $tries = 1;
     
-    protected $date;
-    
+    /**
+     * The replays data manager used to interact with imported replay files.
+     *
+     * @var \App\Components\DataManagers\Replays
+     */
     protected $data_manager;
-    
-    protected $steam_api;
-    
-    protected $group_number = 1;
 
     /**
      * Create a new job instance.
      *
      * @return void
      */
-    public function __construct() {}
+    public function __construct(DataManager $data_manager) {
+        $this->data_manager = $data_manager;
+    }
 
     /**
      * Execute the job.
      *
      * @return void
      */
-    public function handle() {        
-        $this->data_manager = new SteamReplaysManager();
-        
+    public function handle() {
+        $leaderboard_source = $this->data_manager->getLeaderboardSource();
+    
         DB::beginTransaction();
         
-        SteamReplays::createTemporaryTable();
+        Replays::createTemporaryTable($leaderboard_source);
         
-        $steam_replays_insert_queue = SteamReplays::getTempInsertQueue(10000);
+        $replays_insert_queue = Replays::getTempInsertQueue($leaderboard_source, 10000);
         
         $temp_files = $this->data_manager->getTempFiles();
         
         if(!empty($temp_files)) { 
             unset($temp_files);
         
-            $run_results_by_name = RunResults::getAllIdsByName();
-            $replay_versions_by_name = SteamReplayVersions::getAllIdsByName();
-            $seeds_by_name = Seeds::getAllIdsByName();
+            $run_results_by_name = RunResults::getAllIdsByName($leaderboard_source);
+            $replay_versions_by_name = ReplayVersions::getAllIdsByName($leaderboard_source);
+            $seeds_by_name = Seeds::getAllIdsByName($leaderboard_source);
             
-            RunResults::createTemporaryTable();
-            SteamReplayVersions::createTemporaryTable();
-            Seeds::createTemporaryTable();
+            RunResults::createTemporaryTable($leaderboard_source);
+            ReplayVersions::createTemporaryTable($leaderboard_source);
+            Seeds::createTemporaryTable($leaderboard_source);
             
-            $run_results_insert_queue = RunResults::getTempInsertQueue(20000);
-            $steam_replay_versions_insert_queue = SteamReplayVersions::getTempInsertQueue(30000);
-            $seeds_insert_queue = Seeds::getTempInsertQueue(30000);
+            $run_results_insert_queue = RunResults::getTempInsertQueue($leaderboard_source, 20000);
+            $replay_versions_insert_queue = ReplayVersions::getTempInsertQueue($leaderboard_source, 30000);
+            $seeds_insert_queue = Seeds::getTempInsertQueue($leaderboard_source, 30000);
             
 
-            foreach($this->data_manager->getTempFile() as $steam_replay) {
-                $replay_properties = SteamReplays::getParsedReplayProperties($steam_replay->contents);
+            foreach($this->data_manager->getTempFile() as $replay) {
+                $replay_properties = Replays::getParsedReplayProperties($replay->contents);
                 
                 
                 /* ---------- Run Results ---------- */
@@ -82,10 +83,10 @@ class SaveImported implements ShouldQueue {
                 $run_result_id = NULL;
                 
                 if(!isset($run_results_by_name[$replay_properties->run_result])) {
-                    $run_result_id = RunResults::getNewRecordId();
+                    $run_result_id = RunResults::getNewRecordId($leaderboard_source);
                     
                     $run_results_insert_queue->addRecord([
-                        'run_result_id' => $run_result_id,
+                        'id' => $run_result_id,
                         'name' => $replay_properties->run_result,
                         'is_win' => $replay_properties->is_win
                     ]);
@@ -99,20 +100,20 @@ class SaveImported implements ShouldQueue {
                 
                 /* ---------- Steam Replay Versions ---------- */
                 
-                $steam_replay_version_id = NULL;
+                $replay_version_id = NULL;
                 
                 if(!isset($replay_versions_by_name[$replay_properties->version])) {
-                    $steam_replay_version_id = SteamReplayVersions::getNewRecordId();
+                    $replay_version_id = ReplayVersions::getNewRecordId($leaderboard_source);
                     
-                    $steam_replay_versions_insert_queue->addRecord([
-                        'steam_replay_version_id' => $steam_replay_version_id,
+                    $replay_versions_insert_queue->addRecord([
+                        'id' => $replay_version_id,
                         'name' => $replay_properties->version,
                     ]);
                     
-                    $replay_versions_by_name[$replay_properties->version] = $steam_replay_version_id;
+                    $replay_versions_by_name[$replay_properties->version] = $replay_version_id;
                 }
                 else {
-                    $steam_replay_version_id = $replay_versions_by_name[$replay_properties->version];
+                    $replay_version_id = $replay_versions_by_name[$replay_properties->version];
                 }
                 
                 
@@ -121,7 +122,7 @@ class SaveImported implements ShouldQueue {
                 $seed_id = NULL;
                 
                 if(!isset($seeds_by_name[$replay_properties->seed])) {
-                    $seed_id = Seeds::getNewRecordId();
+                    $seed_id = Seeds::getNewRecordId($leaderboard_source);
                     
                     $seeds_insert_queue->addRecord([
                         'id' => $seed_id,
@@ -137,29 +138,29 @@ class SaveImported implements ShouldQueue {
                 
                 /* ---------- Steam Replays ---------- */
                 
-                $steam_replays_insert_queue->addRecord([
-                    'steam_user_pb_id' => $steam_replay->steam_user_pb_id,
+                $replays_insert_queue->addRecord([
+                    'player_pb_id' => $replay->player_pb_id,
                     'downloaded' => 1,
                     'invalid' => 0,
                     'run_result_id' => $run_result_id,
-                    'steam_replay_version_id' => $steam_replay_version_id,
+                    'replay_version_id' => $replay_version_id,
                     'seed_id' => $seed_id
                 ]);
                 
-                $this->data_manager->compressTempFileToSaved($steam_replay);
+                $this->data_manager->compressTempFileToSaved($replay);
                 
-                $this->data_manager->deleteTempFile($steam_replay);
+                $this->data_manager->deleteTempFile($replay);
             }
 
             /* ---------- Save Supplemental Data ---------- */
             
             $run_results_insert_queue->commit();
-            $steam_replay_versions_insert_queue->commit();
+            $replay_versions_insert_queue->commit();
             $seeds_insert_queue->commit();
             
-            RunResults::saveNewFromTemp();
-            SteamReplayVersions::saveNewFromTemp();
-            Seeds::saveNewFromTemp();
+            RunResults::saveNewTemp($leaderboard_source);
+            ReplayVersions::saveNewTemp($leaderboard_source);
+            Seeds::saveNewTemp($leaderboard_source);
         }
         
         
@@ -171,12 +172,12 @@ class SaveImported implements ShouldQueue {
             unset($invalid_files);
         
             foreach($this->data_manager->getInvalidFile() as $invalid_file) {
-                $steam_replays_insert_queue->addRecord([
-                    'steam_user_pb_id' => $invalid_file->steam_user_pb_id,
+                $replays_insert_queue->addRecord([
+                    'player_pb_id' => $invalid_file->player_pb_id,
                     'downloaded' => 0,
                     'invalid' => 1,
                     'run_result_id' => NULL,
-                    'steam_replay_version_id' => NULL,
+                    'replay_version_id' => NULL,
                     'seed_id' => NULL
                 ]);
                 
@@ -187,9 +188,9 @@ class SaveImported implements ShouldQueue {
         
         /* ---------- Wrap Up ---------- */
         
-        $steam_replays_insert_queue->commit();
+        $replays_insert_queue->commit();
         
-        SteamReplays::updateDownloadedFromTemp();
+        Replays::updateDownloadedFromTemp($leaderboard_source);
         
         DB::commit();
     }

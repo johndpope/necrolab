@@ -2,10 +2,10 @@
 
 namespace App\Components\DataManagers;
 
-use DateTime;
 use ZipArchive;
 use Illuminate\Support\Facades\Storage;
 use App\LeaderboardSources;
+use App\Dates;
 
 abstract class Leaderboards
 extends Core {
@@ -15,7 +15,7 @@ extends Core {
     
     protected $temp_files = [];
 
-    public function __construct(LeaderboardSources $leaderboard_source, string $file_extension, DateTime $date) {
+    public function __construct(LeaderboardSources $leaderboard_source, string $file_extension, Dates $date) {
         parent::__construct($leaderboard_source);
         
         $this->addBasePathSegment('leaderboards');
@@ -28,11 +28,11 @@ extends Core {
     }
     
     public function getSavedBasePath() {
-        return parent::getSavedBasePath() . "/{$this->date->format('Y-m-d')}";
+        return parent::getSavedBasePath() . "/{$this->date->name}";
     }
     
     public function getTempBasePath() {
-        return parent::getTempBasePath() . "/{$this->date->format('Y-m-d')}";
+        return parent::getTempBasePath() . "/{$this->date->name}";
     }
     
     public function getDate() {

@@ -3,14 +3,17 @@
 namespace App;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\HasCompositePrimaryKey;
 
 class PlayerAchievements extends Model {
+    use HasCompositePrimaryKey;
+
     /**
      * The table associated with the model.
      *
      * @var string
      */
-    protected $table = 'steam_user_achievements';
+    protected $table = 'player_achievements';
     
     /**
      * The primary key associated with the model.
@@ -18,7 +21,7 @@ class PlayerAchievements extends Model {
      * @var string
      */
     protected $primaryKey = [
-        'steam_user_id',
+        'player_id',
         'achievement_id'
     ];
     

@@ -3,10 +3,10 @@
 namespace App;
 
 use DateTime;
-use DateInterval;
 use ElcoBvg\Opcache\Model;
 use App\Traits\StoredInCache;
 use App\Traits\GetByName;
+use App\LeaderboardSources;
 
 class DailyRankingDayTypes extends Model {
     use StoredInCache, GetByName;
@@ -17,13 +17,6 @@ class DailyRankingDayTypes extends Model {
      * @var string
      */
     protected $table = 'daily_ranking_day_types';
-    
-    /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'id';
     
     /**
      * Indicates if the model should be timestamped.
@@ -37,31 +30,26 @@ class DailyRankingDayTypes extends Model {
             ->orderBy('name', 'asc');
     }
     
-    public static function getAllActiveForDate(DateTime $date) {
-        $all_records = static::where('enabled', 1)->get();
+    public static function getAllByNameForDate(LeaderboardSources $leaderboard_source, DateTime $date): array {
+        $records = static::getAllByName();
         
-        $active_day_types = array();
-        
-        if(!empty($all_records)) {
-            $steam_live_launch_date = new DateTime(env('STEAM_LIVE_LAUNCH_DATE'));
-        
-            foreach($all_records as $active_day_type) {
-                $number_of_days = $active_day_type->name;
+        if(!empty($records)) {
+            foreach($records as $record) {
+                $start_date = NULL;
                 
-                if($number_of_days == 0) {
-                    $number_of_days = $date->diff($steam_live_launch_date)->format('%a');
+                if(!empty($record->name)) {
+                    $start_date = new DateTime();
+                    
+                    $start_date->modify("-{$record->name} day");
                 }
-            
-                $day_type_start_date = clone $date;
+                else {
+                    $start_date = new DateTime($leaderboard_source->start_date);
+                }
                 
-                $day_type_start_date->sub(new DateInterval("P{$number_of_days}D"));
-                
-                $active_day_type->start_date = new DateTime($day_type_start_date->format('Y-m-d'));
-            
-                $active_day_types[$active_day_type->id] = $active_day_type;
+                $record->start_date = $start_date;
             }
         }
         
-        return $active_day_types; 
+        return $records;
     }
 }
