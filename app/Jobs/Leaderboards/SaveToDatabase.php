@@ -139,7 +139,7 @@ class SaveToDatabase implements ShouldQueue {
 
                 Leaderboards::setPropertiesFromName($this->leaderboard_source, $leaderboard, $this->daily_date_format);
                 
-                $is_valid = Leaderboards::isValid($this->leaderboard_source, $leaderboard, $current_date);
+                $is_valid = Leaderboards::isValid($this->leaderboard_source, $leaderboard);
                 
                 if($is_valid) {
                     if(isset($ids_by_external_id[$leaderboard->external_id])) {
