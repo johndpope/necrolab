@@ -18,6 +18,7 @@ use App\Players;
 use App\Leaderboards;
 use App\LeaderboardSnapshots;
 use App\LeaderboardEntryDetails;
+use App\LeaderboardDetailsColumns;
 use App\Replays;
 use App\RunResults;
 use App\ReplayVersions;
@@ -92,6 +93,35 @@ class PlayerPbs extends Model {
         $entry->is_win = 0;
         $entry->details = [];
         
+        /*
+        This will need a refactor to support dynamic algorithms for calculating various values (speed, time, win_count, etc).
+        
+        if(!empty($leaderboard->leaderboard_type->details_columns)) {
+            foreach($leaderboard->leaderboard_type->details_columns as $details_column) {
+                $details_column = LeaderboardDetailsColumns::getByName($details_column);
+                
+                $import_field = $details_column->import_field;
+                
+                if(isset($entry->$import_field)) {
+                    if($details_column->data_type == 'float') {
+                        $entry->details[$details_column] = (float)$entry->$import_field;
+                    }
+                    else {
+                        $entry->details[$details_column] = (int)$entry->$import_field;
+                    }
+                    
+                    if(!empty($leaderboard->leaderboard_type->show_zone_level)) {
+                        $entry->is_win = static::getIfWin($leaderboard->release, $entry->zone, $entry->level);
+                    }
+                    else {
+                        $entry->is_win = 1;
+                    }
+                }
+            }
+        }
+        */
+        
+        //TODO: Refactor this to support multiple details columns along with using import_field from the leaderboard_details_columns table and data_types for casting.
         switch($leaderboard->leaderboard_type->name) {
             case 'score':
             case 'daily':
@@ -100,7 +130,7 @@ class PlayerPbs extends Model {
                 $entry->is_win = static::getIfWin($leaderboard->release, $entry->zone, $entry->level);
                 break;
             case 'speed':
-                $entry->details['time'] = (float)static::getTime($entry->raw_score);
+                $entry->details['time'] = static::getTime($entry->raw_score);
                 
                 $entry->is_win = 1;
                 break;
