@@ -73,7 +73,7 @@ class LeaderboardEntriesController extends Controller {
         
         $dataset = new Dataset($index_name, $data_provider);
         
-        $dataset->setIndex($index, 'le.steam_user_id');
+        $dataset->setIndex($index, 'le.player_id');
         
         $dataset->setIndexSubName($request->date);
         
@@ -95,7 +95,7 @@ class LeaderboardEntriesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function dailyIndex(ReadDailyLeaderboardEntries $request) {
-        $leaderboard_source_id = LeaderboardSources::getByName($request->leaderboard_source)->id;
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source)->id;
         $character_id = Characters::getByName($request->character)->id;
         $release_id = Releases::getByName($request->release)->id;
         $mode_id = Modes::getByName($request->mode)->id;
@@ -103,7 +103,7 @@ class LeaderboardEntriesController extends Controller {
         $date = new DateTime($request->date);
         
         $index_name = CacheNames::getDailyIndex($date, [
-            $leaderboard_source_id,
+            $leaderboard_source,
             $character_id,
             $release_id,
             $mode_id,
@@ -114,7 +114,7 @@ class LeaderboardEntriesController extends Controller {
         /* ---------- Data Provider ---------- */
         
         $data_provider = new SqlDataProvider(LeaderboardEntries::getDailyApiReadQuery(
-            $leaderboard_source_id,
+            $leaderboard_source,
             $character_id,
             $release_id, 
             $mode_id, 
@@ -132,7 +132,7 @@ class LeaderboardEntriesController extends Controller {
         
         $dataset = new Dataset($index_name, $data_provider);
         
-        $dataset->setIndex($index, 'le.steam_user_id');
+        $dataset->setIndex($index, 'le.player_id');
         
         $dataset->setIndexSubName($request->date);
         

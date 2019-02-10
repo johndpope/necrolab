@@ -33,8 +33,7 @@ class Users extends Authenticatable
     protected $fillable = [
         'name', 
         'email', 
-        'password',
-        'steam_user_id'
+        'password'
     ];
 
     /**

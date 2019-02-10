@@ -35,7 +35,7 @@ class PowerRankingEntries extends Model {
      */
     protected $primaryKey = [
         'power_ranking_id',
-        'steam_user_id'
+        'player_id'
     ];
     
     /**

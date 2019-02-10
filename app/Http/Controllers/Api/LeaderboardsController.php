@@ -103,7 +103,7 @@ class LeaderboardsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function byAttributes(ReadLeaderboardByAttributes $request) {
-        $leaderboard_source_id = LeaderboardSources::getByName($request->leaderboard_source)->id;
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source)->id;
         $leaderboard_type_id = LeaderboardTypes::getByName($request->leaderboard_type)->id;
         $character_id = Characters::getByName($request->character)->id;
         $release_id = Releases::getByName($request->release)->id;
@@ -112,14 +112,14 @@ class LeaderboardsController extends Controller {
         $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
         $soundtrack_id = Soundtracks::getByName($request->soundtrack)->id;
         
-        $cache_key = "leaderboards:{$leaderboard_source_id}:{$leaderboard_type_id}:{$character_id}:{$release_id}:{$mode_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}";
+        $cache_key = "leaderboards:{$leaderboard_source->id}:{$leaderboard_type_id}:{$character_id}:{$release_id}:{$mode_id}:{$seeded_type_id}:{$multiplayer_type_id}:{$soundtrack_id}";
     
         return new LeaderboardsResource(
             Cache::store('opcache')->remember(
                 $cache_key, 
                 5, 
                 function() use(
-                    $leaderboard_source_id,
+                    $leaderboard_source,
                     $leaderboard_type_id,
                     $character_id,
                     $release_id,
@@ -129,7 +129,7 @@ class LeaderboardsController extends Controller {
                     $soundtrack_id
                 ) {
                     return Leaderboards::getApiByAttributesQuery(
-                        $leaderboard_source_id,
+                        $leaderboard_source,
                         $leaderboard_type_id,
                         $character_id,
                         $release_id,
@@ -162,24 +162,24 @@ class LeaderboardsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function dailyIndex(ReadDailyLeaderboards $request) {
-        $leaderboard_source_id = LeaderboardSources::getByName($request->leaderboard_source)->id;
+        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source)->id;
         $character_id = Characters::getByName($request->character)->id;
         $release_id = Releases::getByName($request->release)->id;
         $mode_id = Modes::getByName($request->mode)->id;
         $multiplayer_type_id = MultiplayerTypes::getByName($request->multiplayer_type)->id;
         
-        $cache_key = "leaderboards:steam:daily:{$leaderboard_source_id}:{$character_id}:{$release_id}:{$mode_id}:{$multiplayer_type_id}";
+        $cache_key = "leaderboards:steam:daily:{$leaderboard_source->id}:{$character_id}:{$release_id}:{$mode_id}:{$multiplayer_type_id}";
         
         return DailyLeaderboardsResource::collection(
             Cache::store('opcache')->remember($cache_key, 5, function() use(
-                $leaderboard_source_id,
+                $leaderboard_source,
                 $character_id,
                 $release_id, 
                 $mode_id,
                 $multiplayer_type_id
             ) {
                 return Leaderboards::getDailyApiReadQuery(
-                    $leaderboard_source_id,
+                    $leaderboard_source,
                     $character_id,
                     $release_id, 
                     $mode_id,

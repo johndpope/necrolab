@@ -66,7 +66,7 @@ class DailyRankingEntriesController extends Controller {
         
         $dataset = new Dataset($index_name, $data_provider);
         
-        $dataset->setIndex($index, 'su.steam_user_id');
+        $dataset->setIndex($index, 'p.player_id');
         
         $dataset->setIndexSubName($request->date);
         

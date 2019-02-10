@@ -6,16 +6,16 @@ use App\Components\CacheNames\Core;
 
 class Players
 extends Core {    
-    protected const STEAM_USERS = 'su';
+    protected const PLAYERS = 'p';
     
     protected const ALL_RECORDS = 'records';
     
-    protected const STEAM_USERS_BY_NAME = 'names';
+    protected const PLAYERS_BY_NAME = 'names';
     
     protected const PBS = 'pbs';
 
     public static function getBase() {
-        return self::STEAM_USERS;
+        return self::PLAYERS;
     }
     
     public static function getPlayer(string $player_id) {
@@ -31,7 +31,7 @@ extends Core {
     }
     
     public static function getUsersByName() {
-        return self::getBase() . ':' . self::STEAM_USERS_BY_NAME;
+        return self::getBase() . ':' . self::PLAYERS_BY_NAME;
     }
     
     public static function getUsersIndex(array $index_segments = array()) {                
