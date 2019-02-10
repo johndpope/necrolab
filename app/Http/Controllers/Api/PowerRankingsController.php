@@ -21,8 +21,7 @@ class PowerRankingsController extends Controller {
      */
     public function __construct() {
         $this->middleware('auth:api')->except([
-            'index',
-            'show'
+            'index'
         ]);
     }
 
@@ -63,12 +62,4 @@ class PowerRankingsController extends Controller {
             })
         );
     }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id) {}
 }

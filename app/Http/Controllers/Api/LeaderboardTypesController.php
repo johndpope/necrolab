@@ -15,10 +15,6 @@ class LeaderboardTypesController extends Controller {
      */
     public function __construct() {
         $this->middleware('auth:api')->except('index');
-        
-        $this->middleware('permission:leaderboard_types:store')->only('store');
-        $this->middleware('permission:leaderboard_types:show')->only('show');
-        $this->middleware('permission:leaderboard_types:update')->only('update');
     }
 
     /**
