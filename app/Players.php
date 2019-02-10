@@ -95,7 +95,7 @@ class Players extends Model {
             'u.id AS necrolab_id',
             'u.name AS necrolab_username',
             'p.external_id AS player_id',
-            'p..username AS player_username',
+            'p.username AS player_username',
             'p.profile_url AS player_profile_url',
             'mu.external_id AS mixer_id',
             'mu.username AS mixer_username',

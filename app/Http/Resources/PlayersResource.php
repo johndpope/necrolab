@@ -12,7 +12,7 @@ class PlayersResource extends JsonResource {
      * @return array
      */
     public function toArray($request) {
-        $steamid = (string)$this->steamid;
+        $player_id = (string)$this->player_id;
     
         $record = [];
         
@@ -23,10 +23,10 @@ class PlayersResource extends JsonResource {
             ];
         }
         
-        $record['steam'] = [
-            'id' => $steamid,
-            'username' => $this->steam_username,
-            'profile_url' => $this->steam_profile_url
+        $record['player'] = [
+            'id' => $player_id,
+            'username' => $this->player_username,
+            'profile_url' => $this->player_profile_url
         ];
         
         if(!empty($this->mixer_id)) {

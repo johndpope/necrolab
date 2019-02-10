@@ -50,7 +50,7 @@ class PlayersController extends Controller {
         
         $dataset = new Dataset($index_name, $data_provider);
         
-        $dataset->setIndex($index, 'su.steam_user_id');
+        $dataset->setIndex($index, 'p.player_id');
         
         $dataset->setFromRequest($request);
         
@@ -62,14 +62,14 @@ class PlayersController extends Controller {
     /**
      * Display the specified resource.
      *
-     * @param  int  $steamid
+     * @param  string  $external_id
      * @return \Illuminate\Http\Response
      */
-    public function show($steamid) {
+    public function show($external_id) {
         return new PlayersResource(
-            Cache::store('opcache')->remember("steam_users:{$steamid}", 5, function() use($steamid) {
+            Cache::store('opcache')->remember("players:{$external_id}", 5, function() use($external_id) {
                 return Players::getApiReadQuery()
-                    ->where('su.steamid', $steamid)
+                    ->where('p.external_id', $external_id)
                     ->first();
             })
         );
