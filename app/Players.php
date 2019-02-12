@@ -115,7 +115,7 @@ class Players extends Model {
     }
     
     public static function addLeftJoins(LeaderboardSources $leaderboard_source, Builder $query): void {    
-        $query->leftJoin("users_{$leaderboard_source->name}_player up", 'up.player_id', '=', 'p.id');
+        $query->leftJoin("user_{$leaderboard_source->name}_player AS up", 'up.player_id', '=', 'p.id');
         $query->leftJoin('users AS u', 'u.id', '=', 'up.user_id');
         $query->leftJoin('mixer_users AS mu', 'mu.id', '=', 'u.mixer_user_id');
         $query->leftJoin('discord_users AS du', 'du.discord_user_id', '=', 'u.discord_user_id');
@@ -157,7 +157,7 @@ class Players extends Model {
         ->limit(100000);
     }
     
-    public static function getIdsBySearchTerm(LeaderboardSources $leaderboard_source, string $search_term): array {
+    public static function getIdsBySearchTerm(LeaderboardSources $leaderboard_source, string $search_term): object {
         $term_hash_name = sha1($search_term);
     
         return Cache::store('opcache')->remember("{$leaderboard_source->name}:players:search:{$term_hash_name}", 5, function() use(

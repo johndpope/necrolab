@@ -5,8 +5,10 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Cache;
-use App\Http\Resources\PlayersResource;
 use App\Http\Requests\Api\ReadPlayers;
+use App\Http\Requests\Api\ReadPlayer;
+use App\Http\Resources\PlayersResource;
+use App\Components\RequestModels;
 use App\Components\CacheNames\Players as CacheNames;
 use App\Components\Dataset\Dataset;
 use App\Components\Dataset\Indexes\Sql as SqlIndex;
@@ -29,28 +31,32 @@ class PlayersController extends Controller {
     /**
      * Display a listing of the resource.
      *
-     * @param  \Illuminate\Http\Request  $request
+     * @param  \App\Http\Requests\Api\ReadPlayers $request
      * @return \Illuminate\Http\Response
      */
-    public function index(ReadPlayers $request) {        
+    public function index(ReadPlayers $request) {
+        $request_models = new RequestModels($request, [
+            'leaderboard_source'
+        ]);
+        
         $index_name = CacheNames::getUsersIndex();
         
         
         /* ---------- Data Provider ---------- */
         
-        $data_provider = new SqlDataProvider(Players::getApiReadQuery());
+        $data_provider = new SqlDataProvider(Players::getApiReadQuery($request_models->leaderboard_source));
         
         
         /* ---------- Index ---------- */
         
-        $index = new SqlIndex($index_name);
+        $index = new SqlIndex($request_models->leaderboard_source, $index_name);
         
         
         /* ---------- Dataset ---------- */
         
-        $dataset = new Dataset($index_name, $data_provider);
+        $dataset = new Dataset($request_models->leaderboard_source, $index_name, $data_provider);
         
-        $dataset->setIndex($index, 'p.player_id');
+        $dataset->setIndex($index, 'p.id');
         
         $dataset->setFromRequest($request);
         
@@ -62,14 +68,20 @@ class PlayersController extends Controller {
     /**
      * Display the specified resource.
      *
-     * @param  string  $external_id
+     * @param  \App\Http\Requests\Api\ReadPlayer $request
      * @return \Illuminate\Http\Response
      */
-    public function show($external_id) {
+    public function show(ReadPlayer $request) {
+        $request_models = new RequestModels($request, [
+            'leaderboard_source'
+        ]);
+        
+        $cache_key = "{$request_models->leaderboard_source}:players:{$request->player_id}";
+    
         return new PlayersResource(
-            Cache::store('opcache')->remember("players:{$external_id}", 5, function() use($external_id) {
-                return Players::getApiReadQuery()
-                    ->where('p.external_id', $external_id)
+            Cache::store('opcache')->remember($cache_key, 5, function() use($request, $request_models) {
+                return Players::getApiReadQuery($request_models->leaderboard_source)
+                    ->where('p.external_id', $request->player_id)
                     ->first();
             })
         );
