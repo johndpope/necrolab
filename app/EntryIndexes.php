@@ -77,11 +77,13 @@ class EntryIndexes extends Model {
         ");
     }
     
-    public static function updateFromTemp(LeaderboardSources $leaderboard_sources) {}
+    public static function updateFromTemp(LeaderboardSources $leaderboard_source) {}
     
-    public static function getDecodedRecord(LeaderboardSources $leaderboard_sources, string $name, string $sub_name = '') {
-        return Cache::store('opcache')->remember("{$name}:{$sub_name}", 5, function() use($name, $sub_name) {                            
-            $encoded_data = DB::table(static::getSchemaTableName($leaderboard_sources))->where('name', $name)
+    public static function getDecodedRecord(LeaderboardSources $leaderboard_source, string $name, string $sub_name = '') {
+        $cache_key_name = "{$leaderboard_source->name}:{$name}:{$sub_name}";
+    
+        return Cache::store('opcache')->remember($cache_key_name, 5, function() use($leaderboard_source, $name, $sub_name) {                            
+            $encoded_data = DB::table(static::getSchemaTableName($leaderboard_source))->where('name', $name)
                 ->where('sub_name', $sub_name)
                 ->first();
             
