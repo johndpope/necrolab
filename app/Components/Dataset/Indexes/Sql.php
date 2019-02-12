@@ -5,6 +5,7 @@ use stdClass;
 use Illuminate\Support\Facades\Cache;
 use App\Components\CacheNames\Users\Steam as PlayersCacheNames;
 use App\Components\Dataset\Indexes\Index;
+use App\LeaderboardSources;
 use App\EntryIndexes;
 use App\Players;
 
@@ -14,7 +15,9 @@ extends Index {
     
     protected $paginated_index = [];
     
-    public function __construct(string $index_name) {
+    public function __construct(LeaderboardSources $leaderboard_source, string $index_name) {
+        parent::__construct($leaderboard_source);
+    
         $this->setIndexName($index_name);
     }    
     
@@ -23,7 +26,7 @@ extends Index {
         
         $search_term_hash = sha1($this->search_term);
 
-        $filtered_index_key_name = "{$this->index_name}:{$this->index_sub_name}:{$this->external_site_id}:{$search_term_hash}";
+        $filtered_index_key_name = "{$this->leaderboard_source->name}:{$this->index_name}:{$this->index_sub_name}:{$this->external_site_id}:{$search_term_hash}";
         $paginated_index_key_name = "index:{$filtered_index_key_name}:{$this->page}:{$this->limit}";
         
         // Attempt to retrieve this paginated index from cache first
@@ -41,12 +44,16 @@ extends Index {
                 
                 $filtered_index->data = [];
                 
-                $base_index_data = EntryIndexes::getDecodedRecord("{$this->index_name}:$this->external_site_id", $this->index_sub_name);
+                $base_index_data = EntryIndexes::getDecodedRecord(
+                    $this->leaderboard_source, 
+                    "{$this->index_name}:{$this->external_site_id}", 
+                    $this->index_sub_name
+                );
                 
                 if(!empty($base_index_data)) {
                     // If a search term has been specified then filter the base index by it
                     if(!empty($this->search_term)) {
-                        $matching_steam_user_ids = Players::getIdsBySearchTerm($this->search_term);
+                        $matching_steam_user_ids = Players::getIdsBySearchTerm($this->leaderboard_source, $this->search_term);
                         
                         /*
                             Loop through the base index and check for if its steam_user_id exists in $matching_steam_user_ids.

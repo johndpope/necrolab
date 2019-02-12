@@ -13,10 +13,13 @@ use App\Components\Dataset\Traits\HasExternalSiteId;
 use App\Components\Dataset\Traits\HasSearchTerm;
 use App\Components\Dataset\Traits\HasPage;
 use App\Components\Dataset\Traits\HasLimit;
+use App\LeaderboardSources;
 use App\ExternalSites;
 
 class Dataset {
     use HasIndexSubName, HasIndexFieldName, HasExternalSiteId, HasSearchTerm, HasPage, HasLimit;
+    
+    protected $leaderboard_source;
     
     protected $cache_base_name;
     
@@ -34,7 +37,9 @@ class Dataset {
     
     protected $paginator;
     
-    public function __construct(string $cache_base_name, DataProvider $data_provider) {
+    public function __construct(LeaderboardSources $leaderboard_source, string $cache_base_name, DataProvider $data_provider) {
+        $this->leaderboard_source = $leaderboard_source;
+    
         $this->cache_base_name = $cache_base_name;
         
         $this->setDataProvider($data_provider);
@@ -94,7 +99,7 @@ class Dataset {
         // Compile the cache key name that will be used to cache this dataset
         $search_term_hash = sha1($this->search_term);
 
-        $base_key_name = "dataset:{$this->cache_base_name}:{$this->index_sub_name}:{$this->external_site_id}:{$search_term_hash}";
+        $base_key_name = "dataset:{$this->leaderboard_source}:{$this->cache_base_name}:{$this->index_sub_name}:{$this->external_site_id}:{$search_term_hash}";
         $dataset_cache_name = "{$base_key_name}:{$this->page}:{$this->limit}";
         
         // Attempt to retrieve this paginated dataset from cache first
