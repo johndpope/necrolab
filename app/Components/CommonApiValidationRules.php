@@ -3,6 +3,7 @@ namespace App\Components;
 
 use Exception;
 use App\Rules\NameExists;
+use App\Dates;
 use App\Releases;
 use App\Modes;
 use App\DailyRankingDayTypes;
@@ -16,7 +17,6 @@ use App\MultiplayerTypes;
 
 class CommonApiValidationRules {
     protected static $plain_rules = [
-        'date' => 'required|date_format:Y-m-d',
         'page' => 'sometimes|required|integer|min:1',
         'limit' => 'sometimes|required|integer|min:1|max:100',
         'search' => 'sometimes|required|string',
@@ -39,35 +39,38 @@ class CommonApiValidationRules {
                 }
                 else {
                     switch($rule_name) {
+                        case 'leaderboard_source':
+                            $rule = ['required', 'string', new NameExists(LeaderboardSources::class)];
+                            break;
+                        case 'date':
+                            $rule = ['required', 'string', 'date_format:Y-m-d', new NameExists(Dates::class)];
+                            break;
+                        case 'leaderboard_type':
+                            $rule = ['required', 'string', new NameExists(LeaderboardTypes::class)];
+                            break;
+                        case 'character':
+                            $rule = ['sometimes', 'required', 'string', new NameExists(Characters::class)];
+                            break;
                         case 'release':
-                            $rule = ['required', 'string', new NameExists(Releases::class)];
+                            $rule = ['sometimes', 'required', 'string', new NameExists(Releases::class)];
                             break;
                         case 'mode':
-                            $rule = ['required', 'string', new NameExists(Modes::class)];
+                            $rule = ['sometimes', 'required', 'string', new NameExists(Modes::class)];
+                            break;
+                        case 'seeded_type':
+                            $rule = ['sometimes', 'required', 'string', new NameExists(SeededTypes::class)];
+                            break;
+                        case 'multiplayer_type':
+                            $rule = ['sometimes', 'required', 'string', new NameExists(MultiplayerTypes::class)];
+                            break;
+                        case 'soundtrack':
+                            $rule = ['sometimes', 'required', 'string', new NameExists(Soundtracks::class)];
                             break;
                         case 'number_of_days':
                             $rule = ['required', 'string', new NameExists(DailyRankingDayTypes::class)];
                             break;
                         case 'site':
                             $rule = ['sometimes', 'required', 'string', new NameExists(ExternalSites::class)];
-                            break;
-                        case 'character':
-                            $rule = ['required', 'string', new NameExists(Characters::class)];
-                            break;
-                        case 'leaderboard_source':
-                            $rule = ['required', 'string', new NameExists(LeaderboardSources::class)];
-                            break;
-                        case 'leaderboard_type':
-                            $rule = ['required', 'string', new NameExists(LeaderboardTypes::class)];
-                            break;
-                        case 'seeded_type':
-                            $rule = ['required', 'string', new NameExists(SeededTypes::class)];
-                            break;
-                        case 'soundtrack':
-                            $rule = ['required', 'string', new NameExists(Soundtracks::class)];
-                            break;
-                        case 'multiplayer_type':
-                            $rule = ['required', 'string', new NameExists(MultiplayerTypes::class)];
                             break;
                         default:
                             throw new Exception("Specified validation rule '{$rule_name}' is not valid.");
