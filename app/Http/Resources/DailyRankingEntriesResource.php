@@ -29,14 +29,23 @@ class DailyRankingEntriesResource extends JsonResource {
         $record['top_20_ranks'] = (int)$this->top_20_ranks;
         $record['top_50_ranks'] = (int)$this->top_50_ranks;
         $record['top_100_ranks'] = (int)$this->top_100_ranks;
-        $record['total_points'] = (float)$this->total_points;
-        $record['points_per_day'] = $this->total_points / $this->total_dailies;
-        $record['total_score'] = (int)$this->total_score;
-        $record['score_per_day'] = $this->total_score / $this->total_dailies;
-        $record['total_dailies'] = (int)$this->total_dailies;
-        $record['total_wins'] = (int)$this->total_wins;
+        $record['dailies'] = (int)$this->dailies;
+        $record['wins'] = (int)$this->wins;
         $record['sum_of_ranks'] = (int)$this->sum_of_ranks;
-        $record['average_rank'] = $this->sum_of_ranks / $this->total_dailies;
+        $record['average_rank'] = $this->sum_of_ranks / $this->dailies;
+        
+        if(!empty($this->details)) {
+            $details = [];
+        
+            foreach($this->details as $details_name => $details_value) {
+                $details[$details_name] = [
+                    'total' => $details_value * 1,
+                    'per_day' => $details_value / $this->dailies
+                ];
+            }
+            
+            $record['details'] = $details;
+        }
         
         return $record;
     }

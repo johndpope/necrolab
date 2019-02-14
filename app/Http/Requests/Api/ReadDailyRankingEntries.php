@@ -23,8 +23,12 @@ class ReadDailyRankingEntries extends Core {
      */
     public function rules() {
         return CommonApiValidationRules::getRules([
+            'leaderboard_source',
+            'character',
             'release',
             'mode',
+            'multiplayer_type',
+            'soundtrack',
             'number_of_days',
             'date',
             'site',

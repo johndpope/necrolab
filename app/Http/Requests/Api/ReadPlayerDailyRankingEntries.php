@@ -25,8 +25,11 @@ class ReadPlayerDailyRankingEntries extends Core {
         return CommonApiValidationRules::getRules([
             'player_id',
             'leaderboard_source',
+            'character',
             'release',
             'mode',
+            'multiplayer_type',
+            'soundtrack',
             'number_of_days',
             'page',
             'limit'

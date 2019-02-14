@@ -9,12 +9,14 @@ use App\Http\Controllers\Controller;
 use App\Http\Resources\DailyRankingEntriesResource;
 use App\Http\Requests\Api\ReadDailyRankingEntries;
 use App\Http\Requests\Api\ReadPlayerDailyRankingEntries;
+use App\Components\RequestModels;
 use App\Components\CacheNames\Rankings\Daily as CacheNames;
 use App\Components\Dataset\Dataset;
 use App\Components\Dataset\Indexes\Sql as SqlIndex;
 use App\Components\Dataset\DataProviders\Sql as SqlDataProvider;
 use App\DailyRankingEntries;
 use App\LeaderboardSources;
+use App\Dates;
 use App\Releases;
 use App\Modes;
 use App\DailyRankingDayTypes;
@@ -39,41 +41,57 @@ class DailyRankingEntriesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function index(ReadDailyRankingEntries $request) {
-        $release_id = Releases::getByName($request->release)->id;
-        $mode_id = Modes::getByName($request->mode)->id;
-        $daily_ranking_day_type_id = DailyRankingDayTypes::getByName($request->number_of_days)->id;
-        $date = new DateTime($request->date);
+        $request_models = new RequestModels($request, [
+            'leaderboard_source',
+            'character',
+            'release',
+            'mode',
+            'multiplayer_type',
+            'soundtrack',
+            'number_of_days',
+            'date'
+        ]);
         
-        $index_name = CacheNames::getRankings($release_id, $mode_id, $daily_ranking_day_type_id);
+        $cache_names_prefix = $request_models->getCacheNamePrefix();
+        
+        // leaderboard_source and date aren't used for the cache name prefix
+        unset($cache_names_prefix->leaderboard_source);
+        unset($cache_names_prefix->date);
+        
+        $index_name = CacheNames::getBase($cache_names_prefix);
         
         
         /* ---------- Data Provider ---------- */
         
         $data_provider = new SqlDataProvider(DailyRankingEntries::getApiReadQuery(
-            $release_id, 
-            $mode_id, 
-            $daily_ranking_day_type_id, 
-            $date
+            $request_models->leaderboard_source,
+            $request_models->character->id,
+            $request_models->release->id, 
+            $request_models->mode->id,
+            $request_models->multiplayer_type->id,
+            $request_models->soundtrack->id,
+            $request_models->number_of_days->id, 
+            $request_models->date
         ));
         
         
         /* ---------- Index ---------- */
         
-        $index = new SqlIndex($index_name);
+        $index = new SqlIndex($request_models->leaderboard_source, $index_name);
         
         
         /* ---------- Dataset ---------- */
         
-        $dataset = new Dataset($index_name, $data_provider);
+        $dataset = new Dataset($request_models->leaderboard_source, $index_name, $data_provider);
         
-        $dataset->setIndex($index, 'p.player_id');
+        $dataset->setIndex($index, 'dre.player_id');
         
-        $dataset->setIndexSubName($request->date);
+        $dataset->setIndexSubName($request_models->date->name);
         
         $dataset->setFromRequest($request);
         
         $dataset->setBinaryFields([
-            'characters'
+            'details'
         ]);
         
         $dataset->setSortCallback(function($entry, $key) {
@@ -91,40 +109,53 @@ class DailyRankingEntriesController extends Controller {
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function playerIndex(ReadPlayerDailyRankingEntries $request) {
-        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
-    
+    public function playerIndex(ReadPlayerDailyRankingEntries $request) {    
         $player_id = $request->player_id;
-        $release_id = Releases::getByName($request->release)->id;
-        $mode_id = Modes::getByName($request->mode)->id;
-        $daily_ranking_day_type_id = DailyRankingDayTypes::getByName($request->number_of_days)->id;
+        
+        $request_models = new RequestModels($request, [
+            'leaderboard_source',
+            'character',
+            'release',
+            'mode',
+            'multiplayer_type',
+            'soundtrack',
+            'number_of_days'
+        ]);
+        
+        $cache_names_prefix = $request_models->getCacheNamePrefix();
+        
+        // leaderboard_source and date aren't used for the cache name prefix
+        unset($cache_names_prefix->leaderboard_source);
+        unset($cache_names_prefix->date);
         
         
         /* ---------- Data Provider ---------- */
         
         $data_provider = new SqlDataProvider(DailyRankingEntries::getPlayerApiReadQuery(
+            $request_models->leaderboard_source,
             $player_id,
-            $leaderboard_source,
-            $release_id, 
-            $mode_id, 
-            $daily_ranking_day_type_id
+            $request_models->character->id,
+            $request_models->release->id, 
+            $request_models->mode->id,
+            $request_models->multiplayer_type->id,
+            $request_models->soundtrack->id,
+            $request_models->number_of_days->id
         ));
         
         
         /* ---------- Dataset ---------- */
         
         $dataset = new Dataset(
-            CacheNames::getPlayerRankings(
-                $player_id, 
-                $leaderboard_source->id,
-                $release_id, 
-                $mode_id, 
-                $daily_ranking_day_type_id
-            ), 
+            $request_models->leaderboard_source,
+            CacheNames::getPlayer($player_id, $cache_names_prefix), 
             $data_provider
         );
         
         $dataset->setFromRequest($request);
+        
+        $dataset->setBinaryFields([
+            'details'
+        ]);
         
         $dataset->setSortCallback(function($entry, $key) {
             return 0 - (new DateTime($entry->date))->getTimestamp();

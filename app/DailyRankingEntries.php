@@ -182,7 +182,7 @@ class DailyRankingEntries extends Model {
     ): Builder {
         $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->name));
 
-        $query = DB::table('daily_rankings AS dr')
+        $query = DB::table(DailyRankings::getSchemaTableName($leaderboard_source) . ' AS dr')
             ->select([
                 'dre.rank',
                 'dre.first_place_ranks',
@@ -234,7 +234,7 @@ class DailyRankingEntries extends Model {
         
         if(!empty($table_names)) {
             foreach($table_names as $table_name) {                    
-                $partition_query = DB::table('daily_rankings AS dr')
+                $partition_query = DB::table(DailyRankings::getSchemaTableName($leaderboard_source) . ' AS dr')
                     ->select([
                         'd.name AS date',
                         'dre.rank',
@@ -244,14 +244,14 @@ class DailyRankingEntries extends Model {
                         'dre.top_20_ranks',
                         'dre.top_50_ranks',
                         'dre.top_100_ranks',
-                        'dre.total_dailies',
-                        'dre.total_wins',
+                        'dre.dailies',
+                        'dre.wins',
                         'dre.sum_of_ranks',
                         'dre.details'
                     ])
                     ->join("dates AS d", 'd.id', '=', 'dr.date_id')
                     ->join("{$table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.id')
-                    ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'pre.player_id')
+                    ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'dre.player_id')
                     ->where('dr.character_id', $character_id)
                     ->where('dr.release_id', $release_id)
                     ->where('dr.mode_id', $mode_id)
