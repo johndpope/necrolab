@@ -4,6 +4,7 @@ namespace App\Components;
 use Exception;
 use stdClass;
 use Illuminate\Http\Request;
+use App\Components\CacheNames\Prefix;
 
 class RequestModels {
     protected static $models = [
@@ -52,6 +53,16 @@ class RequestModels {
                 $this->loaded[$field] = $model_class::getDefaultRecord();
             }
         }
+    }
+    
+    public function getCacheNamePrefix(): Prefix {
+        $prefix = new Prefix();
+        
+        foreach($this->loaded as $name => $value) {
+            $prefix->$name = $value->id;
+        }
+        
+        return $prefix;
     }
     
     public function __get(string $name): object {
