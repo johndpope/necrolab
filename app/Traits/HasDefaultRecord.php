@@ -7,24 +7,24 @@ use Illuminate\Database\Eloquent\Model;
 use App\LeaderboardSources;
 
 trait HasDefaultRecord {    
-    protected static $default_records = [];
+    protected static $default_record;
     
-    protected static function loadDefaultRecord(LeaderboardSources $leaderboard_source): void {
-        if(!isset(static::$default_records[$leaderboard_source->name])) {
+    protected static function loadDefaultRecord(): void {
+        if(!isset(static::$default_record)) {
             $default_record = static::where('is_default', 1)
                 ->first();
             
             if(empty($default_record)) {
-                throw new Exception("A default record exists for this table.");
+                throw new Exception("A default record does not exist for this table.");
             }
         
-            static::$default_records[$leaderboard_source->name] = $default_record;
+            static::$default_record = $default_record;
         }
     }
     
-    public static function getDefaultRecord(LeaderboardSources $leaderboard_source): Model {
-        static::loadDefaultRecord($leaderboard_source);
+    public static function getDefaultRecord(): Model {
+        static::loadDefaultRecord();
         
-        return static::$default_records[$leaderboard_source->name];
+        return static::$default_record;
     }
 }
