@@ -11,8 +11,12 @@ trait HasTempTable {
     protected static $temp_table_name = [];
     
     public static function loadTempTableName(LeaderboardSources $leaderboard_source): void {
-        if(!isset(static::$temp_table_name[$leaderboard_source->name])) {        
-            static::$temp_table_name[$leaderboard_source->name] = "{$leaderboard_source->name}_" . (new static())->getTable() . '_temp';
+        if(!isset(static::$temp_table_name[$leaderboard_source->name])) {
+            $instance = new static();
+            
+            $instance->setSchema($leaderboard_source->name);
+        
+            static::$temp_table_name[$leaderboard_source->name] = str_replace('.', '_', $instance->getTable()) . '_temp';
         }
     }
     

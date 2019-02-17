@@ -12,7 +12,11 @@ trait HasPartitions {
     
     public static function loadBaseTableName(LeaderboardSources $leaderboard_source) {
         if(!isset(static::$base_table_name[$leaderboard_source->name])) {
-            static::$base_table_name[$leaderboard_source->name] = "{$leaderboard_source->name}." . (new static())->getTable();
+            $instance = new static();
+            
+            $instance->setSchema($leaderboard_source->name);
+        
+            static::$base_table_name[$leaderboard_source->name] = $instance->getTable();
         }
     }
     
