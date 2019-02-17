@@ -12,96 +12,83 @@ class PowerRankingEntriesResource extends JsonResource {
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request) {        
-        $score_total = 0;
-        $speed_total_time = 0;
-        $deathless_total_win_count = 0;
-        
+    public function toArray($request) {
         $total_points = 0;
-        $total_score_points = 0;
-        $total_speed_points = 0;
-        $total_deathless_points = 0;
+        $categories = [];
+        $characters = [];
         
-        $character_rankings = $this->characters;
-
-        foreach($character_rankings as $character_name => &$character_ranking) {
-            $character_ranking['points'] = 0;
-            $character_ranking['name'] = $character_name;
-            
-            foreach($character_ranking as $category_name => &$category_data) {
-                // Only process data in categories which are always arrays
-                if(is_array($category_data)) {
-                    /* ---------- Generate and summarize points ---------- */
-                    
-                    $points = RankPoints::calculateFromRank($category_data['rank']);
-                    
-                    $category_data['points'] = $points;
-                    $character_ranking['points'] += $points;
-                    $total_points += $points;
-                    
-                    /* ---------- Summarize category points and metrics ---------- */
-                    
-                    switch($category_name) {
-                        case 'score':
-                            $total_score_points += $points;
-                            
-                            $score_total += $category_data['score'];
-                            break;
-                        case 'speed':
-                            $total_speed_points += $points;
-                            
-                            $speed_total_time += (float)$category_data['time'];
-                            break;
-                        case 'deathless':
-                            $total_deathless_points += $points;
-                            
-                            $deathless_total_win_count += $category_data['win_count'];
-                            break;
-                    }
-                }
+        
+        /* ---------- Compile categories ---------- */
+        
+        if(!empty($this->category_ranks)) {
+            foreach($this->category_ranks as $category_name => $category_rank) {
+                $categories[$category_name] = [
+                    'name' => $category_name,
+                    'rank' => (int)$category_rank,
+                    'points' => 0
+                ];
             }
         }
         
         
-        /* ---------- Compile score rankings if present ---------- */
+        /* ---------- Compile characters ---------- */
         
-        $score_rankings = [];
+        $character_rankings = $this->characters;
+    
+        if(!empty($character_rankings)) {
+            foreach($character_rankings as $character_name => $character_ranking) {
+                $characters[$character_name]['name'] = $character_name;
+                $characters[$character_name]['rank'] = $character_ranking['rank'];
+                $characters[$character_name]['points'] = 0;
+                
+                $character_categories = $character_ranking['categories'];
+                
+                if(!empty($character_categories)) {
+                    foreach($character_categories as $category_name => $character_category) {
+                        $characters[$character_name]['categories'][$category_name]['rank'] = $character_category['rank'];
+                    
+                        $points = RankPoints::calculateFromRank($character_category['rank']);
+                        
+                        $characters[$character_name]['categories'][$category_name]['points'] = $points;
+                    
+                        // Summarize points
+                        $characters[$character_name]['points'] += $points;
+                        $total_points += $points;
+                        $categories[$category_name]['points'] += $points;
+                        
+                        
+                        $character_category_details = $character_category['details'];
+                        
+                        if(!empty($character_category_details)) {
+                            foreach($character_category_details as $details_name => $details_value) {
+                                if(is_float($details_value + 0)) {
+                                    $details_value = (float)$details_value;
+                                }
+                                else {
+                                    $details_value = (int)$details_value;
+                                }
+                            
+                                // Summarize category details
+                                if(!isset($categories[$category_name]['details'][$details_name])) {
+                                    $categories[$category_name]['details'][$details_name] = 0;
+                                }
+                                
+                                $categories[$category_name]['details'][$details_name] += $details_value;
+                            
+                                // Summarize character category details
+                                if(!isset($characters[$character_name]['categories'][$category_name]['details'][$details_name])) {
+                                    $characters[$character_name]['categories'][$category_name]['details'][$details_name] = 0;
+                                }
+                                
+                                $characters[$character_name]['categories'][$category_name]['details'][$details_name] += $details_value;
+                            }
+                        }
+                    }
+                }
+            }
+        }    
         
-        if(!empty($this->score_rank)) {
-            $score_rankings = [
-                'rank' => (int)$this->score_rank,
-                'points' => $total_score_points,
-                'score' => $score_total
-            ];
-        }
 
-        
-        /* ---------- Compile speed rankings if present ---------- */
-        
-        $speed_rankings = [];
-        
-        if(!empty($this->speed_rank)) {
-            $speed_rankings = [
-                'rank' => (int)$this->speed_rank,
-                'points' => $total_speed_points,
-                'time' => (float)$speed_total_time
-            ];
-        }
-        
-        
-        /* ---------- Compile deathless rankings if present ---------- */
-        
-        $deathless_rankings = [];
-        
-        if(!empty($this->deathless_rank)) {
-            $deathless_rankings = [
-                'rank' => (int)$this->deathless_rank,
-                'points' => $total_deathless_points,
-                'win_count' => $deathless_total_win_count,
-            ];
-        }
-        
-        
         /* ---------- Compile response record ---------- */
         
         $record = [];
@@ -114,12 +101,10 @@ class PowerRankingEntriesResource extends JsonResource {
             $record['player'] = new PlayersResource($this->resource);
         }        
         
-        $record['characters'] = $character_rankings;
-        $record['score'] = $score_rankings;
-        $record['speed'] = $speed_rankings;
-        $record['deathless'] = $deathless_rankings;
-        $record['rank'] = (int)$this->rank;
-        $record['points'] = (float)$total_points;
+        $record['rank'] = $this->rank;
+        $record['points'] = $total_points;
+        $record['characters'] = $characters;
+        $record['categories'] = $categories;
         
         return $record;
     }

@@ -14,6 +14,7 @@ use App\Http\Requests\Api\ReadPowerRankingCharacterEntries;
 use App\Http\Requests\Api\ReadPlayerPowerRankingEntries;
 use App\Http\Requests\Api\ReadPlayerCategoryRankingEntries;
 use App\Http\Requests\Api\ReadPlayerCharacterRankingEntries;
+use App\Components\RequestModels;
 use App\Components\CacheNames\Rankings\Power as CacheNames;
 use App\Components\Dataset\Dataset;
 use App\Components\Dataset\Indexes\Sql as SqlIndex;
@@ -52,29 +53,44 @@ class PowerRankingEntriesController extends Controller {
      * @param callable $sort_callback
      * @return \Illuminate\Http\Response
      */
-    protected function getEntriesResponse(string $index_name, Request $request, Builder $query, callable $sort_callback) {
+    protected function getEntriesResponse(
+        string $index_name, 
+        Request $request, 
+        RequestModels $request_models, 
+        callable $sort_callback
+    ) {
         /* ---------- Data Provider ---------- */
+        $query = PowerRankingEntries::getApiReadQuery(
+            $request_models->leaderboard_source,
+            $request_models->release->id,
+            $request_models->mode->id,
+            $request_models->seeded_type->id,
+            $request_models->multiplayer_type->id,
+            $request_models->soundtrack->id,
+            $request_models->date
+        );
         
         $data_provider = new SqlDataProvider($query);
         
         
         /* ---------- Index ---------- */
         
-        $index = new SqlIndex($index_name);
+        $index = new SqlIndex($request_models->leaderboard_source, $index_name);
         
         
         /* ---------- Dataset ---------- */
         
-        $dataset = new Dataset($index_name, $data_provider);
+        $dataset = new Dataset($request_models->leaderboard_source, $index_name, $data_provider);
         
-        $dataset->setIndex($index, 'p.player_id');
+        $dataset->setIndex($index, 'pre.player_id');
         
-        $dataset->setIndexSubName($request->date);
+        $dataset->setIndexSubName($request_models->date->name);
         
         $dataset->setFromRequest($request);
         
         $dataset->setBinaryFields([
-            'characters'
+            'characters',
+            'category_ranks'
         ]);
         
         $dataset->setSortCallback($sort_callback);
@@ -91,15 +107,25 @@ class PowerRankingEntriesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function index(ReadPowerRankingEntries $request) {
-        $release_id = Releases::getByName($request->release)->id;
-        $mode_id = Modes::getByName($request->mode)->id;
-        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
-        $date = new DateTime($request->date);
+        $request_models = new RequestModels($request, [
+            'leaderboard_source',
+            'release',
+            'mode',
+            'seeded_type',
+            'multiplayer_type',
+            'soundtrack',
+            'date'
+        ]);
+        
+        $cache_prefix_name = $request_models->getCacheNamePrefix();
+        
+        unset($cache_prefix_name->leaderboard_source);
+        unset($cache_prefix_name->date);
     
         return $this->getEntriesResponse(
-            CacheNames::getBase($release_id, $mode_id, $seeded_type_id),
+            CacheNames::getBase($cache_prefix_name),
             $request,
-            PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $seeded_type_id, $date),
+            $request_models,
             function($entry, $key) {
                 return $entry->rank;
             }
@@ -113,26 +139,33 @@ class PowerRankingEntriesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function categoryIndex(ReadCategoryRankingEntries $request) {
-        $leaderboard_type = LeaderboardTypes::getByName($request->leaderboard_type);
+        $request_models = new RequestModels($request, [
+            'leaderboard_source',
+            'leaderboard_type',
+            'release',
+            'mode',
+            'seeded_type',
+            'multiplayer_type',
+            'soundtrack',
+            'date'
+        ]);
         
-        $leaderboard_type_id = $leaderboard_type->id;
-        $release_id = Releases::getByName($request->release)->id;
-        $mode_id = Modes::getByName($request->mode)->id;
-        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
-        $date = new DateTime($request->date);
+        $cache_prefix_name = $request_models->getCacheNamePrefix();
+        
+        unset($cache_prefix_name->leaderboard_source);
+        unset($cache_prefix_name->leaderboard_type);
+        unset($cache_prefix_name->date);
     
         return $this->getEntriesResponse(
-            CacheNames::getCategory($leaderboard_type_id, $release_id, $mode_id, $seeded_type_id),
+            CacheNames::getCategory($cache_prefix_name, $request_models->leaderboard_type->id),
             $request,
-            PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $seeded_type_id, $date),
-            function($entry, $key) use ($leaderboard_type) {
-                $rank_name = "{$leaderboard_type->name}_rank";
-                
-                if(!isset($entry->$rank_name)) {
-                    throw new Exception("Leaderboard type '{$leaderboard_type->name}' is not supported in power rankings.");
+            $request_models,
+            function($entry, $key) use ($request_models) {                
+                if(!isset($entry->category_ranks[$request_models->leaderboard_type->name])) {
+                    throw new Exception("Leaderboard type '{$request_models->leaderboard_type->name}' is not supported in power rankings.");
                 }
             
-                return $entry->$rank_name;
+                return $entry->category_ranks[$request_models->leaderboard_type->name];
             }
         );
     }
@@ -144,20 +177,29 @@ class PowerRankingEntriesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function characterIndex(ReadPowerRankingCharacterEntries $request) {
-        $character_name = $request->character;
-    
-        $release_id = Releases::getByName($request->release)->id;
-        $mode_id = Modes::getByName($request->mode)->id;
-        $character_id = Characters::getByName($character_name)->id;
-        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
-        $date = new DateTime($request->date);
+        $request_models = new RequestModels($request, [
+            'leaderboard_source',
+            'character',
+            'release',
+            'mode',
+            'seeded_type',
+            'multiplayer_type',
+            'soundtrack',
+            'date'
+        ]);
+        
+        $cache_prefix_name = $request_models->getCacheNamePrefix();
+        
+        unset($cache_prefix_name->leaderboard_source);
+        unset($cache_prefix_name->character);
+        unset($cache_prefix_name->date);
         
         return $this->getEntriesResponse(
-            CacheNames::getCharacter($release_id, $mode_id, $seeded_type_id, $character_id),
+            CacheNames::getCharacter($cache_prefix_name, $request_models->character->id),
             $request,
-            PowerRankingEntries::getApiReadQuery($release_id, $mode_id, $seeded_type_id, $date),
-            function($entry, $key) use ($character_name) {
-                return $entry->characters[$character_name]['rank'];
+            $request_models,
+            function($entry, $key) use ($request_models) {
+                return $entry->characters[$request_models->character->name]['rank'];
             }
         );
     }
@@ -171,20 +213,36 @@ class PowerRankingEntriesController extends Controller {
      * @param callable $filter_callback (optional)
      * @return \Illuminate\Http\Response
      */
-    protected function getPlayerEntriesResponse(string $index_name, Request $request, Builder $query, callable $filter_callback = NULL) {
+    protected function getPlayerEntriesResponse(
+        string $index_name, 
+        Request $request, 
+        RequestModels $request_models, 
+        callable $filter_callback = NULL
+    ) {
         /* ---------- Data Provider ---------- */
+
+        $query = PowerRankingEntries::getPlayerApiReadQuery(
+            $request->player_id, 
+            $request_models->leaderboard_source,
+            $request_models->release->id, 
+            $request_models->mode->id, 
+            $request_models->seeded_type->id,
+            $request_models->multiplayer_type->id,
+            $request_models->soundtrack->id
+        );
         
         $data_provider = new SqlDataProvider($query);
         
         
         /* ---------- Dataset ---------- */
         
-        $dataset = new Dataset($index_name, $data_provider);
+        $dataset = new Dataset($request_models->leaderboard_source, $index_name, $data_provider);
         
         $dataset->setFromRequest($request);
         
         $dataset->setBinaryFields([
-            'characters'
+            'characters',
+            'category_ranks'
         ]);
         
         if(isset($filter_callback)) {
@@ -207,23 +265,23 @@ class PowerRankingEntriesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function playerIndex(ReadPlayerPowerRankingEntries $request) {
-        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
-    
-        $player_id = $request->player_id;
-        $release_id = Releases::getByName($request->release)->id;
-        $mode_id = Modes::getByName($request->mode)->id;
-        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
+        $request_models = new RequestModels($request, [
+            'leaderboard_source',
+            'release',
+            'mode',
+            'seeded_type',
+            'multiplayer_type',
+            'soundtrack'
+        ]);
+        
+        $cache_prefix_name = $request_models->getCacheNamePrefix();
+        
+        unset($cache_prefix_name->leaderboard_source);
         
         return $this->getPlayerEntriesResponse(
-            CacheNames::getPlayer($player_id, $leaderboard_source->id, $release_id, $mode_id, $seeded_type_id),
+            CacheNames::getPlayer($request->player_id, $cache_prefix_name),
             $request,
-            PowerRankingEntries::getPlayerApiReadQuery(
-                $player_id, 
-                $leaderboard_source,
-                $release_id, 
-                $mode_id, 
-                $seeded_type_id
-            )
+            $request_models
         );
     }
     
@@ -234,28 +292,28 @@ class PowerRankingEntriesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function playerCategoryIndex(ReadPlayerCategoryRankingEntries $request) {
-        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
-    
-        $player_id = $request->player_id;
-    
-        $leaderboard_type = LeaderboardTypes::getByName($request->leaderboard_type);
-    
-        $leaderboard_type_id = $leaderboard_type->id;
-        $release_id = Releases::getByName($request->release)->id;
-        $mode_id = Modes::getByName($request->mode)->id;
-        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
+        $request_models = new RequestModels($request, [
+            'leaderboard_source',
+            'leaderboard_type',
+            'release',
+            'mode',
+            'seeded_type',
+            'multiplayer_type',
+            'soundtrack'
+        ]);
+        
+        $cache_prefix_name = $request_models->getCacheNamePrefix();
+        
+        unset($cache_prefix_name->leaderboard_source);
+        unset($cache_prefix_name->leaderboard_type);
         
         return $this->getPlayerEntriesResponse(
-            CacheNames::getPlayerCategory($player_id, $leaderboard_source->id, $leaderboard_type_id, $release_id, $mode_id, $seeded_type_id),
+            CacheNames::getPlayerCategory($cache_prefix_name, $request->player_id, $request_models->leaderboard_type->id),
             $request,
-            PowerRankingEntries::getPlayerCategoryApiReadQuery(
-                $player_id,
-                $leaderboard_source,
-                $leaderboard_type,
-                $release_id, 
-                $mode_id, 
-                $seeded_type_id
-            )
+            $request_models,
+            function($entry) use ($request_models) {
+                return isset($entry->category_ranks[$request_models->leaderboard_type->name]);
+            }
         );
     }
     
@@ -266,35 +324,27 @@ class PowerRankingEntriesController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function playerCharacterIndex(ReadPlayerCharacterRankingEntries $request) {
-        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
-    
-        $player_id = $request->player_id;
-    
-        $release_id = Releases::getByName($request->release)->id;
-        $mode_id = Modes::getByName($request->mode)->id;
+        $request_models = new RequestModels($request, [
+            'leaderboard_source',
+            'character',
+            'release',
+            'mode',
+            'seeded_type',
+            'multiplayer_type',
+            'soundtrack',
+        ]);
         
-        $character_name = $request->character;
-        $character_id = Characters::getByName($character_name)->id;
+        $cache_prefix_name = $request_models->getCacheNamePrefix();
         
-        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
+        unset($cache_prefix_name->leaderboard_source);
+        unset($cache_prefix_name->character);
 
         return $this->getPlayerEntriesResponse(
-            CacheNames::getPlayerCharacter($player_id, $leaderboard_source->id, $release_id, $mode_id, $seeded_type_id, $character_id),
+            CacheNames::getPlayerCharacter($cache_prefix_name, $request->player_id, $request_models->character->id),
             $request,
-            PowerRankingEntries::getPlayerApiReadQuery(
-                $player_id, 
-                $leaderboard_source,
-                $release_id, 
-                $mode_id, 
-                $seeded_type_id
-            ),
-            /*
-                Since character data is now stored in a bytea field all power ranking entries for this
-                player need to be retrieved, and the data checked for if the specified character rank exists.
-                This is expensive so other solutions will be looked into as soon as possible.
-            */
-            function($entry) use ($character_name) {
-                return isset($entry->characters[$character_name]);
+            $request_models,
+            function($entry) use ($request_models) {
+                return isset($entry->characters[$request_models->character->name]);
             }
         );
     }

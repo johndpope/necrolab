@@ -23,10 +23,13 @@ class ReadCategoryRankingEntries extends Core {
      */
     public function rules() {
         return CommonApiValidationRules::getRules([
+            'leaderboard_source',
             'leaderboard_type',
             'release',
             'mode',
             'seeded_type',
+            'multiplayer_type',
+            'soundtrack',
             'date',
             'site',
             'search',

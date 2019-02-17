@@ -28,6 +28,8 @@ class ReadPlayerPowerRankingEntries extends Core {
             'release',
             'mode',
             'seeded_type',
+            'multiplayer_type',
+            'soundtrack',
             'page',
             'limit'
         ]);

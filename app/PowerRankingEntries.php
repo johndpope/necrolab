@@ -220,8 +220,7 @@ class PowerRankingEntries extends Model {
         int $mode_id, 
         int $seeded_type_id, 
         int $multiplayer_type_id, 
-        int $soundtrack_id,
-        callable $additional_criteria = NULL
+        int $soundtrack_id
     ): Builder {
         $release = Releases::getById($release_id);
         
@@ -241,6 +240,7 @@ class PowerRankingEntries extends Model {
                         'pre.characters',
                         'pre.category_ranks'
                     ])
+                    ->join("dates AS d", 'd.id', '=', 'pr.date_id')
                     ->join("{$table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.id')
                     ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'pre.player_id')
                     ->where('pr.release_id', $release_id)
@@ -254,12 +254,6 @@ class PowerRankingEntries extends Model {
                     ])
                     ->where('p.external_id', $player_id);
                 
-                if(!empty($additional_criteria)) {
-                    call_user_func_array($additional_criteria, [
-                        $partition_query
-                    ]);
-                }
-                
                 if(!isset($query)) {
                     $query = $partition_query;
                 }
@@ -270,36 +264,5 @@ class PowerRankingEntries extends Model {
         }
             
         return $query;
-    }
-    
-    public static function getPlayerCategoryApiReadQuery(
-        string $player_id, 
-        LeaderboardSources $leaderboard_source, 
-        LeaderboardTypes $leaderboard_type, 
-        int $release_id, 
-        int $mode_id, 
-        int $seeded_type_id, 
-        int $multiplayer_type_id, 
-        int $soundtrack_id
-    ): Builder { 
-        /*
-        TODO: This isn't possible right now since category_ranks is a binary field.
-        
-        $additional_criteria = function(Builder $query) use ($leaderboard_type) {
-            $rank_name = "{$leaderboard_type->name}_rank";
-        
-            $query->whereNotNull("pre.{$rank_name}");
-        };*/
-    
-        return static::getPlayerApiReadQuery(
-            $player_id, 
-            $leaderboard_source, 
-            $release_id, 
-            $mode_id, 
-            $seeded_type_id, 
-            $multiplayer_type_id, 
-            $soundtrack_id
-            //$additional_criteria
-        );
     }
 }

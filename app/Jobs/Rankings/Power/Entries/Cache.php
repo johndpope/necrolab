@@ -19,6 +19,7 @@ use App\LeaderboardSources;
 use App\Dates;
 use App\PowerRankingEntries;
 use App\ExternalSites;
+use App\LeaderboardTypes;
 use App\Characters;
 use App\EntryIndexes;
 
@@ -68,6 +69,7 @@ class Cache implements ShouldQueue {
         DB::beginTransaction();
         
         $characters = Characters::getAllByName();
+        $leaderboard_types = LeaderboardTypes::getAllByName();
         
         $cursor = new PostgresCursor(
             'power_ranking_entries_cache', 
@@ -110,7 +112,7 @@ class Cache implements ShouldQueue {
                     ExternalSites::addToSiteIdIndexes(
                         $indexes, 
                         $entry, 
-                        CacheNames::getCategory($cache_name_prefix, $leaderboard_type_name),
+                        CacheNames::getCategory($cache_name_prefix, $leaderboard_types[$leaderboard_type_name]->id),
                         $player_id, 
                         (int)$category_rank
                     );

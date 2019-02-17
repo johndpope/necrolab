@@ -25,10 +25,12 @@ class ReadPlayerCharacterRankingEntries extends Core {
         return CommonApiValidationRules::getRules([
             'player_id',
             'leaderboard_source',
+            'character',
             'release',
             'mode',
             'seeded_type',
-            'character',
+            'multiplayer_type',
+            'soundtrack',
             'page',
             'limit'
         ]);
