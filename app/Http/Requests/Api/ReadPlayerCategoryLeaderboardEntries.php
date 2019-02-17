@@ -24,14 +24,14 @@ class ReadPlayerCategoryLeaderboardEntries extends Core {
     public function rules() {
         return CommonApiValidationRules::getRules([
             'player_id',
-            'date',
             'leaderboard_source',
             'leaderboard_type',
             'release',
             'mode',
             'seeded_type',
             'multiplayer_type',
-            'soundtrack'
+            'soundtrack',
+            'date'
         ]);
     }
 }

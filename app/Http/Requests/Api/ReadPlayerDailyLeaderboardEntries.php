@@ -29,6 +29,7 @@ class ReadPlayerDailyLeaderboardEntries extends Core {
             'release',
             'mode',
             'multiplayer_type',
+            'soundtrack',
             'page',
             'limit'
         ]);

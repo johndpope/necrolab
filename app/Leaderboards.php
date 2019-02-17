@@ -92,6 +92,9 @@ class Leaderboards extends Model {
                 
                     $leaderboard->daily_date = Dates::getByName($date_formatted);
                     
+                    // Dailies should always be seeded
+                    $leaderboard->seeded_type = SeededTypes::getByName('seeded');
+                    
                     if(empty($leaderboard->daily_date)) {
                         throw new Exception("Date '{$date_formatted}' does not exist in the dates table.");
                     }

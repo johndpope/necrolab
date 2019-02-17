@@ -28,6 +28,7 @@ class ReadDailyLeaderboardEntries extends Core {
             'release',
             'mode',
             'multiplayer_type',
+            'soundtrack',
             'date',
             'site',
             'search',

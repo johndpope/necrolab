@@ -167,10 +167,10 @@ class LeaderboardEntries extends Model {
         return DB::table(LeaderboardSnapshots::getSchemaTableName($leaderboard_source) . ' AS ls')
             ->select([
                 'ls.id AS leaderboard_snapshot_id',
-                'sup.details'
+                'ppb.details'
             ])
             ->join(static::getTableName($leaderboard_source, new DateTime($date->name)) . " AS le", 'le.leaderboard_snapshot_id', '=', 'ls.id')
-            ->join(PlayerPbs::getSchemaTableName($leaderboard_source) . " AS sup", 'sup.id', '=', 'le.player_pb_id')
+            ->join(PlayerPbs::getSchemaTableName($leaderboard_source) . " AS ppb", 'ppb.id', '=', 'le.player_pb_id')
             ->where('ls.date_id', $date->id);
     }
     
@@ -231,7 +231,7 @@ class LeaderboardEntries extends Model {
     }
     
     public static function getNonDailyApiReadQuery(LeaderboardSources $leaderboard_source, string $leaderboard_id, Dates $date): Builder {    
-        $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->date));
+        $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->name));
     
         $query = DB::table(Leaderboards::getSchemaTableName($leaderboard_source) . ' AS l')
             ->select([
@@ -239,8 +239,8 @@ class LeaderboardEntries extends Model {
             ])
             ->join(LeaderboardSnapshots::getSchemaTableName($leaderboard_source) . ' AS ls', 'ls.leaderboard_id', '=', 'l.id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.id')
-            ->join(Players::getSchemaTableName($leaderboard_source) . ' AS su', 'su.id', '=', 'le.player_id')
-            ->join(PlayerPbs::getSchemaTableName($leaderboard_source) . ' AS sup', 'sup.id', '=', 'le.player_pb_id');
+            ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'le.player_id')
+            ->join(PlayerPbs::getSchemaTableName($leaderboard_source) . ' AS ppb', 'ppb.id', '=', 'le.player_pb_id');
             
         Players::addSelects($query);
         PlayerPbs::addSelects($query);
@@ -265,20 +265,17 @@ class LeaderboardEntries extends Model {
         int $soundtrack_id,
         Dates $date
     ): Builder {    
-        $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->date));
+        $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->name));
     
         $query = DB::table(Leaderboards::getSchemaTableName($leaderboard_source) . ' AS l')
             ->select([
                 'le.rank',
             ])
             ->join('seeded_types AS st', 'st.id', '=', 'l.seeded_type_id')
-            ->join(LeaderboardSnapshots::getSchemaTableName($leaderboard_source) . ' AS ls', function($join) {
-                $join->on('ls.leaderboard_id', '=', 'l.id')
-                    ->on('ls.date_id', '=', $date->id);
-            })
+            ->join(LeaderboardSnapshots::getSchemaTableName($leaderboard_source) . ' AS ls', 'ls.leaderboard_id', '=', 'l.id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.id')
-            ->join(Players::getSchemaTableName($leaderboard_source) . ' AS su', 'su.id', '=', 'le.player_id')
-            ->join(PlayerPbs::getSchemaTableName($leaderboard_source) . ' AS sup', 'sup.id', '=', 'le.player_pb_id');
+            ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'le.player_id')
+            ->join(PlayerPbs::getSchemaTableName($leaderboard_source) . ' AS ppb', 'ppb.id', '=', 'le.player_pb_id');
         
         Players::addSelects($query);
         PlayerPbs::addSelects($query);
@@ -295,39 +292,41 @@ class LeaderboardEntries extends Model {
             ->where('st.name', '=', 'seeded')
             ->where('l.multiplayer_type_id', $multiplayer_type_id)
             ->where('l.soundtrack_id', $soundtrack_id)
-            ->where('l.daily_date_id', $date->id);
+            ->where('l.daily_date_id', $date->id)
+            ->where('ls.date_id', $date->id);
         
         return $query;
     }
     
     public static function getPlayerNonDailyApiQuery(
         string $player_id, 
-        Dates $date, 
         LeaderboardSources $leaderboard_source,
         int $release_id, 
         int $mode_id, 
         int $seeded_type_id, 
         int $multiplayer_type_id,
-        int $soundtrack_id
+        int $soundtrack_id,
+        Dates $date
     ): Builder {
-        $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->date));
+        $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->name));
     
-        $query = DB::table('Leaderboards::getSchemaTableName($leaderboard_source) AS l')
+        $query = DB::table(Leaderboards::getSchemaTableName($leaderboard_source) . ' AS l')
             ->select([
                 'c.name AS character_name',
+                'lt.name AS leaderboard_type_name',
                 'le.rank',
             ])
             ->join('characters AS c', 'c.id', '=', 'l.character_id')
             ->join(LeaderboardSnapshots::getSchemaTableName($leaderboard_source) . ' AS ls', 'ls.leaderboard_id', '=', 'l.id')
             ->join("{$entries_table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.id')
-            ->join(Players::getSchemaTableName($leaderboard_source) . ' AS su', 'su.id', '=', 'le.player_id')
-            ->join(PlayerPbs::getSchemaTableName($leaderboard_source) . ' AS sup', 'sup.id', '=', 'le.player_pb_id');
+            ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'le.player_id')
+            ->join(PlayerPbs::getSchemaTableName($leaderboard_source) . ' AS ppb', 'ppb.id', '=', 'le.player_pb_id');
         
         PlayerPbs::addSelects($query);
         PlayerPbs::addJoins($leaderboard_source, $query);
         PlayerPbs::addLeftJoins($leaderboard_source, $query);
         
-        $query->where('su.external_id', $player_id)
+        $query->where('p.external_id', $player_id)
             ->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
             ->where('l.seeded_type_id', $seeded_type_id)
@@ -342,23 +341,23 @@ class LeaderboardEntries extends Model {
     
     public static function getPlayerNonDailyApiReadQuery(
         string $player_id, 
-        Dates $date, 
         LeaderboardSources $leaderboard_source,
         int $release_id, 
         int $mode_id, 
         int $seeded_type_id, 
         int $multiplayer_type_id,
-        int $soundtrack_id
+        int $soundtrack_id,
+        Dates $date
     ): Builder {
         $query = static::getPlayerNonDailyApiQuery(
             $player_id, 
-            $date, 
             $leaderboard_source,
             $release_id, 
             $mode_id, 
             $seeded_type_id, 
             $multiplayer_type_id,
-            $soundtrack_id
+            $soundtrack_id,
+            $date
         );
         
         $query->where('lt.name', '!=', 'daily');
@@ -368,27 +367,27 @@ class LeaderboardEntries extends Model {
     
     public static function getPlayerCategoryApiReadQuery(
         string $player_id, 
-        Dates $date, 
         LeaderboardSources $leaderboard_source,
         int $leaderboard_type_id,
         int $release_id, 
         int $mode_id, 
         int $seeded_type_id, 
         int $multiplayer_type_id,
-        int $soundtrack_id
+        int $soundtrack_id,
+        Dates $date
     ): Builder {
         $query = static::getPlayerNonDailyApiQuery(
             $player_id, 
-            $date, 
             $leaderboard_source,
             $release_id, 
             $mode_id, 
             $seeded_type_id, 
             $multiplayer_type_id,
-            $soundtrack_id
+            $soundtrack_id,
+            $date
         );
         
-        $query->where('l.id', $leaderboard_type_id);
+        $query->where('l.leaderboard_type_id', $leaderboard_type_id);
         
         return $query;
     }
@@ -402,21 +401,21 @@ class LeaderboardEntries extends Model {
         int $multiplayer_type_id,
         int $soundtrack_id
     ): Builder {            
-        $query = DB::table(PlayerPbs::getSchemaTableName($leaderboard_source) . ' AS sup')
+        $query = DB::table(PlayerPbs::getSchemaTableName($leaderboard_source) . ' AS ppb')
             ->select([
                 'd.name AS first_snapshot_date',
-                'sup.first_rank AS rank'
+                'ppb.first_rank AS rank'
             ])
-            ->join(Leaderboards::getSchemaTableName($leaderboard_source) . ' AS l', 'l.id', '=', 'sup.leaderboard_id')
+            ->join(Leaderboards::getSchemaTableName($leaderboard_source) . ' AS l', 'l.id', '=', 'ppb.leaderboard_id')
             ->join('seeded_types AS st', 'st.id', '=', 'l.seeded_type_id')
             ->join('dates AS d', 'd.id', '=', 'l.daily_date_id')
-            ->join(Players::getSchemaTableName($leaderboard_source) . ' AS su', 'su.id', '=', 'sup.player_id');
+            ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'ppb.player_id');
         
         PlayerPbs::addSelects($query);
         PlayerPbs::addJoins($leaderboard_source, $query);
         PlayerPbs::addLeftJoins($leaderboard_source, $query);
         
-        $query->where('su.external_id', $player_id)
+        $query->where('p.external_id', $player_id)
             ->where('lt.name', 'daily')
             ->where('l.character_id', $character_id)
             ->where('l.release_id', $release_id)

@@ -216,11 +216,11 @@ class PlayerPbs extends Model {
     public static function addSelects(Builder $query): void {
         $query->addSelect([
             'led.name AS details',
-            'sup.zone',
-            'sup.level',
-            'sup.is_win',
-            'sup.raw_score',
-            'sup.details',
+            'ppb.zone',
+            'ppb.level',
+            'ppb.is_win',
+            'ppb.raw_score',
+            'ppb.details',
             'sr.external_id AS replay_external_id',
             'se.name AS seed',
             'sr.downloaded',
@@ -236,15 +236,15 @@ class PlayerPbs extends Model {
     }
     
     public static function addJoins(LeaderboardSources $leaderboard_source, Builder $query): void {
-        $query->join(LeaderboardEntryDetails::getSchemaTableName($leaderboard_source) . " AS led", 'led.id', '=', 'sup.leaderboard_entry_details_id');
+        $query->join(LeaderboardEntryDetails::getSchemaTableName($leaderboard_source) . " AS led", 'led.id', '=', 'ppb.leaderboard_entry_details_id');
         $query->join('leaderboard_types AS lt', 'lt.id', '=', 'l.leaderboard_type_id');
         $query->join('leaderboard_details_columns AS ldc', 'ldc.id', '=', 'lt.leaderboard_details_column_id');
         $query->join('data_types AS dt', 'dt.id', '=', 'ldc.data_type_id');
     }
     
     public static function addLeftJoins(LeaderboardSources $leaderboard_source, Builder $query): void {    
-        $query->leftJoin(Replays::getSchemaTableName($leaderboard_source) . ' AS sr', 'sr.player_pb_id', '=', 'sup.id');
-        $query->leftJoin(RunResults::getSchemaTableName($leaderboard_source) . ' AS rr',  'rr.run_result_id', '=', 'sr.run_result_id');
+        $query->leftJoin(Replays::getSchemaTableName($leaderboard_source) . ' AS sr', 'sr.player_pb_id', '=', 'ppb.id');
+        $query->leftJoin(RunResults::getSchemaTableName($leaderboard_source) . ' AS rr',  'rr.id', '=', 'sr.run_result_id');
         $query->leftJoin(ReplayVersions::getSchemaTableName($leaderboard_source) . ' AS srv', 'srv.id', '=', 'sr.replay_version_id');
         $query->leftJoin(Seeds::getSchemaTableName($leaderboard_source) . ' AS se', 'se.id', '=', 'sr.seed_id');
     }
@@ -284,22 +284,22 @@ class PlayerPbs extends Model {
         int $soundtrack_id
     ): Builder {
     
-        $query = DB::table(static::getSchemaTableName($leaderboard_source) . ' AS sup')
+        $query = DB::table(static::getSchemaTableName($leaderboard_source) . ' AS ppb')
             ->select([
                 'l.leaderboard_id',                
                 'ls.date AS first_snapshot_date',
-                'sup.first_rank'
+                'ppb.first_rank'
             ])
-            ->join(Players::getSchemaTableName($leaderboard_source) . ' AS su', 'su.id', '=', 'sup.player_id')
-            ->join(Leaderboards::getSchemaTableName($leaderboard_source) . ' AS l', 'l.id', '=', 'sup.leaderboard_id')
-            ->join(LeaderboardSnapshots::getSchemaTableName($leaderboard_source) . ' AS ls', 'ls.id', '=', 'sup.first_leaderboard_snapshot_id')
+            ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'ppb.player_id')
+            ->join(Leaderboards::getSchemaTableName($leaderboard_source) . ' AS l', 'l.id', '=', 'ppb.leaderboard_id')
+            ->join(LeaderboardSnapshots::getSchemaTableName($leaderboard_source) . ' AS ls', 'ls.id', '=', 'ppb.first_leaderboard_snapshot_id')
             ->join('dates AS d', 'd.id', '=', 'ls.date_id');
         
         static::addSelects($query);
         static::addJoins($query);
         static::addLeftJoins($query);
 
-        $query->where('su.external_id', $player_id)
+        $query->where('p.external_id', $player_id)
             ->where('l.character_id', $character_id)
             ->where('l.release_id', $release_id)
             ->where('l.mode_id', $mode_id)
@@ -308,7 +308,7 @@ class PlayerPbs extends Model {
             ->where('l.multiplayer_type_id', $multiplayer_type_id)
             ->where('l.soundtrack_id', $soundtrack_id)
             ->orderBy('d.name', 'desc')
-            ->orderBy('sup.player_pb_id', 'desc');
+            ->orderBy('ppb.player_pb_id', 'desc');
         
         return $query;
     }

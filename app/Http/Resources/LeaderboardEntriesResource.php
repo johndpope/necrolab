@@ -16,7 +16,7 @@ class LeaderboardEntriesResource extends JsonResource {
             'rank' => $this->rank
         ];
         
-        if(!empty($this->steamid)) {
+        if(!empty($this->player_id)) {
             $record['player'] = new PlayersResource($this->resource);
         }
         

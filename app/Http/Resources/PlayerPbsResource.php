@@ -14,12 +14,16 @@ class PlayerPbsResource extends JsonResource {
     public function toArray($request) {
         $record = [];
         
-        if(!empty($this->lbid)) {
-            $record['lbid'] = $this->lbid;
+        if(!empty($this->leaderboard_id)) {
+            $record['leaderboard_id'] = $this->leaderboard_id;
         }
         
         if(!empty($this->character_name)) {
             $record['character'] = $this->character_name;
+        }
+        
+        if(!empty($this->leaderboard_type_name)) {
+            $record['leaderboard_type'] = $this->leaderboard_type_name;
         }
         
         if(!empty($this->first_snapshot_date)) {
@@ -30,20 +34,21 @@ class PlayerPbsResource extends JsonResource {
             $record['rank'] = $this->first_rank;
         }
         
-        $details_column = $this->details_column;
+        $details_decoded = json_decode($this->details, true);
+        $details = [];
         
-        $details_column_value = $this->$details_column;
-        
-        if($this->details_column_data_type == 'seconds') {
-            $details_column_value = (float)$details_column_value;
+        if(!empty($details_decoded)) {
+            foreach($details_decoded as $details_name => $details_value) {
+                if(is_float($details_value + 0)) {
+                    $details[$details_name] = (float)$details_value;
+                }
+                else {
+                    $details[$details_name] = (int)$details_value;
+                }
+            }
         }
-        else {
-            $details_column_value = (int)$details_column_value;
-        }
         
-        $record[$this->details_column] = $details_column_value;
-        
-        $record['details'] = $this->details;
+        $record['details'] = $details;
         
         if(!empty($this->show_zone_level)) {
             $record['zone'] = $this->zone;
