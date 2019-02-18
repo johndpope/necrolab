@@ -5,11 +5,17 @@ namespace App;
 use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Query\Builder;
 use App\Traits\IsSchemaTable;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
 use App\LeaderboardSources;
 use App\Dates;
+use App\Releases;
+use App\Modes;
+use App\SeededTypes;
+use App\MultiplayerTypes;
+use App\Soundtracks;
 
 class PowerRankings extends Model {
     use IsSchemaTable, HasTempTable, HasManualSequence;
@@ -108,11 +114,11 @@ class PowerRankings extends Model {
     
     public static function getApiReadQuery(
         LeaderboardSources $leaderboard_source,
-        int $release_id, 
-        int $mode_id, 
-        int $seeded_type_id, 
-        int $multiplayer_type_id, 
-        int $soundtrack_id
+        Releases $release,
+        Modes $mode,
+        SeededTypes $seeded_type,
+        MultiplayerTypes $multiplayer_type,
+        Soundtracks $soundtrack
     ): Builder {
         return DB::table(static::getSchemaTableName($leaderboard_source) . ' AS pr')
             ->select([
@@ -122,11 +128,11 @@ class PowerRankings extends Model {
                 'pr.characters'
             ])
             ->join('dates AS d', 'd.id', '=', 'pr.date_id')
-            ->where('pr.release_id', $release_id)
-            ->where('pr.mode_id', $mode_id)
-            ->where('pr.seeded_type_id', $seeded_type_id)
-            ->where('pr.multiplayer_type_id', $multiplayer_type_id)
-            ->where('pr.soundtrack_id', $soundtrack_id)
+            ->where('pr.release_id', $release->id)
+            ->where('pr.mode_id', $mode->id)
+            ->where('pr.seeded_type_id', $seeded_type->id)
+            ->where('pr.multiplayer_type_id', $multiplayer_type->id)
+            ->where('pr.soundtrack_id', $soundtrack->id)
             ->orderBy('d.name', 'desc');
     }
 }

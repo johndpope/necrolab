@@ -23,9 +23,12 @@ class ReadPowerRankings extends Core {
      */
     public function rules() {
         return CommonApiValidationRules::getRules([
+            'leaderboard_source',
             'release',
             'mode',
-            'seeded_type'
+            'seeded_type',
+            'multiplayer_type',
+            'soundtrack'
         ]);
     }
 }

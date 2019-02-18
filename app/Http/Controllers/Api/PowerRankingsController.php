@@ -5,13 +5,10 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
-use App\Components\Encoder;
+use App\Components\RequestModels;
 use App\Http\Resources\PowerRankingsResource;
 use App\Http\Requests\Api\ReadPowerRankings;
 use App\PowerRankings;
-use App\Releases;
-use App\Modes;
-use App\SeededTypes;
 
 class PowerRankingsController extends Controller {
     /**
@@ -32,34 +29,42 @@ class PowerRankingsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function index(ReadPowerRankings $request) {
-        $release_id = Releases::getByName($request->release)->id;
-        $mode_id = Modes::getByName($request->mode)->id;
-        $seeded_type_id = SeededTypes::getByName($request->seeded_type)->id;
+        $request_models = new RequestModels($request, [
+            'leaderboard_source',
+            'release',
+            'mode',
+            'seeded_type',
+            'multiplayer_type',
+            'soundtrack'
+        ]);
+        
+        $cache_prefix_name = $request_models->getCacheNamePrefix();
+        
+        $cache_name = "rankings:power:" . (string)$cache_prefix_name;
         
         return PowerRankingsResource::collection(
-            Cache::store('opcache')->remember("rankings:power:steam:{$release_id}:{$mode_id}", 5, function() use($release_id, $mode_id, $seeded_type_id) {
-                $query = PowerRankings::getApiReadQuery(
-                    $release_id,
-                    $mode_id,
-                    $seeded_type_id
-                );
-                
-                $records = [];
-                
-                foreach($query->cursor() as $power_ranking) {
-                    if(!empty($power_ranking->categories)) {
-                        $power_ranking->categories = Encoder::decode(stream_get_contents($power_ranking->categories));
+            Cache::store('opcache')->remember(
+                $cache_name, 
+                5, 
+                function() use($request_models) {
+                    $records = PowerRankings::getApiReadQuery(
+                        $request_models->leaderboard_source,
+                        $request_models->release,
+                        $request_models->mode,
+                        $request_models->seeded_type,
+                        $request_models->multiplayer_type,
+                        $request_models->soundtrack
+                    )->get();
+                    
+                    if(!empty($records)) {
+                        foreach($records as $record) {
+                            $record->categories = json_decode($record->categories, true);
+                            $record->characters = json_decode($record->characters, true);
+                        }
                     }
                     
-                    if($power_ranking->characters) {
-                        $power_ranking->characters = Encoder::decode(stream_get_contents($power_ranking->characters));
-                    }
-                    
-                    $records[] = $power_ranking;
-                }
-                
-                return collect($records);
-            })
+                    return $records;
+                })
         );
     }
 }
