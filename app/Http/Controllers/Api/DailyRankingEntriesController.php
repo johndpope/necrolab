@@ -65,12 +65,12 @@ class DailyRankingEntriesController extends Controller {
         
         $data_provider = new SqlDataProvider(DailyRankingEntries::getApiReadQuery(
             $request_models->leaderboard_source,
-            $request_models->character->id,
-            $request_models->release->id, 
-            $request_models->mode->id,
-            $request_models->multiplayer_type->id,
-            $request_models->soundtrack->id,
-            $request_models->number_of_days->id, 
+            $request_models->character,
+            $request_models->release, 
+            $request_models->mode,
+            $request_models->multiplayer_type,
+            $request_models->soundtrack,
+            $request_models->number_of_days, 
             $request_models->date
         ));
         
@@ -111,7 +111,7 @@ class DailyRankingEntriesController extends Controller {
      */
     public function playerIndex(ReadPlayerDailyRankingEntries $request) {    
         $player_id = $request->player_id;
-        
+
         $request_models = new RequestModels($request, [
             'leaderboard_source',
             'character',
@@ -134,12 +134,12 @@ class DailyRankingEntriesController extends Controller {
         $data_provider = new SqlDataProvider(DailyRankingEntries::getPlayerApiReadQuery(
             $request_models->leaderboard_source,
             $player_id,
-            $request_models->character->id,
-            $request_models->release->id, 
-            $request_models->mode->id,
-            $request_models->multiplayer_type->id,
-            $request_models->soundtrack->id,
-            $request_models->number_of_days->id
+            $request_models->character,
+            $request_models->release, 
+            $request_models->mode,
+            $request_models->multiplayer_type,
+            $request_models->soundtrack,
+            $request_models->number_of_days
         ));
         
         

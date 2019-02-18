@@ -9,17 +9,22 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\Builder;
 use App\Components\Encoder;
 use App\ExternalSites;
+use App\Traits\IsSchemaTable;
 use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
-use App\Releases;
 use App\Players;
 use App\LeaderboardSources;
 use App\LeaderboardTypes;
 use App\Dates;
 use App\PowerRankings;
+use App\Releases;
+use App\Modes;
+use App\SeededTypes;
+use App\MultiplayerTypes;
+use App\Soundtracks;
 
 class PowerRankingEntries extends Model {
-    use HasPartitions, HasTempTable;
+    use IsSchemaTable, HasPartitions, HasTempTable;
     
     /**
      * The table associated with the model.
@@ -183,11 +188,11 @@ class PowerRankingEntries extends Model {
     
     public static function getApiReadQuery(
         LeaderboardSources $leaderboard_source,
-        int $release_id, 
-        int $mode_id, 
-        int $seeded_type_id, 
-        int $multiplayer_type_id, 
-        int $soundtrack_id, 
+        Releases $release,
+        Modes $mode,
+        SeededTypes $seeded_type,
+        MultiplayerTypes $multiplayer_type,
+        Soundtracks $soundtrack,
         Dates $date
     ): Builder {
         $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->name));
@@ -200,11 +205,11 @@ class PowerRankingEntries extends Model {
             ])
             ->join("{$entries_table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.id')
             ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'pre.player_id')
-            ->where('pr.release_id', $release_id)
-            ->where('pr.mode_id', $mode_id)
-            ->where('pr.seeded_type_id', $seeded_type_id)
-            ->where('pr.multiplayer_type_id', $multiplayer_type_id)
-            ->where('pr.soundtrack_id', $soundtrack_id)
+            ->where('pr.release_id', $release->id)
+            ->where('pr.mode_id', $mode->id)
+            ->where('pr.seeded_type_id', $seeded_type->id)
+            ->where('pr.multiplayer_type_id', $multiplayer_type->id)
+            ->where('pr.soundtrack_id', $soundtrack->id)
             ->where('pr.date_id', $date->id);
         
         Players::addSelects($query);
@@ -216,14 +221,12 @@ class PowerRankingEntries extends Model {
     public static function getPlayerApiReadQuery(
         string $player_id, 
         LeaderboardSources $leaderboard_source,
-        int $release_id, 
-        int $mode_id, 
-        int $seeded_type_id, 
-        int $multiplayer_type_id, 
-        int $soundtrack_id
-    ): Builder {
-        $release = Releases::getById($release_id);
-        
+        Releases $release,
+        Modes $mode,
+        SeededTypes $seeded_type,
+        MultiplayerTypes $multiplayer_type,
+        Soundtracks $soundtrack
+    ): Builder {        
         $start_date = new DateTime($release['start_date']);
         $end_date = new DateTime($release['end_date']);
     
@@ -243,11 +246,11 @@ class PowerRankingEntries extends Model {
                     ->join("dates AS d", 'd.id', '=', 'pr.date_id')
                     ->join("{$table_name} AS pre", 'pre.power_ranking_id', '=', 'pr.id')
                     ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'pre.player_id')
-                    ->where('pr.release_id', $release_id)
-                    ->where('pr.mode_id', $mode_id)
-                    ->where('pr.seeded_type_id', $seeded_type_id)
-                    ->where('pr.multiplayer_type_id', $multiplayer_type_id)
-                    ->where('pr.soundtrack_id', $soundtrack_id)
+                    ->where('pr.release_id', $release->id)
+                    ->where('pr.mode_id', $mode->id)
+                    ->where('pr.seeded_type_id', $seeded_type->id)
+                    ->where('pr.multiplayer_type_id', $multiplayer_type->id)
+                    ->where('pr.soundtrack_id', $soundtrack->id)
                     ->whereBetween('d.name', [
                         $start_date->format('Y-m-d'),
                         $end_date->format('Y-m-d')

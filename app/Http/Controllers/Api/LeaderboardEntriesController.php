@@ -119,13 +119,13 @@ class LeaderboardEntriesController extends Controller {
         
         /* ---------- Data Provider ---------- */
         
-        $data_provider = new SqlDataProvider(LeaderboardEntries::getDailyApiReadQuery(            
+        $data_provider = new SqlDataProvider(LeaderboardEntries::getDailyApiReadQuery(
             $request_models->leaderboard_source,
-            $request_models->character->id,
-            $request_models->release->id,
-            $request_models->mode->id,
-            $request_models->multiplayer_type->id,
-            $request_models->soundtrack->id,
+            $request_models->character,
+            $request_models->release,
+            $request_models->mode,
+            $request_models->multiplayer_type,
+            $request_models->soundtrack,
             $request_models->date
         ));
         
@@ -176,7 +176,7 @@ class LeaderboardEntriesController extends Controller {
         $cache_prefix_name = $request_models->getCacheNamePrefix();
         
         $cache_key = "players:{$player_id}:leaderboards:" . (string)$cache_prefix_name . ":entries";
-        
+
         return LeaderboardEntriesResource::collection(
             Cache::store('opcache')->remember($cache_key, 5, function() use(
                 $player_id,
@@ -185,11 +185,11 @@ class LeaderboardEntriesController extends Controller {
                 return LeaderboardEntries::getPlayerNonDailyApiReadQuery(
                     $player_id,
                     $request_models->leaderboard_source,
-                    $request_models->release->id,
-                    $request_models->mode->id,
-                    $request_models->seeded_type->id,
-                    $request_models->multiplayer_type->id,
-                    $request_models->soundtrack->id,
+                    $request_models->release,
+                    $request_models->mode,
+                    $request_models->seeded_type,
+                    $request_models->multiplayer_type,
+                    $request_models->soundtrack,
                     $request_models->date
                 )->get();
             })
@@ -228,12 +228,12 @@ class LeaderboardEntriesController extends Controller {
                 return LeaderboardEntries::getPlayerCategoryApiReadQuery(
                     $player_id,
                     $request_models->leaderboard_source,
-                    $request_models->leaderboard_type->id,
-                    $request_models->release->id,
-                    $request_models->mode->id,
-                    $request_models->seeded_type->id,
-                    $request_models->multiplayer_type->id,
-                    $request_models->soundtrack->id,
+                    $request_models->leaderboard_type,
+                    $request_models->release,
+                    $request_models->mode,
+                    $request_models->seeded_type,
+                    $request_models->multiplayer_type,
+                    $request_models->soundtrack,
                     $request_models->date
                 )->get();
             })
@@ -273,11 +273,11 @@ class LeaderboardEntriesController extends Controller {
         $data_provider = new SqlDataProvider(LeaderboardEntries::getPlayerDailyApiReadQuery(
             $player_id, 
             $request_models->leaderboard_source,
-            $request_models->character->id,
-            $request_models->release->id, 
-            $request_models->mode->id,
-            $request_models->multiplayer_type->id,
-            $request_models->soundtrack->id
+            $request_models->character,
+            $request_models->release, 
+            $request_models->mode,
+            $request_models->multiplayer_type,
+            $request_models->soundtrack
         ));
         
         

@@ -63,11 +63,11 @@ class PowerRankingEntriesController extends Controller {
         
         $query = PowerRankingEntries::getApiReadQuery(
             $request_models->leaderboard_source,
-            $request_models->release->id,
-            $request_models->mode->id,
-            $request_models->seeded_type->id,
-            $request_models->multiplayer_type->id,
-            $request_models->soundtrack->id,
+            $request_models->release,
+            $request_models->mode,
+            $request_models->seeded_type,
+            $request_models->multiplayer_type,
+            $request_models->soundtrack,
             $request_models->date
         );
         
@@ -225,11 +225,11 @@ class PowerRankingEntriesController extends Controller {
         $query = PowerRankingEntries::getPlayerApiReadQuery(
             $request->player_id, 
             $request_models->leaderboard_source,
-            $request_models->release->id, 
-            $request_models->mode->id, 
-            $request_models->seeded_type->id,
-            $request_models->multiplayer_type->id,
-            $request_models->soundtrack->id
+            $request_models->release, 
+            $request_models->mode, 
+            $request_models->seeded_type,
+            $request_models->multiplayer_type,
+            $request_models->soundtrack
         );
         
         $data_provider = new SqlDataProvider($query);

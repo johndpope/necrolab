@@ -7,16 +7,22 @@ use PDO;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\Builder;
+use App\Traits\IsSchemaTable;
 use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
 use App\Players;
 use App\LeaderboardSources;
 use App\Dates;
 use App\DailyRankings;
+use App\Characters;
 use App\Releases;
+use App\Modes;
+use App\MultiplayerTypes;
+use App\Soundtracks;
+use App\DailyRankingDayTypes;
 
 class DailyRankingEntries extends Model {
-    use HasPartitions, HasTempTable;
+    use IsSchemaTable, HasPartitions, HasTempTable;
 
     /**
      * The table associated with the model.
@@ -172,12 +178,12 @@ class DailyRankingEntries extends Model {
     
     public static function getApiReadQuery(
         LeaderboardSources $leaderboard_source,
-        int $character_id,
-        int $release_id, 
-        int $mode_id, 
-        int $multiplayer_type_id,
-        int $soundtrack_id,
-        int $daily_ranking_day_type_id, 
+        Characters $character,
+        Releases $release,
+        Modes $mode,
+        MultiplayerTypes $multiplayer_type,
+        Soundtracks $soundtrack,
+        DailyRankingDayTypes $daily_ranking_day_type,
         Dates $date
     ): Builder {
         $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->name));
@@ -199,12 +205,12 @@ class DailyRankingEntries extends Model {
             ])
             ->join("{$entries_table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.id')
             ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'dre.player_id')
-            ->where('dr.character_id', $character_id)
-            ->where('dr.release_id', $release_id)
-            ->where('dr.mode_id', $mode_id)
-            ->where('dr.multiplayer_type_id', $multiplayer_type_id)
-            ->where('dr.soundtrack_id', $soundtrack_id)
-            ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type_id)
+            ->where('dr.character_id', $character->id)
+            ->where('dr.release_id', $release->id)
+            ->where('dr.mode_id', $mode->id)
+            ->where('dr.multiplayer_type_id', $multiplayer_type->id)
+            ->where('dr.soundtrack_id', $soundtrack->id)
+            ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type->id)
             ->where('dr.date_id', $date->id);
             
         Players::addSelects($query);
@@ -216,15 +222,13 @@ class DailyRankingEntries extends Model {
     public static function getPlayerApiReadQuery(
         LeaderboardSources $leaderboard_source,
         string $player_id, 
-        int $character_id,
-        int $release_id, 
-        int $mode_id, 
-        int $multiplayer_type_id,
-        int $soundtrack_id,
-        int $daily_ranking_day_type_id
-    ): Builder {
-        $release = Releases::getById($release_id);
-        
+        Characters $character,
+        Releases $release,
+        Modes $mode,
+        MultiplayerTypes $multiplayer_type,
+        Soundtracks $soundtrack,
+        DailyRankingDayTypes $daily_ranking_day_type
+    ): Builder {        
         $start_date = new DateTime($release['start_date']);
         $end_date = new DateTime($release['end_date']);
     
@@ -252,12 +256,12 @@ class DailyRankingEntries extends Model {
                     ->join("dates AS d", 'd.id', '=', 'dr.date_id')
                     ->join("{$table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.id')
                     ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'dre.player_id')
-                    ->where('dr.character_id', $character_id)
-                    ->where('dr.release_id', $release_id)
-                    ->where('dr.mode_id', $mode_id)
-                    ->where('dr.multiplayer_type_id', $multiplayer_type_id)
-                    ->where('dr.soundtrack_id', $soundtrack_id)
-                    ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type_id)
+                    ->where('dr.character_id', $character->id)
+                    ->where('dr.release_id', $release->id)
+                    ->where('dr.mode_id', $mode->id)
+                    ->where('dr.multiplayer_type_id', $multiplayer_type->id)
+                    ->where('dr.soundtrack_id', $soundtrack->id)
+                    ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type->id)
                     ->whereBetween('d.name', [
                         $start_date->format('Y-m-d'),
                         $end_date->format('Y-m-d')
