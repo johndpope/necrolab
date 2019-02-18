@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
+use App\Components\RequestModels;
 use App\Http\Requests\Api\ReadLeaderboardSnapshots;
 use App\Http\Requests\Api\ReadPlayerLeaderboardSnapshots;
 use App\Http\Resources\LeaderboardSnapshotsResource;
@@ -35,15 +36,29 @@ class LeaderboardSnapshotsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function index(ReadLeaderboardSnapshots $request) {
-        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
+        $request_models = new RequestModels($request, [
+            'leaderboard_source',
+        ]);
         
         $leaderboard_id = $request->leaderboard_id;
         
-        $cache_key = "leaderboards:{$leaderboard_source->name}:{$leaderboard_id}:snapshots";
+        $cache_prefix_name = $request_models->getCacheNamePrefix();
+        
+        $cache_prefix_name->leaderboard_id = $leaderboard_id;
+        
+        $cache_key = "leaderboard:snapshots:" . (string)$cache_prefix_name;
     
         return LeaderboardSnapshotsResource::collection(
-            Cache::store('opcache')->remember("", 5, function() use($leaderboard_source, $leaderboard_id) {
-                return LeaderboardSnapshots::getApiReadQuery($leaderboard_source, $leaderboard_id)->get();
+            Cache::store('opcache')->remember($cache_key, 5, function() use($request_models, $leaderboard_id) {
+                $records = LeaderboardSnapshots::getApiReadQuery($request_models->leaderboard_source, $leaderboard_id)->get();
+                
+                if(!empty($records)) {
+                    foreach($records as $record) {
+                        $record->details = json_decode($record->details, true);
+                    }
+                }
+                
+                return $records;
             })
         );
     }
@@ -55,16 +70,23 @@ class LeaderboardSnapshotsController extends Controller {
      * @return \Illuminate\Http\Response
      */
     public function playerIndex(ReadPlayerLeaderboardSnapshots $request) {
-        $leaderboard_source = LeaderboardSources::getByName($request->leaderboard_source);
+        $request_models = new RequestModels($request, [
+            'leaderboard_source',
+        ]);
         
         $player_id = $request->player_id;
         $leaderboard_id = $request->leaderboard_id;
+        
+        $cache_prefix_name = $request_models->getCacheNamePrefix();
+        
+        $cache_prefix_name->player_id = $player_id;
+        $cache_prefix_name->leaderboard_id = $leaderboard_id;
     
-        $cache_key = "players:{$leaderboard_source->name}:{$player_id}:leaderboards:{$leaderboard_id}:snapshots";
+        $cache_key = "player:leaderboard:snapshots:" . (string)$cache_prefix_name;
         
         return PlayerLeaderboardSnapshotsResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use($player_id, $leaderboard_source, $leaderboard_id) {
-                return LeaderboardSnapshots::getPlayerApiDates($player_id, $leaderboard_source, $leaderboard_id);
+            Cache::store('opcache')->remember($cache_key, 5, function() use($request_models, $player_id, $leaderboard_id) {
+                return LeaderboardSnapshots::getPlayerApiDates($player_id, $request_models->leaderboard_source, $leaderboard_id);
             })
         );
     }

@@ -11,13 +11,17 @@ class LeaderboardSnapshotsResource extends JsonResource {
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request) {    
+    public function toArray($request) {
+        $details = $this->details;
+        
+        if(empty($details)) {
+            $details = [];
+        }
+    
         return [
             'date' => $this->date,
             'players' => $this->players,
-            'score' => $this->score,
-            'time' => $this->time,
-            'win_count' => $this->win_count
+            'details' => $details
         ];
     }
 }
