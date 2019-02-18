@@ -60,6 +60,7 @@ class PowerRankingEntriesController extends Controller {
         callable $sort_callback
     ) {
         /* ---------- Data Provider ---------- */
+        
         $query = PowerRankingEntries::getApiReadQuery(
             $request_models->leaderboard_source,
             $request_models->release->id,

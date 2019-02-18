@@ -14,7 +14,7 @@ class LeaderboardsResource extends JsonResource {
     public function toArray($request) {    
         $record = [];
         
-        if(!empty($this->leaderboard_id)) {            
+        if(!empty($this->external_id)) {            
             $rankings = [];
             
             if(!empty($this->ranking_types)) {
@@ -22,14 +22,14 @@ class LeaderboardsResource extends JsonResource {
             }
         
             $record = [
-                'id' => $this->lbid,
+                'id' => $this->external_id,
                 'name' => $this->name,
                 'display_name' => $this->display_name,
                 'rankings' => $rankings,
                 'leaderboard_type' => $this->leaderboard_type,
+                'character' => $this->character,
                 'release' => $this->release,
                 'mode' => $this->mode,
-                'character' => $this->character,
                 'seeded_type' => $this->seeded_type,
                 'multiplayer_type' => $this->multiplayer_type,
                 'soundtrack' => $this->soundtrack,

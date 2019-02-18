@@ -6,7 +6,7 @@ use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Http\Exceptions\HttpResponseException;
 use App\Components\CommonApiValidationRules;
 
-class ReadDailyLeaderboards extends Core {
+class ReadLeaderboardShow extends Core {
     /**
      * Determine if the user is authorized to make this request.
      *
@@ -24,11 +24,7 @@ class ReadDailyLeaderboards extends Core {
     public function rules() {
         return CommonApiValidationRules::getRules([
             'leaderboard_source',
-            'character',
-            'release',
-            'mode',
-            'multiplayer_type',
-            'soundtrack'
+            'leaderboard_id'
         ]);
     }
 }

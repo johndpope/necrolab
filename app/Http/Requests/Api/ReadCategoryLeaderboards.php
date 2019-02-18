@@ -23,10 +23,11 @@ class ReadCategoryLeaderboards extends Core {
      */
     public function rules() {
         return CommonApiValidationRules::getRules([
+            'leaderboard_source',
             'leaderboard_type',
+            'character',
             'release',
-            'mode',
-            'character'
+            'mode'
         ]);
     }
 }
