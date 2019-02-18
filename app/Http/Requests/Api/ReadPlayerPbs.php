@@ -23,8 +23,8 @@ class ReadPlayerPbs extends Core {
      */
     public function rules() {
         return CommonApiValidationRules::getRules([
-            'player_id',
             'leaderboard_source',
+            'player_id',
             'leaderboard_type',
             'character',
             'release',

@@ -63,16 +63,16 @@ class PlayerPbsResource extends JsonResource {
         
         $replay = [];
         
-        if(!empty($this->show_replay) && !empty($this->ugcid) && !empty($this->downloaded)) {
+        if(!empty($this->show_replay) && !empty($this->replay_external_id) && !empty($this->downloaded)) {
             $replay = [
-                'ugcid' => $this->ugcid,
+                'replay_id' => $this->replay_external_id,
                 'version' => $this->version
             ];
             
             $replay_url = '';
             
             if(!empty($this->uploaded_to_s3)) {
-                $replay_url = env('AWS_URL') . "/replays/{$this->ugcid}.zip";
+                $replay_url = env('AWS_URL') . "/replays/{$this->replay_external_id}.zip";
             }
             
             $replay['file_url'] = $replay_url;

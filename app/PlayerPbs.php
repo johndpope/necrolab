@@ -13,7 +13,13 @@ use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
 use App\Traits\AddsSqlCriteria;
 use App\LeaderboardSources;
+use App\LeaderboardTypes;
+use App\Characters;
 use App\Releases;
+use App\Modes;
+use App\SeededTypes;
+use App\MultiplayerTypes;
+use App\Soundtracks;
 use App\Players;
 use App\Leaderboards;
 use App\LeaderboardSnapshots;
@@ -275,19 +281,18 @@ class PlayerPbs extends Model {
     public static function getPlayerApiReadQuery(
         string $player_id, 
         LeaderboardSources $leaderboard_source,
-        int $character_id, 
-        int $release_id, 
-        int $mode_id,
-        int $leaderboard_type_id,
-        int $seeded_type_id, 
-        int $multiplayer_type_id, 
-        int $soundtrack_id
+        LeaderboardTypes $leaderboard_type,
+        Characters $character,
+        Releases $release,
+        Modes $mode,
+        SeededTypes $seeded_type,
+        MultiplayerTypes $multiplayer_type,
+        Soundtracks $soundtrack
     ): Builder {
-    
         $query = DB::table(static::getSchemaTableName($leaderboard_source) . ' AS ppb')
             ->select([
-                'l.leaderboard_id',                
-                'ls.date AS first_snapshot_date',
+                'l.external_id AS leaderboard_id',                
+                'd.name AS first_snapshot_date',
                 'ppb.first_rank'
             ])
             ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', '=', 'ppb.player_id')
@@ -296,19 +301,19 @@ class PlayerPbs extends Model {
             ->join('dates AS d', 'd.id', '=', 'ls.date_id');
         
         static::addSelects($query);
-        static::addJoins($query);
-        static::addLeftJoins($query);
+        static::addJoins($leaderboard_source, $query);
+        static::addLeftJoins($leaderboard_source, $query);
 
         $query->where('p.external_id', $player_id)
-            ->where('l.character_id', $character_id)
-            ->where('l.release_id', $release_id)
-            ->where('l.mode_id', $mode_id)
-            ->where('l.leaderboard_type_id', $leaderboard_type_id)
-            ->where('l.seeded_type_id', $seeded_type_id)
-            ->where('l.multiplayer_type_id', $multiplayer_type_id)
-            ->where('l.soundtrack_id', $soundtrack_id)
+            ->where('l.leaderboard_type_id', $leaderboard_type->id)
+            ->where('l.character_id', $character->id)
+            ->where('l.release_id', $release->id)
+            ->where('l.mode_id', $mode->id)
+            ->where('l.seeded_type_id', $seeded_type->id)
+            ->where('l.multiplayer_type_id', $multiplayer_type->id)
+            ->where('l.soundtrack_id', $soundtrack->id)
             ->orderBy('d.name', 'desc')
-            ->orderBy('ppb.player_pb_id', 'desc');
+            ->orderBy('ppb.id', 'desc');
         
         return $query;
     }
