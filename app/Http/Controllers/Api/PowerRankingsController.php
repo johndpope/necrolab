@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
 use App\Components\RequestModels;
+use App\Components\Encoder;
 use App\Http\Resources\PowerRankingsResource;
 use App\Http\Requests\Api\ReadPowerRankings;
 use App\PowerRankings;
@@ -56,12 +57,10 @@ class PowerRankingsController extends Controller {
                         $request_models->soundtrack
                     )->get();
                     
-                    if(!empty($records)) {
-                        foreach($records as $record) {
-                            $record->categories = json_decode($record->categories, true);
-                            $record->characters = json_decode($record->characters, true);
-                        }
-                    }
+                    Encoder::jsonDecodeProperties($records, [
+                        'categories',
+                        'characters'
+                    ]);
                     
                     return $records;
                 })

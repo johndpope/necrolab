@@ -12,6 +12,12 @@ use App\Traits\HasManualSequence;
 use App\DailyRankingEntries;
 use App\LeaderboardSources;
 use App\Dates;
+use App\Characters;
+use App\Releases;
+use App\Modes;
+use App\MultiplayerTypes;
+use App\Soundtracks;
+use App\DailyRankingDayTypes;
 
 class DailyRankings extends Model {
     use IsSchemaTable, HasTempTable, HasManualSequence;
@@ -110,7 +116,15 @@ class DailyRankings extends Model {
         ");
     }
     
-    public static function getApiReadQuery(LeaderboardSources $leaderboard_source, int $release_id, int $daily_ranking_day_type_id): Builder {
+    public static function getApiReadQuery(
+        LeaderboardSources $leaderboard_source,
+        Characters $character,
+        Releases $release,
+        Modes $mode,
+        MultiplayerTypes $multiplayer_type,
+        Soundtracks $soundtrack,
+        DailyRankingDayTypes $daily_ranking_day_type
+    ): Builder {
         return DB::table(static::getSchemaTableName($leaderboard_source) . ' AS dr')
             ->select([
                 'd.name AS date',
@@ -120,8 +134,12 @@ class DailyRankings extends Model {
                 'dr.details'
             ])
             ->join('dates AS d', 'd.id', '=', 'dr.date_id')
-            ->where('rd.release_id', $release_id)
-            ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type_id)
+            ->where('dr.character_id', $character->id)
+            ->where('dr.release_id', $release->id)
+            ->where('dr.mode_id', $mode->id)
+            ->where('dr.multiplayer_type_id', $multiplayer_type->id)
+            ->where('dr.soundtrack_id', $soundtrack->id)
+            ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type->id)
             ->orderBy('d.name', 'desc');
     }
 }

@@ -11,13 +11,19 @@ class DailyRankingsResource extends JsonResource {
      * @param  \Illuminate\Http\Request  $request
      * @return array
      */
-    public function toArray($request) {    
+    public function toArray($request) {
+        $details = $this->details;
+        
+        if(empty($details)) {
+            $details = [];
+        }
+    
         return [
             'date' => $this->date,
-            'players' => (int)$this->players,
-            'total_dailies' => (int)$this->total_dailies,
-            'total_wins' => (int)$this->total_wins,
-            'total_score' => (int)$this->total_score
+            'players' => $this->players,
+            'dailies' => $this->dailies,
+            'wins' => $this->wins,
+            'details' => $details
         ];
     }
 }

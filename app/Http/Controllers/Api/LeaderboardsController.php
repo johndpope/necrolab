@@ -17,6 +17,7 @@ use App\Http\Requests\Api\ReadPlayerLeaderboards;
 use App\Http\Requests\Api\ReadPlayerCategoryLeaderboards;
 use App\Http\Requests\Api\ReadPlayerDailyLeaderboards;
 use App\Components\RequestModels;
+use App\Components\Encoder;
 use App\Leaderboards;
 use App\LeaderboardSources;
 use App\LeaderboardTypes;
@@ -202,7 +203,7 @@ class LeaderboardsController extends Controller {
         
         return DailyLeaderboardsResource::collection(
             Cache::store('opcache')->remember($cache_key, 5, function() use($request_models) {
-                return Leaderboards::getDailyApiReadQuery(
+                $records = Leaderboards::getDailyApiReadQuery(
                     $request_models->leaderboard_source,
                     $request_models->character,
                     $request_models->release, 
@@ -210,6 +211,12 @@ class LeaderboardsController extends Controller {
                     $request_models->multiplayer_type,
                     $request_models->soundtrack
                 )->get();
+                
+                Encoder::jsonDecodeProperties($records, [
+                    'details'
+                ]);
+                
+                return $records;
             })
         );
     }
@@ -306,10 +313,10 @@ class LeaderboardsController extends Controller {
         $cache_prefix_name = $request_models->getCacheNamePrefix();
         
         $cache_key = "player:{$player_id}:leaderboards:daily:" . (string)$cache_prefix_name;
-        Cache::store('opcache')->clear();
+    
         return DailyLeaderboardsResource::collection(
             Cache::store('opcache')->remember($cache_key, 5, function() use($player_id, $request_models) {
-                return Leaderboards::getPlayerDailyApiReadQuery(
+                $records = Leaderboards::getPlayerDailyApiReadQuery(
                     $request_models->leaderboard_source,
                     $player_id,
                     $request_models->character,
@@ -318,6 +325,12 @@ class LeaderboardsController extends Controller {
                     $request_models->multiplayer_type,
                     $request_models->soundtrack
                 )->get();
+                
+                Encoder::jsonDecodeProperties($records, [
+                    'details'
+                ]);
+                
+                return $records;
             })
         );
     }

@@ -20,7 +20,7 @@ class DailyLeaderboardsResource extends JsonResource {
             $record['players'] = $this->players;
         }
         
-        $details = json_decode($this->details, true);
+        $details = $this->details;
         
         if(empty($details)) {
             $details = [];

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
 use App\Http\Controllers\Controller;
 use App\Components\RequestModels;
+use App\Components\Encoder;
 use App\Http\Requests\Api\ReadLeaderboardSnapshots;
 use App\Http\Requests\Api\ReadPlayerLeaderboardSnapshots;
 use App\Http\Resources\LeaderboardSnapshotsResource;
@@ -52,11 +53,9 @@ class LeaderboardSnapshotsController extends Controller {
             Cache::store('opcache')->remember($cache_key, 5, function() use($request_models, $leaderboard_id) {
                 $records = LeaderboardSnapshots::getApiReadQuery($request_models->leaderboard_source, $leaderboard_id)->get();
                 
-                if(!empty($records)) {
-                    foreach($records as $record) {
-                        $record->details = json_decode($record->details, true);
-                    }
-                }
+                Encoder::jsonDecodeProperties($records, [
+                    'details'
+                ]);
                 
                 return $records;
             })
