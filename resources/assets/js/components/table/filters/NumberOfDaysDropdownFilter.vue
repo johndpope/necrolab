@@ -12,10 +12,6 @@ const NumberOfDaysDropdownFilter = {
         label: {
             type: String,
             default: 'Number of Days'
-        },
-        default_selected_value: {
-            type: String,
-            default: '30'
         }
     },
     methods: {

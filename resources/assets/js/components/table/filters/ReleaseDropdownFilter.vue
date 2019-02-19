@@ -12,10 +12,6 @@ const ReleaseDropdownFilter = {
         label: {
             type: String,
             default: 'Release'
-        },
-        default_selected_value: {
-            type: String,
-            default: 'amplified_dlc'
         }
     },
     methods: {

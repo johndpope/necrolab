@@ -14,10 +14,6 @@ const CharacterDropdownFilter = {
             type: String,
             default: 'Character'
         },
-        default_selected_value: {
-            type: String,
-            default: 'cadence'
-        },
         option_formatter: {
             type: Object,
             default: () => CharacterIconSelector

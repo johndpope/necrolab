@@ -12,10 +12,6 @@ const SoundtrackDropdownFilter = {
         label: {
             type: String,
             default: 'Soundtrack'
-        },
-        default_selected_value: {
-            type: String,
-            default: 'default'
         }
     },
     methods: {

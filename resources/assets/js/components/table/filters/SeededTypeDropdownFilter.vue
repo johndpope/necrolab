@@ -9,9 +9,9 @@ const SeededTypeDropdownFilter = {
             type: String,
             default: 'seeded_type'
         },
-        default_selected_value: {
+        label: {
             type: String,
-            default: 'unseeded'
+            default: 'Seeded Type'
         }
     },
     methods: {

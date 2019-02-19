@@ -12,10 +12,6 @@ const ModeDropdownFilter = {
         label: {
             type: String,
             default: 'Mode'
-        },
-        default_selected_value: {
-            type: String,
-            default: 'normal'
         }
     },
     methods: {

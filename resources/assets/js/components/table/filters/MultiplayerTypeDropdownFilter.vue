@@ -12,10 +12,6 @@ const MultiplayerTypeDropdownFilter = {
         label: {
             type: String,
             default: 'Multiplayer Type'
-        },
-        default_selected_value: {
-            type: String,
-            default: 'single'
         }
     },
     methods: {

@@ -91,10 +91,6 @@ const DropdownFilter = {
             type: Array,
             default: () => []
         },
-        default_selected_value: {
-            type: String,
-            default: ''
-        },
         option_value_name: {
             type: String,
             default: 'name'
@@ -139,15 +135,19 @@ const DropdownFilter = {
             
             options_length = options.length;
             
-            if(!this.options_initialized && this.default_selected_value != null) {
+            if(!this.options_initialized) {
                 for(let options_index = 0; options_index < options_length; options_index++) {
                     let option = options[options_index];
 
-                    if(option[this.option_value_name] == this.default_selected_value) {
+                    if(option['is_default'] != null && option.is_default == 1) {
                         this.selected = option;
                         
                         break;
                     }
+                }
+                
+                if(this.selected == null && options[0] != null) {
+                    this.selected = options[0];
                 }
             }
             
