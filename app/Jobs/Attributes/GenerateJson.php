@@ -63,7 +63,7 @@ class GenerateJson implements ShouldQueue {
             'multiplayer_types' => MultiplayerTypesResource::collection(MultiplayerTypes::all()),
             'soundtracks' => SoundtracksResource::collection(Soundtracks::all()),
             'details_columns' => LeaderboardDetailsColumnsResource::collection(LeaderboardDetailsColumns::all()),
-            'soundtracks' => DataTypesResource::collection(DataTypes::all())
+            'data_types' => DataTypesResource::collection(DataTypes::all())
         ];
         
         Storage::disk('public')->put('attributes.json', json_encode($attributes));
