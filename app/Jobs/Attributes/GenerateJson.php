@@ -19,6 +19,7 @@ use App\MultiplayerTypes;
 use App\Soundtracks;
 use App\LeaderboardDetailsColumns;
 use App\DataTypes;
+use App\ExternalSites;
 use App\Http\Resources\LeaderboardSourcesResource;
 use App\Http\Resources\LeaderboardTypesResource;
 use App\Http\Resources\CharactersResource;
@@ -29,6 +30,7 @@ use App\Http\Resources\MultiplayerTypesResource;
 use App\Http\Resources\SoundtracksResource;
 use App\Http\Resources\LeaderboardDetailsColumnsResource;
 use App\Http\Resources\DataTypesResource;
+use App\Http\Resources\ExternalSitesResource;
 
 class GenerateJson implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -63,7 +65,8 @@ class GenerateJson implements ShouldQueue {
             'multiplayer_types' => MultiplayerTypesResource::collection(MultiplayerTypes::all()),
             'soundtracks' => SoundtracksResource::collection(Soundtracks::all()),
             'details_columns' => LeaderboardDetailsColumnsResource::collection(LeaderboardDetailsColumns::all()),
-            'data_types' => DataTypesResource::collection(DataTypes::all())
+            'data_types' => DataTypesResource::collection(DataTypes::all()),
+            'sites' => ExternalSitesResource::collection(ExternalSites::all())
         ];
         
         Storage::disk('public')->put('attributes.json', json_encode($attributes));

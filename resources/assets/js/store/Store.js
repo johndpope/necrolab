@@ -10,6 +10,7 @@ Vue.use(Vuex);
 
 import PageStore from './modules/PageStore.js';
 import BreadcrumbsStore from './modules/BreadcrumbsStore.js';
+import AttributesStore from './modules/AttributesStore.js';
 import DataTypesStore from './modules/DataTypesStore.js';
 import CharactersStore from './modules/CharactersStore.js';
 import ModesStore from './modules/ModesStore.js';
@@ -28,6 +29,7 @@ const Store = new Vuex.Store({
     modules: {
         page: PageStore,
         breadcrumbs: BreadcrumbsStore,
+        attributes: AttributesStore,
         data_types: DataTypesStore,
         characters: CharactersStore,
         modes: ModesStore,

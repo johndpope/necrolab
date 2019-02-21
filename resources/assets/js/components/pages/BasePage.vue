@@ -11,13 +11,21 @@ const BasePage = {
     },
     created() {
         this.loaded = false;
-    
-        this.loadState(this.$route.params);
+        
+        let promise = this.$store.dispatch('attributes/load');
+
+        promise.then(() => {
+            this.loadState(this.$route.params);
+        });
     },
     beforeRouteUpdate(to, from, next) {
         this.loaded = false;
-    
-        this.loadState(to.params);
+
+        let promise = this.$store.dispatch('attributes/load');
+        
+        promise.then(() => {
+            this.loadState(to.params);
+        });
         
         next();
     }
