@@ -10,7 +10,7 @@
                     <b-nav-item href="#/">Home</b-nav-item>
                     <b-nav-item-dropdown text="Rankings" right>
                         <template
-                            v-for="(leaderboard_source, leaderboard_source_index) in leaderboard_sources"
+                            v-for="(leaderboard_source, leaderboard_source_index) in leaderboardSources"
                         >
                             <div 
                                 class="h5 pl-3 pb-0"
@@ -27,7 +27,7 @@
                             <a class="dropdown-item" :href="'#/rankings/character/' + leaderboard_source.name">Characters</a>
                             
                             <a 
-                                v-for="leaderboard_type in leaderboard_types" 
+                                v-for="leaderboard_type in leaderboardTypes" 
                                 class="dropdown-item"
                                 :href="'#/rankings/' + leaderboard_type.name + '/' + leaderboard_source.name"
                             >
@@ -37,7 +37,7 @@
                     </b-nav-item-dropdown>
                     <b-nav-item-dropdown text="Leaderboards" right>
                         <template
-                            v-for="(leaderboard_source, leaderboard_source_index) in leaderboard_sources"
+                            v-for="(leaderboard_source, leaderboard_source_index) in leaderboardSources"
                         >
                             <div 
                                 class="h5 pl-3 pb-0"
@@ -50,7 +50,7 @@
                                 </leaderboard-source-icon-display>
                             </div>                            
                             <a 
-                                v-for="leaderboard_type in leaderboard_types" 
+                                v-for="leaderboard_type in leaderboardTypes" 
                                 class="dropdown-item"
                                 :href="'#/leaderboards/' + leaderboard_type.name + '/' + leaderboard_source.name"
                             >
@@ -62,7 +62,7 @@
                         <a class="dropdown-item" href="#/players">Necrolab</a>
                         <div class="dropdown-divider"></div>
                         <a 
-                            v-for="leaderboard_source in leaderboard_sources" 
+                            v-for="leaderboard_source in leaderboardSources" 
                             :key="leaderboard_source.name"
                             class="dropdown-item"
                             :href="'#/players/' + leaderboard_source.name"
@@ -125,15 +125,18 @@ const WithNavLayout = {
     },
     data() {
         return {
-            properties_loaded: false,
-            leaderboard_sources: [],
-            leaderboard_types: []
+            properties_loaded: false
         };
     },
-    created() {
-        this.leaderboard_sources = this.$store.getters['attributes/getAll']('leaderboard_sources');
-        this.leaderboard_types = this.$store.getters['attributes/getAll']('leaderboard_types');
-        
+    computed: {
+        leaderboardSources() {
+            return this.$store.getters['attributes/getAll']('leaderboard_sources');
+        },
+        leaderboardTypes() {
+            return this.$store.getters['attributes/getAll']('leaderboard_types');
+        }
+    },
+    created() {        
         this.properties_loaded = true;
     }
 };
