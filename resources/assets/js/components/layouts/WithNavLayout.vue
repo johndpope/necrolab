@@ -130,19 +130,11 @@ const WithNavLayout = {
             leaderboard_types: []
         };
     },
-    created() {        
-        let promises = [
-            this.$store.dispatch('leaderboard_sources/loadAll'),
-            this.$store.dispatch('leaderboard_types/loadAll')
-        ];
+    created() {
+        this.leaderboard_sources = this.$store.getters['attributes/getAll']('leaderboard_sources');
+        this.leaderboard_types = this.$store.getters['attributes/getAll']('leaderboard_types');
         
-        Promise.all(promises)
-            .then(() => {
-                this.leaderboard_sources = this.$store.getters['leaderboard_sources/getAll'];
-                this.leaderboard_types = this.$store.getters['leaderboard_types/getAll'];
-                
-                this.properties_loaded = true;
-            });
+        this.properties_loaded = true;
     }
 };
 
