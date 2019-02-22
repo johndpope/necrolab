@@ -24,25 +24,36 @@ const AttributesStore = {
     },
     mutations: {
         setAll(state, records) {
+            let all_records = {};
+            let records_by_name = {};
+            let default_records = {};
+            let selected = {};
+            
             state.names.forEach((attribute_name) => {
                 if(records[attribute_name] != null) {
-                    state.records[attribute_name] = records[attribute_name];
+                    all_records[attribute_name] = records[attribute_name];
                     
                     state.filter_stores[attribute_name] = [];
                     
-                    state.selected[attribute_name] = '';
+                    selected[attribute_name] = '';
                     
-                    state.records_by_name[attribute_name] = {};
+                    records_by_name[attribute_name] = {};
                     
                     records[attribute_name].forEach((record) => {
-                        state.records_by_name[attribute_name][record.name] = record;
+                        records_by_name[attribute_name][record.name] = record;
                         
                         if(record['is_default'] != null && record.is_default == 1) {
-                            state.default_records[attribute_name] = record;
+                            default_records[attribute_name] = record;
                         }
                     });
                 }
             });
+            
+            // Set each state property from a local variable to make them reactive
+            state.records = all_records;
+            state.records_by_name = records_by_name;
+            state.default_records = default_records;
+            state.selected = selected;
         },
         setSelected(state, payload) {
             // In order to make state.selected reactive it needs to be cleared and reset from a local variable.
