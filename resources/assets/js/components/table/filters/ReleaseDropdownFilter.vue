@@ -15,14 +15,17 @@ const ReleaseDropdownFilter = {
         }
     },
     methods: {
-        getDefaultOptions() {
-            return this.$store.getters['releases/getFiltered'];
+        getDefaultOptions() {            
+            return this.$store.getters['attributes/getFiltered']('releases');
         },
         loadOptions(resolve, reject) {
             resolve();
         },
         setSelectedState(selected) {
-            this.$store.commit('releases/setSelected', selected);
+            this.$store.commit('attributes/setSelected', {
+                attribute: 'releases',
+                record: selected
+            });
         }
     }
 };

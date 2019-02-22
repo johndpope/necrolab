@@ -16,13 +16,16 @@ const ModeDropdownFilter = {
     },
     methods: {
         getDefaultOptions() {
-            return this.$store.getters['modes/getFiltered'];
+            return this.$store.getters['attributes/getFiltered']('modes');
         },
         loadOptions(resolve, reject) {
             resolve();
         },
         setSelectedState(selected) {
-            this.$store.commit('modes/setSelected', selected);
+            this.$store.commit('attributes/setSelected', {
+                attribute: 'modes',
+                record: selected
+            });
         }
     }
 };

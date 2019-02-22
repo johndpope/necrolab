@@ -28,18 +28,17 @@ const SiteDropdownFilter = {
         }
     },
     methods: {
-        getDefaultOptions() {
-            return this.$store.getters['sites/getAll'];
+        getDefaultOptions() {            
+            return this.$store.getters['attributes/getAll']('sites');
         },
         loadOptions(resolve, reject) {
-            let promise = this.$store.dispatch('sites/loadAll');
-        
-            promise.then(() => {
-                resolve();
-            });
+            resolve();
         },
         setSelectedState(selected) {
-            this.$store.commit('sites/setSelected', selected);
+            this.$store.commit('attributes/setSelected', {
+                attribute: 'sites',
+                record: selected
+            });
         }
     }
 };

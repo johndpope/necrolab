@@ -105,7 +105,7 @@ const DropdownFilter = {
         }
     },
     computed: {
-        options() {
+        options() {            
             let options = this.getDefaultOptions();  
 
             let options_length = options.length;
@@ -161,7 +161,7 @@ const DropdownFilter = {
             else {
                 this.hidden = false;
             }
-            
+
             let selected_option = this.selected;
             
             if(selected_option[this.option_value_name] != null) {
@@ -191,7 +191,7 @@ const DropdownFilter = {
                 
                 this.$emit("selectedValueChanged", this.field_name, selected);
                 
-                this.setSelectedState(selected);
+                this.setSelectedState(this.selected_option);
             }
         },
         hasOptionFormatter() {

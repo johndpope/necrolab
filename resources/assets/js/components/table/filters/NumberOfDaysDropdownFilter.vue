@@ -15,14 +15,17 @@ const NumberOfDaysDropdownFilter = {
         }
     },
     methods: {
-        getDefaultOptions() {
-            return this.$store.getters['number_of_days/getAll'];
+        getDefaultOptions() {            
+            return this.$store.getters['attributes/getFiltered']('number_of_days');
         },
         loadOptions(resolve, reject) {
             resolve();
         },
         setSelectedState(selected) {
-            this.$store.commit('number_of_days/setSelected', selected);
+            this.$store.commit('attributes/setSelected', {
+                attribute: 'number_of_days',
+                record: selected
+            });
         }
     }
 };
