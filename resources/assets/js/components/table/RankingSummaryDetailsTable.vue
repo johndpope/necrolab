@@ -1,33 +1,40 @@
 <template>
     <div 
-        v-if="leaderboard_types.length > 0 && details_columns_loaded"
+        v-if="leaderboard_types.length > 0"
         class="table-responsive pb-0"
     >
         <table class="table table-sm table-bordered pb-0 mb-0">
             <thead>
                 <tr>
-                    <th scope="col"></th>
+                    <th scope="col">
+                        Category
+                    </th>
                     <th 
-                        v-for="(leaderboard_type, leaderboard_type_index) in leaderboard_types"
-                        v-if="leaderboard_type.name != 'daily'"
-                        :key="leaderboard_type_index"
                         scope="col"
+                        v-for="(row, row_index) in rows"
                     >
-                        {{ leaderboard_type.display_name }}
+                        {{ row.display_name }}
+                    </th>
+                    <th 
+                        scope="col"
+                        v-for="(details_name, details_index) in details_columns"
+                        :key="details_index"
+                    >
+                        {{ $store.getters['details_columns/getByName'](details_name).display_name }}
                     </th>
                 </tr>
             </thead>
             <tbody>
                 <tr
-                    v-for="(row, row_index) in rows"
+                    v-for="(leaderboard_type, leaderboard_type_index) in leaderboard_types"
+                    v-if="leaderboard_type.name != 'daily'"
+                    :key="leaderboard_type_index"
                 >
                     <th scope="row">
-                        {{ row.display_name }}
+                        {{ leaderboard_type.display_name }}
                     </th>
-                    <td
-                        v-for="(leaderboard_type, leaderboard_type_index) in leaderboard_types"
-                        v-if="leaderboard_type.name != 'daily'"
-                        :key="leaderboard_type_index"
+                    <td 
+                        v-for="(row, row_index) in rows"
                     >
                         <template v-if="row['rounded'] != null && row.rounded">
                             <rounded-decimal :original_number="getCategoryField(leaderboard_type.name, row.name)"></rounded-decimal>
@@ -36,27 +43,21 @@
                             {{ getCategoryField(leaderboard_type.name, row.name) }}
                         </template>
                     </td>
-                </tr>
-                <tr>
-                    <th scope="row">
-                        {{ categoryDetailsLabel }}
-                    </th>
                     <td
-                        v-for="(leaderboard_type, leaderboard_type_index) in leaderboard_types"
-                        v-if="leaderboard_type.name != 'daily'"
-                        :key="leaderboard_type_index"
+                        v-for="details_column_name in details_columns"
                     >
                         <template
-                            v-if="$store.getters['leaderboard_details_columns/getByName'](leaderboard_type.details_column_name).data_type == 'seconds'"
+                            v-for="(details_value, details_name) in getCategoryField(leaderboard_type.name, 'details')"
                         >
-                            <seconds-to-time :unformatted="getCategoryField(leaderboard_type.name, leaderboard_type.details_column_name)" :include_hours="true" :zero_pad_hours="true">
-                            </seconds-to-time>
-                        </template>
-                        <template v-else>
-                            {{ getCategoryField(leaderboard_type.name, leaderboard_type.details_column_name) }}
+                            <details-column
+                                v-if="details_name == details_column_name"
+                                :details_name="details_name" 
+                                :details_value="details_value"
+                            >
+                            </details-column>
                         </template>
                     </td>
-                </tr> 
+                </tr>
             </tbody>
         </table>
     </div>
@@ -64,13 +65,13 @@
 
 <script>
 import RoundedDecimal from '../formatting/RoundedDecimal.vue';
-import SecondsToTime from '../formatting/SecondsToTime.vue';
+import DetailsColumn from '../formatting/DetailsColumn.vue';
 
 const RankingSummaryDetailsTable = {
     name: 'ranking-summary-details-table',
     components: {
         'rounded-decimal': RoundedDecimal,
-        'seconds-to-time': SecondsToTime
+        'details-column': DetailsColumn
     },
     props: {
         record: {
@@ -84,56 +85,35 @@ const RankingSummaryDetailsTable = {
         leaderboard_types: {
             type: Array,
             default: () => []
-        },
-        details_column: {
-            type: Object,
-            default: () => {}
         }
     },
     data() {
         return {
-           details_columns_loaded: false
-        }
-    },
-    computed: {
-        categoryDetailsLabel() {
-            let category_details_segments = [];
-            
-            let leaderboard_types_length = this.leaderboard_types.length;
-            
-            for(let index = 0; index < leaderboard_types_length; index++) {
-                let leaderboard_type = this.leaderboard_types[index];
-                
-                if(leaderboard_type.name != 'daily') {
-                    let details_column = this.$store.getters['leaderboard_details_columns/getByName'](leaderboard_type.details_column_name);
-                    
-                    if(details_column['display_name'] != null) {
-                        category_details_segments.push(details_column.display_name);
-                    }
-                }
-            }
-            
-            let category_details = category_details_segments.join('/');
-            
-            return category_details;
-        }
+            details_columns: []
+        };
     },
     methods: {
         getCategoryField(category_name, field_name) {
             let field_value = '';
             
-            if(this.record[category_name] != null) {
-                field_value = this.record[category_name][field_name];
+            if(
+                this.record['categories'] != null && 
+                this.record['categories'][category_name] != null && 
+                this.record['categories'][category_name][field_name] != null
+            ) {
+                field_value = this.record.categories[category_name][field_name];
             }
             
             return field_value;
         }
     },
     created() {
-        let promise = this.$store.dispatch('leaderboard_details_columns/loadAll');
-        
-        promise.then(() => {            
-            this.details_columns_loaded = true;
+        this.leaderboard_types.forEach((leaderboard_type) => {
+            leaderboard_type.details_columns.forEach((details_name) => {
+                if(this.details_columns.indexOf(details_name) == -1) {
+                    this.details_columns.push(details_name);
+                }
+            });
         });
     }
 };

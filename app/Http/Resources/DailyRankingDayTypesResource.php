@@ -18,12 +18,8 @@ class DailyRankingDayTypesResource extends JsonResource {
             'id' => (int)$this->id,
             'name' => (string)$this->name,
             'display_name' => $this->display_name,
-            $this->mergeWhen(!empty($authenticated_user) && $authenticated_user->hasAnyPermission([
-                'permission:daily_ranking_day_types:store',
-                'permission:daily_ranking_day_types:update'
-            ]), [
-                'enabled' => $this->enabled,
-            ])
+            //TODO: Add is_default to the daily_ranking_day_types table
+            'is_default' => $this->name == 0 ? 1 : 0
         ];
     }
 }

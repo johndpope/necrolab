@@ -53,34 +53,24 @@ export default {
         }
     },
     methods: {
-        loadState(route_params) {
-            let promise = this.$store.dispatch('page/loadModules', [
-                'leaderboard_sources',
-                'releases',
-                'modes',
-                'seeded_types',
-                'leaderboard_types',
-                'leaderboard_details_columns',
-                'data_types'
+        loadState(route_params) {   
+            this.$store.commit('leaderboard_types/setFilterStores', [
+                'modes'
             ]);
-
-            promise.then(() => {
-                this.$store.commit('releases/setFilterStores', [
-                    'leaderboard_sources'
-                ]);
-                
-                this.$store.commit('leaderboard_types/setFilterStores', [
-                    'modes'
-                ]);
-                
-                this.$store.commit('modes/setFilterStores', [
-                    'releases'
-                ]);
-                
-                this.$store.commit('leaderboard_sources/setSelected', route_params.leaderboard_source);
-                
-                this.loaded = true;
-            });
+            
+            this.$store.commit('releases/setFilterStores', [
+                'leaderboard_sources'
+            ]);
+            
+            this.$store.commit('modes/setFilterStores', [
+                'releases'
+            ]);
+            
+            this.$store.commit('multiplayer_types/setFilterStores', [
+                'leaderboard_sources'
+            ]);
+            
+            this.loaded = true;
         }
     }
 };

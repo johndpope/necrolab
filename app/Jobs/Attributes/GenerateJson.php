@@ -17,6 +17,7 @@ use App\Modes;
 use App\SeededTypes;
 use App\MultiplayerTypes;
 use App\Soundtracks;
+use App\DailyRankingDayTypes;
 use App\LeaderboardDetailsColumns;
 use App\DataTypes;
 use App\ExternalSites;
@@ -28,6 +29,7 @@ use App\Http\Resources\ModesResource;
 use App\Http\Resources\SeededTypesResource;
 use App\Http\Resources\MultiplayerTypesResource;
 use App\Http\Resources\SoundtracksResource;
+use App\Http\Resources\DailyRankingDayTypesResource;
 use App\Http\Resources\LeaderboardDetailsColumnsResource;
 use App\Http\Resources\DataTypesResource;
 use App\Http\Resources\ExternalSitesResource;
@@ -64,6 +66,7 @@ class GenerateJson implements ShouldQueue {
             'seeded_types' => SeededTypesResource::collection(SeededTypes::all()),
             'multiplayer_types' => MultiplayerTypesResource::collection(MultiplayerTypes::all()),
             'soundtracks' => SoundtracksResource::collection(Soundtracks::all()),
+            'number_of_days' => DailyRankingDayTypesResource::collection(DailyRankingDayTypes::all()),
             'details_columns' => LeaderboardDetailsColumnsResource::collection(LeaderboardDetailsColumns::all()),
             'data_types' => DataTypesResource::collection(DataTypes::all()),
             'sites' => ExternalSitesResource::collection(ExternalSites::all())

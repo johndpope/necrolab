@@ -8,6 +8,7 @@
             :api_endpoint_url="api_endpoint_url" 
             :header_columns="header_columns" 
             :has_action_column="true" 
+            :default_request_parameters="defaultRequestParameters"
             :filters="filters"
         >
             <template slot="table-row" slot-scope="{ row_index, row }">
@@ -38,6 +39,8 @@ import NecroTable from '../table/NecroTable.vue';
 import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
 import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
 import SeededTypeDropdownFilter from '../table/filters/SeededTypeDropdownFilter.vue';
+import MultiplayerTypeDropdownFilter from '../table/filters/MultiplayerTypeDropdownFilter.vue';
+import SoundtrackDropdownFilter from '../table/filters/SoundtrackDropdownFilter.vue';
 import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
 
 const RankingsOverviewPage = {
@@ -76,7 +79,9 @@ const RankingsOverviewPage = {
                 return [
                     ReleaseDropdownFilter,
                     ModeDropdownFilter,
-                    SeededTypeDropdownFilter
+                    SeededTypeDropdownFilter,
+                    MultiplayerTypeDropdownFilter,
+                    SoundtrackDropdownFilter
                 ];
             }
         },
@@ -86,7 +91,9 @@ const RankingsOverviewPage = {
                 return [
                     'releases',
                     'modes',
-                    'seeded_types'
+                    'seeded_types',
+                    'multiplayer_types',
+                    'soundtracks'
                 ];
             }
         }
@@ -105,6 +112,13 @@ const RankingsOverviewPage = {
             ]
         }
     },
+    computed: {
+        defaultRequestParameters() {
+            return {
+                leaderboard_source: this.$route.params.leaderboard_source
+            };
+        }
+    },
     methods: {
         getEntriesUrl(date) {
             let url_segment_stores_length = this.url_segment_stores.length;
@@ -114,13 +128,9 @@ const RankingsOverviewPage = {
             for(let index = 0; index < url_segment_stores_length; index++) {
                 let url_segment_store = this.url_segment_stores[index];
                 
-                let selected = this.$store.getters[url_segment_store + '/getSelected'];
+                let selected = this.$store.getters[`${url_segment_store}/getSelected`];
                 
-                if(typeof selected !== 'string') {
-                    selected = selected.name;
-                }
-                
-                url_segments.push(selected);
+                url_segments.push(selected.name);
             }
             
             return '/rankings/' + this.category_name + '/' + this.$route.params.leaderboard_source + '/' + url_segments.join('/') + '/' + date;

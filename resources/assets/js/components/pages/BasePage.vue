@@ -37,7 +37,7 @@ const BasePage = {
     },
     created() {
         let promise = this.$store.dispatch('attributes/load');
-        
+
         promise.then(() => {
             this.initialize(this.$route.params);
         });

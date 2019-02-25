@@ -119,11 +119,11 @@ class UpdateStats implements ShouldQueue {
                         foreach($character_categories as $leaderboard_type_name => $category_data) {
                             /* ---------- Summarize character category players ---------- */
                                 
-                            if(!isset($character_summary[$power_ranking_id][$character_name][$leaderboard_type_name]['players'])) {
-                                $character_summary[$power_ranking_id][$character_name][$leaderboard_type_name]['players'] = 0;
+                            if(!isset($character_summary[$power_ranking_id][$character_name]['categories'][$leaderboard_type_name]['players'])) {
+                                $character_summary[$power_ranking_id][$character_name]['categories'][$leaderboard_type_name]['players'] = 0;
                             }
                             
-                            $character_summary[$power_ranking_id][$character_name][$leaderboard_type_name]['players'] += 1;
+                            $character_summary[$power_ranking_id][$character_name]['categories'][$leaderboard_type_name]['players'] += 1;
                             
                         
                             $character_details = $category_data['details'] ?? [];
@@ -141,11 +141,11 @@ class UpdateStats implements ShouldQueue {
                                 
                                     /* ---------- Summarize character category details ---------- */
                                 
-                                    if(!isset($character_summary[$power_ranking_id][$character_name][$leaderboard_type_name]['details'][$details_name])) {
-                                        $character_summary[$power_ranking_id][$character_name][$leaderboard_type_name]['details'][$details_name] = 0;
+                                    if(!isset($character_summary[$power_ranking_id][$character_name]['categories'][$leaderboard_type_name]['details'][$details_name])) {
+                                        $character_summary[$power_ranking_id][$character_name]['categories'][$leaderboard_type_name]['details'][$details_name] = 0;
                                     }
                                     
-                                    $character_summary[$power_ranking_id][$character_name][$leaderboard_type_name]['details'][$details_name] += $details_value;
+                                    $character_summary[$power_ranking_id][$character_name]['categories'][$leaderboard_type_name]['details'][$details_name] += $details_value;
                                 }
                             }
                         }

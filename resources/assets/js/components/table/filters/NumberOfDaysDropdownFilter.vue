@@ -16,7 +16,7 @@ const NumberOfDaysDropdownFilter = {
     },
     methods: {
         getDefaultOptions() {            
-            return this.$store.getters['number_of_days/getFiltered'];
+            return this.$store.getters['number_of_days/getAll'];
         },
         loadOptions(resolve, reject) {
             resolve();

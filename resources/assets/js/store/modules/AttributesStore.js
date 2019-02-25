@@ -10,6 +10,7 @@ const AttributesStore = {
             'seeded_types',
             'multiplayer_types',
             'soundtracks',
+            'number_of_days',
             'details_columns',
             'data_types',
             'sites'

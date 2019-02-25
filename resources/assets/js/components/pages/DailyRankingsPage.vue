@@ -1,6 +1,7 @@
 <template>
     <rankings-overview-page
         :loaded="loaded"
+        key="daily"        
         category_name="daily"
         category_display_name="Daily"
         :api_endpoint_url="api_endpoint_url"
@@ -22,7 +23,10 @@
             </td>
         </template>
         <template slot="row-details" slot-scope="{ row }">
-            <daily-ranking-summary-details-table :record="row" :show_calculated="false">
+            <daily-ranking-summary-details-table 
+                :record="row" 
+                :details_columns="details_columns"
+            >
             </daily-ranking-summary-details-table>
         </template>
     </rankings-overview-page>
@@ -32,8 +36,11 @@
 import BasePage from './BasePage.vue';
 import RankingsOverviewPage from '../rankings/RankingsOverviewPage.vue';
 import DailyRankingSummaryDetailsTable from '../table/DailyRankingSummaryDetailsTable.vue';
+import CharacterDropdownFilter from '../table/filters/CharacterDropdownFilter.vue';
 import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
 import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
+import MultiplayerTypeDropdownFilter from '../table/filters/MultiplayerTypeDropdownFilter.vue';
+import SoundtrackDropdownFilter from '../table/filters/SoundtrackDropdownFilter.vue';
 import NumberOfDaysDropdownFilter from '../table/filters/NumberOfDaysDropdownFilter.vue';
 
 export default {
@@ -45,6 +52,7 @@ export default {
     },
     data() {
         return {
+            details_columns: [],
             api_endpoint_url: '/api/1/rankings/daily',
             header_columns: [
                 'Rank',
@@ -52,8 +60,11 @@ export default {
                 'Score'
             ],
             filters: [
+                CharacterDropdownFilter,
                 ReleaseDropdownFilter,
                 ModeDropdownFilter,
+                MultiplayerTypeDropdownFilter,
+                SoundtrackDropdownFilter,
                 NumberOfDaysDropdownFilter
             ],
             url_segment_stores: [
@@ -65,30 +76,33 @@ export default {
     },
     methods: {
         loadState(route_params) {
-            let promise = this.$store.dispatch('page/loadModules', [
-                'leaderboard_sources',
-                'leaderboard_types',
-                'releases',
-                'modes',
-                'number_of_days'
+            this.$store.commit('releases/setFilterStores', [
+                'leaderboard_sources'
             ]);
-
-            promise.then(() => {
-                this.$store.commit('releases/setFilterStores', [
-                    'leaderboard_sources'
-                ]);
-                
-                this.$store.commit('modes/setFilterStores', [
-                    'leaderboard_types',
-                    'releases'
-                ]);
-                
-                this.$store.commit('leaderboard_sources/setSelected', route_params.leaderboard_source);
-                
-                this.$store.commit('leaderboard_types/setSelected', 'daily');
-                
-                this.loaded = true;
-            });
+            
+            this.$store.commit('characters/setFilterStores', [
+                'leaderboard_sources',
+                'releases',
+                'leaderboard_types',
+                'modes'
+            ]);
+            
+            this.$store.commit('modes/setFilterStores', [
+                'leaderboard_types',
+                'releases'
+            ]);
+            
+            this.$store.commit('multiplayer_types/setFilterStores', [
+                'leaderboard_sources'
+            ]);
+            
+            this.$store.commit('leaderboard_types/setSelected', 'daily');
+            
+            let leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
+            
+            this.details_columns = this.$store.getters['details_columns/getAllByNames'](leaderboard_type.details_columns);
+            
+            this.loaded = true;
         }
     }
 };
