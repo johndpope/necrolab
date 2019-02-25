@@ -16,16 +16,13 @@ const ReleaseDropdownFilter = {
     },
     methods: {
         getDefaultOptions() {            
-            return this.$store.getters['attributes/getFiltered']('releases');
+            return this.$store.getters['releases/getFiltered'];
         },
         loadOptions(resolve, reject) {
             resolve();
         },
         setSelectedState(selected) {
-            this.$store.commit('attributes/setSelected', {
-                attribute: 'releases',
-                record: selected
-            });
+            this.$store.commit('releases/setSelected', selected);
         }
     }
 };

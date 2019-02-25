@@ -16,16 +16,13 @@ const MultiplayerTypeDropdownFilter = {
     },
     methods: {
         getDefaultOptions() {            
-            return this.$store.getters['attributes/getFiltered']('multiplayer_types');
+            return this.$store.getters['multiplayer_types/getFiltered'];
         },
         loadOptions(resolve, reject) {
             resolve();
         },
         setSelectedState(selected) {
-            this.$store.commit('attributes/setSelected', {
-                attribute: 'multiplayer_types',
-                record: selected
-            });
+            this.$store.commit('multiplayer_types/setSelected', selected);
         }
     }
 };

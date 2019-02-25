@@ -1,5 +1,5 @@
 import ModuleGenerator from './ModuleGenerator.js';
 
-const LeaderboardSourcesStore = ModuleGenerator.getNew('/api/1/leaderboards/sources');
+const LeaderboardSourcesStore = ModuleGenerator.getNew('leaderboard_sources');
 
 export default LeaderboardSourcesStore;

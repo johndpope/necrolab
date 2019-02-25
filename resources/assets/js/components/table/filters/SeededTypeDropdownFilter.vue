@@ -16,16 +16,13 @@ const SeededTypeDropdownFilter = {
     },
     methods: {
         getDefaultOptions() {            
-            return this.$store.getters['attributes/getAll']('seeded_types');
+            return this.$store.getters['seeded_types/getAll'];
         },
         loadOptions(resolve, reject) {
             resolve();
         },
         setSelectedState(selected) {
-            this.$store.commit('attributes/setSelected', {
-                attribute: 'seeded_types',
-                record: selected
-            });
+            this.$store.commit('seeded_types/setSelected', selected);
         }
     }
 };

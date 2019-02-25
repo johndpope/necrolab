@@ -16,16 +16,13 @@ const SoundtrackDropdownFilter = {
     },
     methods: {
         getDefaultOptions() {            
-            return this.$store.getters['attributes/getFiltered']('soundtracks');
+            return this.$store.getters['soundtracks/getAll'];
         },
         loadOptions(resolve, reject) {
             resolve();
         },
         setSelectedState(selected) {
-            this.$store.commit('attributes/setSelected', {
-                attribute: 'soundtracks',
-                record: selected
-            });
+            this.$store.commit('soundtracks/setSelected', selected);
         }
     }
 };

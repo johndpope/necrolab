@@ -1,8 +1,5 @@
 import ModuleGenerator from './ModuleGenerator.js';
 
-const ModesStore = ModuleGenerator.getNew(
-    '/api/1/modes',
-    'modes'
-);
+const ModesStore = ModuleGenerator.getNew('modes');
 
 export default ModesStore;

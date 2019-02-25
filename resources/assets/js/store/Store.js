@@ -42,7 +42,7 @@ const Store = new Vuex.Store({
         leaderboards: LeaderboardsStore,
         leaderboard_sources: LeaderboardSourcesStore,
         leaderboard_types: LeaderboardTypesStore,
-        leaderboard_details_columns: LeaderboardDetailsColumnsStore
+        details_columns: LeaderboardDetailsColumnsStore
     }
 });
 

@@ -1,5 +1,5 @@
 import ModuleGenerator from './ModuleGenerator.js';
 
-const SoundtracksStore = ModuleGenerator.getNew('/api/1/soundtracks');
+const SoundtracksStore = ModuleGenerator.getNew('soundtracks');
 
 export default SoundtracksStore;

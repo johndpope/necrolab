@@ -130,10 +130,10 @@ const WithNavLayout = {
     },
     computed: {
         leaderboardSources() {
-            return this.$store.getters['attributes/getAll']('leaderboard_sources');
+            return this.$store.getters['leaderboard_sources/getAll'];
         },
         leaderboardTypes() {
-            return this.$store.getters['attributes/getAll']('leaderboard_types');
+            return this.$store.getters['leaderboard_types/getAll'];
         }
     },
     created() {        

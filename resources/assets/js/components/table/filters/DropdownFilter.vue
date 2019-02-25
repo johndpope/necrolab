@@ -189,9 +189,9 @@ const DropdownFilter = {
                     selected = this.selected_option[this.option_value_name];
                 }
                 
-                this.$emit("selectedValueChanged", this.field_name, selected);
-                
                 this.setSelectedState(this.selected_option);
+                
+                this.$emit("selectedValueChanged", this.field_name, selected);
             }
         },
         hasOptionFormatter() {

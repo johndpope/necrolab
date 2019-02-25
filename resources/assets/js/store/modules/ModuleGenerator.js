@@ -1,25 +1,43 @@
 const ModuleGenerator = {
-    getNew(api_endpoint_url, filter_property_name) {
+    getNew(attribute_name) {
         return {
             namespaced: true,
             state: {
-                loading_promise: null,
+                attribute_name: attribute_name,
                 records: [],
                 records_by_name: {},
                 selected: {},
+                default_record: {},
                 filter_stores: []
             },
             mutations: {
                 setAll(state, records) {
                     state.records = records;
                     
-                    let records_length = records.length;
-                    
-                    for(let index = 0; index < records_length; index++) {
-                        state.records_by_name[records[index].name] = records[index];
-                    }
+                    records.forEach((record) => {
+                        state.records_by_name[record.name] = record;
+                    });
                 },
-                setSelected(state, record) {
+                setSelected(state, record) { 
+                    if(record != null) {
+                        if(record['name'] != null) {
+                            if (state.records_by_name[record.name] == null) {
+                                record = {};
+                            }
+                        }
+                        else {
+                            if(state.records_by_name[record] != null) {
+                                record = state.records_by_name[record];
+                            }
+                            else {
+                                record = {};
+                            }
+                        }
+                    }
+                    else {
+                        record = {};
+                    }
+
                     state.selected = record;
                 },
                 setFilterStores(state, filter_stores) {
@@ -33,15 +51,11 @@ const ModuleGenerator = {
                 getAllByNames: (state) => (names) => {
                     let records = [];
                     
-                    let names_length = names.length;
-                    
-                    for(let index = 0; index < names_length; index++) {
-                        let name = names[index];
-                        
+                    names.forEach((name) => {
                         if(state.records_by_name[name] != null) {
                             records.push(state.records_by_name[name]);
                         }
-                    }
+                    })
 
                     return records;
                 },
@@ -55,35 +69,28 @@ const ModuleGenerator = {
                     return record;
                 },
                 getFiltered: (state, getters, root_state, root_getters) => {
+                    /* 
+                    * 1. Loop through filter_stores
+                    * 2. Get the selected value of each filter store
+                    * 3. Check if filter store record contains the name of the current attribute
+                    * 4. If filtered_names has not been set then set the filtered record names from the filter store property.
+                    * 5. If filtered_names has been set then only set filtered record names if the count is less than the current count.
+                    */
                     let filtered_names = [];
-                    let first_pass_completed = false;
                     
-                    let filter_stores_length = state.filter_stores.length;
+                    state.filter_stores.forEach((filter_store_name) => {
+                        let filter_option = root_getters[`${filter_store_name}/getSelected`];
 
-                    if(filter_stores_length > 0) {                        
-                        let records_length = state.records.length;
+                        if(filter_option['name'] == null) {
+                            filter_option = {};
+                        }
 
-                        for(let index = 0; index < filter_stores_length; index++) {
-                            let filter_store_name = state.filter_stores[index];
-                            
-                            let filter_option = root_getters[filter_store_name + '/getSelected'];
-
-                            if(typeof filter_option == 'string') {
-                                filter_option = root_getters[filter_store_name + '/getByName'](filter_option);
-                            }
-                            else if(filter_option['name'] == null) {
-                                filter_option = {};
-                            }
-
-                            if(filter_option[filter_property_name] != null) {
-                                if(!first_pass_completed || filter_option[filter_property_name].length < filtered_names.length) {
-                                    filtered_names = filter_option[filter_property_name];
-                                    
-                                    first_pass_completed = true;
-                                }
+                        if(filter_option[state.attribute_name] != null) {
+                            if(filtered_names.length == 0 || filter_option[state.attribute_name].length < filtered_names.length) {
+                                filtered_names = filter_option[state.attribute_name];
                             }
                         }
-                    }
+                    });
                     
                     return getters.getAllByNames(filtered_names);
                 },
@@ -92,47 +99,6 @@ const ModuleGenerator = {
                 },
                 getSelected: state => {
                     return state.selected;
-                }
-            },
-            actions: {
-                loadAll({ commit, state }) {
-                    if(state.loading_promise == null) {
-                        state.loading_promise = new Promise((resolve, reject) => {
-                            if(state.records.length == 0) {
-                                axios.get(api_endpoint_url)
-                                .then(response => {                    
-                                    commit('setAll', response.data.data);
-                                    
-                                    resolve();
-                                })
-                                .catch(error => {                    
-                                    reject();
-                                });
-                            }
-                            else {
-                                resolve();
-                            }
-                        });
-                    }
-                    
-                    return state.loading_promise;
-                },
-                loadDependencies(context) {
-                    return new Promise((resolve, reject) => {
-                        let filter_stores_length = context.state.filter_stores.length;
-                        
-                        let promises = [];
-                        
-                        for(let index = 0; index < filter_stores_length; index++) {
-                            let promise = this.dispatch[context.state.filter_stores[index] + '/loadAll'];
-                            
-                            promises.push(promise);
-                        }
-                        
-                        Promise.all(promises).then(() => {
-                            resolve();
-                        });
-                    });
                 }
             }
         };
