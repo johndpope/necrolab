@@ -54,8 +54,8 @@
             </b-modal>
         </template>
         <template v-else>
-            <router-link :to="'/players/steam/' + player.steam.id">
-                {{ player.steam.username }}
+            <router-link :to="`/players/${leaderboard_source.name}/${player.player.id}`">
+                {{ player.player.username }}
             </router-link>
         </template>
     </div>
@@ -93,6 +93,9 @@ const PlayerProfileModal = {
             default: () => {
                 return {};
             }
+        },
+        leaderboard_source: {
+            type: Object
         }
     },
     data() {
@@ -112,7 +115,8 @@ const PlayerProfileModal = {
                 username = this.player.necrolab.username;
             }
             else {
-                username = this.player.steam.username;
+                console.log(this.player);
+                username = this.player.player.username;
             }
             
             return username;

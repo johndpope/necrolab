@@ -1,6 +1,7 @@
 <template>
     <ranking-entries-page
         v-if="loaded"
+        :loaded="loaded"
         category_name="power"
         category_display_name="Power"
         :api_endpoint_url="api_endpoint_url"
@@ -11,7 +12,10 @@
                 {{ row.rank }}
             </td>
             <td>
-                <player-profile-modal :player="row.player"></player-profile-modal>
+                <player-profile-modal 
+                    :player="row.player"
+                    :leaderboard_source="$store.getters['leaderboard_sources/getSelected']"
+                ></player-profile-modal>
             </td>
             <td>
                 <rounded-decimal :original_number="row.points"></rounded-decimal>
@@ -67,29 +71,12 @@ export default {
         }
     },
     methods: {
-        loadState(route_params) {
-            let promise = this.$store.dispatch('page/loadModules', [
-                'leaderboard_sources',
-                'releases',
-                'modes',
-                'seeded_types',
-                'leaderboard_types',
-                'leaderboard_details_columns',
-                'data_types'
+        loadState(route_params) {            
+            this.$store.commit('leaderboard_types/setFilterStores', [
+                'modes'
             ]);
-
-            promise.then(() => {
-                this.$store.commit('leaderboard_types/setFilterStores', [
-                    'modes'
-                ]);
-                
-                this.$store.commit('leaderboard_sources/setSelected', route_params.leaderboard_source);
-                this.$store.commit('releases/setSelected', route_params.release);
-                this.$store.commit('modes/setSelected', route_params.mode);
-                this.$store.commit('seeded_types/setSelected', route_params.seeded_type);
-                
-                this.loaded = true;
-            });
+            
+            this.loaded = true;
         }
     }
 };

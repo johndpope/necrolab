@@ -9,7 +9,6 @@
                     <th scope="col">Top 20</th>
                     <th scope="col">Top 50</th>
                     <th scope="col">Top 100</th>
-                    <th scope="col">Points Per Day</th>
                     <th scope="col">Attempts</th>
                     <th scope="col">Wins</th>
                     <th scope="col">Average Rank</th>
@@ -36,13 +35,10 @@
                         {{ record.top_100_ranks }}
                     </td>
                     <td>
-                        <rounded-decimal :original_number="record.points_per_day"></rounded-decimal>
+                        {{ record.dailies }}
                     </td>
                     <td>
-                        {{ record.total_dailies }}
-                    </td>
-                    <td>
-                        {{ record.total_wins }}
+                        {{ record.wins }}
                     </td>
                     <td>
                         <rounded-decimal :original_number="record.average_rank"></rounded-decimal>

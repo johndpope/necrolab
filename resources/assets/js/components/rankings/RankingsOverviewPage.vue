@@ -120,18 +120,14 @@ const RankingsOverviewPage = {
         }
     },
     methods: {
-        getEntriesUrl(date) {
-            let url_segment_stores_length = this.url_segment_stores.length;
-            
+        getEntriesUrl(date) {            
             let url_segments = [];
-            
-            for(let index = 0; index < url_segment_stores_length; index++) {
-                let url_segment_store = this.url_segment_stores[index];
-                
+
+            this.url_segment_stores.forEach((url_segment_store) => {                
                 let selected = this.$store.getters[`${url_segment_store}/getSelected`];
                 
                 url_segments.push(selected.name);
-            }
+            });
             
             return '/rankings/' + this.category_name + '/' + this.$route.params.leaderboard_source + '/' + url_segments.join('/') + '/' + date;
         },

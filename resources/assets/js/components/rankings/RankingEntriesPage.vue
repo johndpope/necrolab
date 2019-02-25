@@ -87,6 +87,14 @@ const RankingEntriesPage = {
                     {
                         name: 'seeded_type',
                         store_name: 'seeded_types'
+                    },
+                    {
+                        name: 'multiplayer_type',
+                        store_name: 'multiplayer_types'
+                    },
+                    {
+                        name: 'soundtrack',
+                        store_name: 'soundtracks'
                     }
                 ];
             }
@@ -103,7 +111,7 @@ const RankingEntriesPage = {
             sub_title: '',
             api_request_parameters: this.default_api_request_parameters,
             filters: [
-                SiteDropdownFilter
+                
             ]
         }
     },
@@ -146,39 +154,22 @@ const RankingEntriesPage = {
         }
     },
     created() {
-        let filter_records_length = this.filter_records.length;
-        
-        let promises = [];
-        
-        for(let index = 0; index < filter_records_length; index++) {
-            let dispatch_name = this.filter_records[index].store_name + '/loadAll';
+        this.filter_records.forEach((filter_record) => {            
+            let getter_name = `${filter_record.store_name}/getByName`;
+            let route_parameter_value = this.$route.params[filter_record.name];
             
-            let promise = this.$store.dispatch(dispatch_name);
+            this.filter_record_values[filter_record.name] = this.$store.getters[getter_name](route_parameter_value);
             
-            promises.push(promise);
-        }
+            this.api_request_parameters[filter_record.name] = route_parameter_value;
+        });
         
-        Promise.all(promises)
-            .then(() => {   
-                for(let index = 0; index < filter_records_length; index++) {
-                    let filter_record = this.filter_records[index];
-                    
-                    let getter_name = filter_record.store_name + '/getByName';
-                    let route_parameter_value = this.$route.params[filter_record.name];
-                    
-                    this.filter_record_values[filter_record.name] = this.$store.getters[getter_name](route_parameter_value);
-                    
-                    this.api_request_parameters[filter_record.name] = route_parameter_value;
-                }
-                
-                this.api_request_parameters['date'] = this.$route.params.date;
-                
-                this.title = this.category_display_name + ' Ranking Entries';
-                
-                this.sub_title = this.getDisplayName();
-                
-                this.loaded = true;
-            });
+        this.api_request_parameters['date'] = this.$route.params.date;
+        
+        this.title = this.category_display_name + ' Ranking Entries';
+        
+        this.sub_title = this.getDisplayName();
+        
+        this.loaded = true;
     }
 };
 

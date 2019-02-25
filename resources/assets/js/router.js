@@ -31,9 +31,9 @@ import LeaderboardSnapshotsPage from './components/pages/LeaderboardSnapshotsPag
 import LeaderboardEntriesPage from './components/pages/LeaderboardEntriesPage.vue';
 import DailyLeaderboardEntriesPage from './components/pages/DailyLeaderboardEntriesPage.vue';
 
-import LeaderboardSourcePlayersPage from './components/player/LeaderboardSourcePlayersPage.vue';
-import LeaderboardSourcePlayerProfilePage from './components/player/LeaderboardSourcePlayerProfilePage.vue';
-import PlayerProfileLeaderboards from './components/player/PlayerProfileLeaderboards.vue';
+//import LeaderboardSourcePlayersPage from './components/player/LeaderboardSourcePlayersPage.vue';
+//import LeaderboardSourcePlayerProfilePage from './components/player/LeaderboardSourcePlayerProfilePage.vue';
+//import PlayerProfileLeaderboards from './components/player/PlayerProfileLeaderboards.vue';
 
 
 /* --------- Define routes ---------- */
@@ -56,7 +56,7 @@ const routes = [
                 component: PowerRankingsPage
             },
             {
-                path: '/rankings/power/:leaderboard_source/:release/:mode/:seeded_type/:date',
+                path: '/rankings/power/:leaderboard_source/:release/:mode/:seeded_type/:multiplayer_type/:soundtrack/:date',
                 component: PowerRankingEntriesPage
             },
             {
@@ -64,7 +64,7 @@ const routes = [
                 component: CharacterRankingsPage
             },
             {
-                path: '/rankings/character/:leaderboard_source/:character/:release/:mode/:seeded_type/:date',
+                path: '/rankings/character/:leaderboard_source/:character/:release/:mode/:seeded_type/:multiplayer_type/:soundtrack/:date',
                 component: CharacterRankingEntriesPage
             },
             {
@@ -72,7 +72,7 @@ const routes = [
                 component: DailyRankingsPage
             },
             {
-                path: '/rankings/daily/:leaderboard_source/:release/:mode/:number_of_days/:date',
+                path: '/rankings/daily/:leaderboard_source/:character/:release/:mode/:multiplayer_type/:soundtrack/:number_of_days/:date',
                 component: DailyRankingEntriesPage
             },
             {
@@ -80,7 +80,7 @@ const routes = [
                 component: CategoryRankingsPage
             },
             {
-                path: '/rankings/:leaderboard_type/:leaderboard_source/:release/:mode/:seeded_type/:date',
+                path: '/rankings/:leaderboard_type/:leaderboard_source/:release/:mode/:seeded_type/:multiplayer_type/:soundtrack/:date',
                 component: CategoryRankingEntriesPage
             },
             {
@@ -103,14 +103,14 @@ const routes = [
                 path: '/leaderboards/:leaderboard_type/:leaderboard_source/:character/:release/:mode/:seeded_type/:multiplayer_type/:soundtrack/snapshots/:date',
                 component: LeaderboardEntriesPage
             },
-            {
+            /*{
                 path: '/players/:leaderboard_source', 
                 component: LeaderboardSourcePlayersPage
-            },
-            {
-                path: '/players/:leaderboard_source/:player_id', 
-                component: LeaderboardSourcePlayerProfilePage,
-                children: [
+            },*/
+            //{
+            //    path: '/players/:leaderboard_source/:player_id', 
+            //    component: LeaderboardSourcePlayerProfilePage,
+            //    children: [
                     /*{
                         path: 'pbs/:leaderboard_type',
                         component: PlayerProfilePbs
@@ -137,8 +137,8 @@ const routes = [
                         path: 'rankings/:leaderboard_type',
                         component: PlayerProfileRankingCategories
                     }*/
-                ]
-            }
+                //]
+            //}
         ]
     }
 ];

@@ -1,5 +1,6 @@
 <template>
     <rankings-overview-page
+        v-if="loaded"
         :loaded="loaded"
         :key="leaderboard_type.name"
         :category_name="leaderboard_type.name"
@@ -17,7 +18,6 @@
             </td>
             <td
                 v-for="details_column in details_columns"
-                :key="details_column.name"
             >
                 <details-column
                     :details_name="details_column.name"

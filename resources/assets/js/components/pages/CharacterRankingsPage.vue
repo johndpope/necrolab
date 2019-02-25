@@ -1,5 +1,6 @@
 <template>
     <rankings-overview-page
+        v-if="loaded"
         :loaded="loaded"
         category_name="character"
         category_display_name="Character"
@@ -75,7 +76,9 @@ export default {
                 'characters',
                 'releases',
                 'modes',
-                'seeded_types'
+                'seeded_types',
+                'multiplayer_types',
+                'soundtracks'
             ],
             details_table_rows: [
                 {

@@ -1,5 +1,6 @@
 <template>
     <rankings-overview-page
+        v-if="loaded"
         :loaded="loaded"
         category_name="power"
         category_display_name="Power"

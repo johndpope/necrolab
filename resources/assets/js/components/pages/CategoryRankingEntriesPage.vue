@@ -1,44 +1,44 @@
 <template>
     <ranking-entries-page
         v-if="loaded"
+        :loaded="loaded"
+        :key="leaderboard_type.name"
         :category_name="leaderboard_type.name"
         :category_display_name="leaderboard_type.display_name"
         :header_columns="headerColumns"
         :api_endpoint_url="apiEndpointUrl"
-        :default_api_request_parameters="apiRequestParameters"
+        :filter_records="filter_records"
     >
         <template slot="table-row" slot-scope="{ row_index, row }">
             <td>
-                {{ row[leaderboard_type.name].rank }}
+                {{ row['categories'][leaderboard_type.name].rank }}
             </td>
             <td>
-                <player-profile-modal :player="row.player"></player-profile-modal>
+                <player-profile-modal 
+                    :player="row.player"
+                    :leaderboard_source="$store.getters['leaderboard_sources/getSelected']"
+                ></player-profile-modal>
             </td>
             <td>
-                <rounded-decimal :original_number="row[leaderboard_type.name].points"></rounded-decimal>
+                <rounded-decimal :original_number="row['categories'][leaderboard_type.name].points"></rounded-decimal>
             </td>
-            <td>
-                <template v-if="details_column.data_type == 'seconds'">
-                    <seconds-to-time 
-                        :unformatted="row[leaderboard_type.name][details_column.name]" 
-                        :include_hours="true" 
-                        :zero_pad_hours="true"
-                    >
-                    </seconds-to-time>
-                </template>
-                <template v-else>
-                    {{ row[leaderboard_type.name][details_column.name] }}
-                </template>
+            <td
+                v-for="details_column in details_columns"
+                :key="details_column.name"
+            >
+                <details-column
+                    :details_name="details_column.name"
+                    :details_value="row['categories'][leaderboard_type.name]['details'][details_column.name]"
+                >
+                </details-column>
             </td>
         </template>
         <template slot="row-details" slot-scope="{ row }">           
             <ranking-category-summary-details-table
                 :characters="characters"
                 :record="row.characters"
-                :category="leaderboard_type.name"
-                :category_display_name="details_column.display_name"
-                :details_property="details_column.name"
-                :details_data_type="details_column.data_type"
+                :leaderboard_type="leaderboard_type"
+                :details_columns="details_columns"
                 :rows="details_table_rows"
             >
             </ranking-category-summary-details-table>
@@ -51,7 +51,7 @@ import BasePage from './BasePage.vue';
 import RankingEntriesPage from '../rankings/RankingEntriesPage.vue';
 import PlayerProfileModal from '../player/PlayerProfileModal.vue';
 import RoundedDecimal from '../formatting/RoundedDecimal.vue';
-import SecondsToTime from '../formatting/SecondsToTime.vue';
+import DetailsColumn from '../formatting/DetailsColumn.vue';
 import RankingCategorySummaryDetailsTable from '../table/RankingCategorySummaryDetailsTable.vue';
 
 export default {
@@ -61,13 +61,43 @@ export default {
         'ranking-entries-page': RankingEntriesPage,
         'player-profile-modal': PlayerProfileModal,
         'rounded-decimal': RoundedDecimal,
-        'seconds-to-time': SecondsToTime,
+        'details-column': DetailsColumn,
         'ranking-category-summary-details-table': RankingCategorySummaryDetailsTable
     },
     data() {
         return {
             leaderboard_type: {},
-            details_column: {},
+            filter_records: [
+                {
+                    name: 'leaderboard_source',
+                    store_name: 'leaderboard_sources'
+                },
+                {
+                    name: 'leaderboard_type',
+                    store_name: 'leaderboard_types'
+                },
+                {
+                    name: 'release',
+                    store_name: 'releases'
+                },
+                {
+                    name: 'mode',
+                    store_name: 'modes'
+                },
+                {
+                    name: 'seeded_type',
+                    store_name: 'seeded_types'
+                },
+                {
+                    name: 'multiplayer_type',
+                    store_name: 'multiplayer_types'
+                },
+                {
+                    name: 'soundtrack',
+                    store_name: 'soundtracks'
+                }
+            ],
+            details_columns: [],
             details_table_rows: [
                 {
                     name: 'rank',
@@ -77,7 +107,7 @@ export default {
                     name: 'points',
                     display_name: 'Points',
                     rounded: true
-                },
+                }
             ]
         }
     },
@@ -91,12 +121,17 @@ export default {
             };
         },
         headerColumns() {
-            return [
+            const header_columns = [
                 'Rank',
                 'Player',
-                'Points',
-                this.details_column.display_name
-            ]
+                'Points'
+            ];
+            
+            this.details_columns.forEach((details_column) => {
+                header_columns.push(details_column.display_name);
+            });
+            
+            return header_columns;
         },
         characters() {
             return this.$store.getters['characters/getFiltered'];
@@ -104,36 +139,18 @@ export default {
     },
     methods: {
         loadState(route_params) {
-            let promise = this.$store.dispatch('page/loadModules', [
+            this.$store.commit('characters/setFilterStores', [
                 'leaderboard_sources',
-                'characters',
                 'releases',
-                'modes',
-                'seeded_types',
                 'leaderboard_types',
-                'leaderboard_details_columns',
-                'data_types'
+                'modes'
             ]);
 
-            promise.then(() => {
-                this.$store.commit('characters/setFilterStores', [
-                    'leaderboard_sources',
-                    'releases',
-                    'leaderboard_types',
-                    'modes'
-                ]);
-                
-                this.$store.commit('leaderboard_sources/setSelected', route_params.leaderboard_source);
-                this.$store.commit('leaderboard_types/setSelected', route_params.leaderboard_type);
-                this.$store.commit('releases/setSelected', route_params.release);
-                this.$store.commit('modes/setSelected', route_params.mode);
-                this.$store.commit('seeded_types/setSelected', route_params.seeded_type);
-                
-                this.leaderboard_type = this.$store.getters['leaderboard_types/getByName'](route_params.leaderboard_type);
-                this.details_column = this.$store.getters['leaderboard_details_columns/getByName'](this.leaderboard_type.details_column_name);
-                
-                this.loaded = true;
-            });
+            this.leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
+            
+            this.details_columns = this.$store.getters['details_columns/getAllByNames'](this.leaderboard_type.details_columns);
+
+            this.loaded = true;
         }
     }
 };

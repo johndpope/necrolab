@@ -3,6 +3,7 @@
 namespace App\Http\Resources;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+use App\RankPoints;
 
 class DailyRankingEntriesResource extends JsonResource {
     /**
@@ -22,7 +23,10 @@ class DailyRankingEntriesResource extends JsonResource {
             $record['player'] = new PlayersResource($this->resource);
         }
         
-        $record['rank'] = (int)$this->rank;
+        $rank = (int)$this->rank;
+        
+        $record['rank'] = $rank;
+        $record['points'] = RankPoints::calculateFromRank($rank);
         $record['first_place_ranks'] = (int)$this->first_place_ranks;
         $record['top_5_ranks'] = (int)$this->top_5_ranks;
         $record['top_10_ranks'] = (int)$this->top_10_ranks;
@@ -33,19 +37,7 @@ class DailyRankingEntriesResource extends JsonResource {
         $record['wins'] = (int)$this->wins;
         $record['sum_of_ranks'] = (int)$this->sum_of_ranks;
         $record['average_rank'] = $this->sum_of_ranks / $this->dailies;
-        
-        if(!empty($this->details)) {
-            $details = [];
-        
-            foreach($this->details as $details_name => $details_value) {
-                $details[$details_name] = [
-                    'total' => $details_value * 1,
-                    'per_day' => $details_value / $this->dailies
-                ];
-            }
-            
-            $record['details'] = $details;
-        }
+        $record['details'] = $this->details;
         
         return $record;
     }
