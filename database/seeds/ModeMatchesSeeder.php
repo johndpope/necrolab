@@ -27,7 +27,7 @@ class ModeMatchesSeeder extends Seeder {
             [
                 'leaderboard_source_id' => $leaderboard_source->id,
                 'mode_id' => $modes['no_return']->id,
-                'match_regex' => '(no return)',
+                'match_regex' => '(no\ return)',
                 'sort_order' => 2,
                 'created_at' => date('Y-m-d H:i:s')
             ],

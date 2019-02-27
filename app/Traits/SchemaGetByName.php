@@ -12,8 +12,12 @@ trait SchemaGetByName {
     protected static function loadAllByName(LeaderboardSources $leaderboard_source): void {    
         if(empty(static::$all_by_name[$leaderboard_source->name])) {
             static::$all_by_name[$leaderboard_source->name] = [];
+            
+            $instance = new static();
+            
+            $instance->setSchema($leaderboard_source->name);
         
-            $table_name = "{$leaderboard_source->name}." . (new static())->getTable();
+            $table_name = $instance->getTable();
         
             $all_records = DB::table($table_name)->get();
             

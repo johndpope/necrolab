@@ -31,6 +31,6 @@ class RegexCombiner {
     }
     
     public function getCombined(): string {
-        return '/(?|' . implode("\n|", $this->segments) . "\n)/ix";
+        return '/^.*(?|' . implode("\n|", $this->segments) . "\n).*$/ix";
     }
 }

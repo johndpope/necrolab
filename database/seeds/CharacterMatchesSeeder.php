@@ -118,14 +118,14 @@ class CharacterMatchesSeeder extends Seeder {
             [
                 'leaderboard_source_id' => $leaderboard_source->id,
                 'character_id' => $characters['all_dlc']->id,
-                'match_regex' => '(all chars dlc)',
+                'match_regex' => '(all\ chars\ dlc)',
                 'sort_order' => 15,
                 'created_at' => date('Y-m-d H:i:s')
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source->id,
                 'character_id' => $characters['all']->id,
-                'match_regex' => '(all chars)',
+                'match_regex' => '(all\ chars)',
                 'sort_order' => 16,
                 'created_at' => date('Y-m-d H:i:s')
             ]

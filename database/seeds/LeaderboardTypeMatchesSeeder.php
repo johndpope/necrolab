@@ -34,7 +34,7 @@ class LeaderboardTypeMatchesSeeder extends Seeder {
             [
                 'leaderboard_source_id' => $leaderboard_source->id,
                 'leaderboard_type_id' => $leaderboard_types['score']->id,
-                'match_regex' => '(hardcore|core|all zones)',
+                'match_regex' => '(hardcore|core|all\ zones)',
                 'sort_order' => 3,
                 'created_at' => date('Y-m-d H:i:s')
             ],
