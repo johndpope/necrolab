@@ -458,9 +458,9 @@ class CreateSourceSchema implements ShouldQueue {
             $table->timestamp('updated');
             $table->integer('id');
             $table->string('external_id', 255)->unique();
-            $table->string('username', 255);
-            $table->text('profile_url');
-            $table->text('avatar_url');
+            $table->string('username', 255)->nullable();
+            $table->text('profile_url')->nullable();
+            $table->text('avatar_url')->nullable();
             
             $table->primary('id');
         });
@@ -836,7 +836,7 @@ class CreateSourceSchema implements ShouldQueue {
         $end_date->modify('last day of this month');
         
         //TODO: Need to update all three job dispatches
-        LeaderboardEntries::dispatchRangePartitionCreationJob(
+        /*LeaderboardEntries::dispatchRangePartitionCreationJob(
             CreateLeaderboardEntriesPartitionJob::class,
             $this->leaderboard_source, 
             $start_date,
@@ -855,6 +855,6 @@ class CreateSourceSchema implements ShouldQueue {
             $this->leaderboard_source, 
             $start_date,
             $end_date
-        );
+        );*/
     }
 }

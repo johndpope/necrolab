@@ -10,7 +10,11 @@ trait HasManualSequence {
     
     public static function getNewRecordId(LeaderboardSources $leaderboard_source) {
         if(!isset(static::$sequence_name[$leaderboard_source->name])) {
-            static::$sequence_name[$leaderboard_source->name] = "{$leaderboard_source->name}." . (new static())->getTable() . '_seq';
+            $instance = new static();
+            
+            $instance->setSchema($leaderboard_source->name);
+        
+            static::$sequence_name[$leaderboard_source->name] = "{$instance->getTable()}_seq";
         }
     
         $new_record_id = DB::selectOne("
