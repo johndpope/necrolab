@@ -15,6 +15,7 @@ use App\Http\Requests\Api\ReadCategoryLeaderboards;
 use App\Http\Requests\Api\ReadDailyLeaderboards;
 use App\Http\Requests\Api\ReadPlayerLeaderboards;
 use App\Http\Requests\Api\ReadPlayerCategoryLeaderboards;
+use App\Http\Requests\Api\ReadCharacterLeaderboards;
 use App\Http\Requests\Api\ReadPlayerDailyLeaderboards;
 use App\Components\RequestModels;
 use App\Components\Encoder;
@@ -38,6 +39,7 @@ class LeaderboardsController extends Controller {
         $this->middleware('auth:api')->except([
             'index',
             'categoryIndex',
+            'charactersIndex',
             'dailyIndex',
             'byAttributes',
             'show',
@@ -107,6 +109,44 @@ class LeaderboardsController extends Controller {
                         $request_models->character,
                         $request_models->release,
                         $request_models->mode
+                    )->get();
+                }
+            )
+        );
+    }
+    
+    /**
+     * Display a listing of all character leaderboards for the specified criteria.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @return \Illuminate\Http\Response
+     */
+    public function charactersIndex(ReadCharacterLeaderboards $request) {
+        $request_models = new RequestModels($request, [
+            'leaderboard_source',
+            'leaderboard_type',
+            'release',
+            'mode',
+            'seeded_type',
+            'multiplayer_type',
+            'soundtrack'
+        ]);
+        
+        $cache_prefix_name = $request_models->getCacheNamePrefix();
+
+        return LeaderboardsResource::collection(
+            Cache::store('opcache')->remember(
+                "leaderboards:characters:" . (string)$cache_prefix_name, 
+                5, 
+                function() use($request_models) {
+                    return Leaderboards::getCharactersApiReadQuery(
+                        $request_models->leaderboard_source,
+                        $request_models->leaderboard_type,
+                        $request_models->release,
+                        $request_models->mode,
+                        $request_models->seeded_type,
+                        $request_models->multiplayer_type,
+                        $request_models->soundtrack
                     )->get();
                 }
             )

@@ -74,12 +74,12 @@ class Leaderboards extends Model {
         $leaderboard->daily_date = NULL;
         
         if(!empty($daily_date_format)) {
-            $unformatted_daily_date = preg_replace($daily_date_format->clean_regex, "", $leaderboard->name);
+            $unformatted_daily_date = preg_replace("/{$daily_date_format->clean_regex}/", "", $leaderboard->name);
             
             if(!empty($unformatted_daily_date)) {            
                 $leaderboard->leaderboard_type = LeaderboardTypes::getByName('daily');
                 
-                $daily_date = DateTime::createFromFormat('d/m/Y', $unformatted_daily_date);
+                $daily_date = DateTime::createFromFormat($daily_date_format->format, $unformatted_daily_date);
 
                 $last_errors = DateTime::getLastErrors();
                 
@@ -296,6 +296,31 @@ class Leaderboards extends Model {
             ->where('l.character_id', $character->id)
             ->where('l.release_id', $release->id)
             ->where('l.mode_id', $mode->id);
+    }
+    
+    public static function getCharactersApiReadQuery(
+        LeaderboardSources $leaderboard_source, 
+        LeaderboardTypes $leaderboard_type,
+        Releases $release,
+        Modes $mode,
+        SeededTypes $seeded_type,
+        MultiplayerTypes $multiplayer_type,
+        Soundtracks $soundtrack
+    ): Builder {
+        $query = static::getApiReadQuery($leaderboard_source);
+    
+        $query->orders = [];
+        
+        $query
+            ->where('l.leaderboard_type_id', $leaderboard_type->id)
+            ->where('l.release_id', $release->id)
+            ->where('l.mode_id', $mode->id)
+            ->where('l.seeded_type_id', $seeded_type->id)
+            ->where('l.multiplayer_type_id', $multiplayer_type->id)
+            ->where('l.soundtrack_id', $soundtrack->id)
+            ->orderBy('c.sort_order', 'asc');
+    
+        return $query;
     }
     
     public static function getApiShowQuery(LeaderboardSources $leaderboard_source, string $leaderboard_id): Builder {

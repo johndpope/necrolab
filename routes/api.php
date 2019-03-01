@@ -84,6 +84,7 @@ Route::get('/1/leaderboards/daily/entries', 'Api\LeaderboardEntriesController@da
 // Leaderboards
 Route::get('/1/leaderboards', 'Api\LeaderboardsController@index');
 Route::get('/1/leaderboards/category', 'Api\LeaderboardsController@categoryIndex');
+Route::get('/1/leaderboards/characters', 'Api\LeaderboardsController@charactersIndex');
 Route::get('/1/leaderboards/daily', 'Api\LeaderboardsController@dailyIndex');
 Route::get('/1/leaderboard', 'Api\LeaderboardsController@show');
 
