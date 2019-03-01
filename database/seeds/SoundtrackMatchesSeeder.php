@@ -20,7 +20,7 @@ class SoundtrackMatchesSeeder extends Seeder {
             [
                 'leaderboard_source_id' => $leaderboard_source->id,
                 'soundtrack_id' => $soundtracks['custom']->id,
-                'match_regex' => '(custom)',
+                'match_regex' => '.*(custom).*',
                 'sort_order' => 1,
                 'created_at' => date('Y-m-d H:i:s')
             ]

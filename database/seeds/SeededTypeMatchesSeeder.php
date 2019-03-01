@@ -20,7 +20,7 @@ class SeededTypeMatchesSeeder extends Seeder {
             [
                 'leaderboard_source_id' => $leaderboard_source->id,
                 'seeded_type_id' => $seeded_types['seeded']->id,
-                'match_regex' => '(seeded)',
+                'match_regex' => '.*(seeded).*',
                 'sort_order' => 1,
                 'created_at' => date('Y-m-d H:i:s')
             ]

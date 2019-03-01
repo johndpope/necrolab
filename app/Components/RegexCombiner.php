@@ -19,7 +19,7 @@ class RegexCombiner {
     }
     
     public function addSegment(string $name, string $segment): void {
-        $this->segments[$name] = "{$segment} (*MARK:{$name})";
+        $this->segments[$name] = "(?P<group_{$name}>{$segment}(*MARK:{$name}))";
     }
     
     public function addSegments(array $segments): void {
@@ -31,6 +31,6 @@ class RegexCombiner {
     }
     
     public function getCombined(): string {
-        return '/^.*(?|' . implode("\n|", $this->segments) . "\n).*$/ix";
+        return '@' . implode("|", $this->segments) . "@im";
     }
 }

@@ -20,7 +20,7 @@ class MultiplayerTypeMatchesSeeder extends Seeder {
             [
                 'leaderboard_source_id' => $leaderboard_source->id,
                 'multiplayer_type_id' => $multiplayer_types['co_op']->id,
-                'match_regex' => '(co-op)',
+                'match_regex' => '.*(co-op).*',
                 'sort_order' => 1,
                 'created_at' => date('Y-m-d H:i:s')
             ]

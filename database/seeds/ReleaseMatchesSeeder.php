@@ -20,21 +20,21 @@ class ReleaseMatchesSeeder extends Seeder {
             [
                 'leaderboard_source_id' => $leaderboard_source->id,
                 'release_id' => $releases['early_access']->id,
-                'match_regex' => '(dev)',
+                'match_regex' => '.*(dev).*',
                 'sort_order' => 1,
                 'created_at' => date('Y-m-d H:i:s')
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source->id,
                 'release_id' => $releases['amplified_dlc']->id,
-                'match_regex' => '(?=.*prod)(?=.*dlc)',
+                'match_regex' => '.*(?=.*prod.*)(?=.*dlc.*).*',
                 'sort_order' => 2,
                 'created_at' => date('Y-m-d H:i:s')
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source->id,
                 'release_id' => $releases['original']->id,
-                'match_regex' => '(prod)',
+                'match_regex' => '.*(prod).*',
                 'sort_order' => 3,
                 'created_at' => date('Y-m-d H:i:s')
             ],
