@@ -19,7 +19,7 @@
                 <td class="align-middle">
                     <a 
                         :href="getSnapshotsUrl(row)" 
-                        @click="$store.commit('leaderboards/setRecord', row)"
+                        @click="$store.commit('leaderboards/setRecord', { leaderboard_source: leaderboard_source.name, record: row })"
                     >
                         View Snapshots
                         <!-- <right-arrow></right-arrow> -->

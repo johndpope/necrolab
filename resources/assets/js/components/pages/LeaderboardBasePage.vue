@@ -15,7 +15,7 @@ const LeaderboardBasePage = {
             seeded_type: {},
             multiplayer_type: {},
             soundtrack: {},
-            leaderboard_details_column: {}
+            details_columns: []
         }
     },
     computed: {
@@ -45,18 +45,6 @@ const LeaderboardBasePage = {
                     multiplayer_type: route_params.multiplayer_type,
                     soundtrack: route_params.soundtrack
                 }));
-                
-                promises.push(this.$store.dispatch('page/loadModules', [
-                    'leaderboard_sources',
-                    'leaderboard_types',
-                    'characters',
-                    'releases',
-                    'modes',
-                    'seeded_types',
-                    'multiplayer_types',
-                    'soundtracks',
-                    'leaderboard_details_columns'
-                ]));
 
                 Promise.all(promises).then(() => {
                     this.leaderboard_source = this.$store.getters['leaderboard_sources/getByName'](route_params.leaderboard_source);
@@ -67,7 +55,7 @@ const LeaderboardBasePage = {
                     this.seeded_type = this.$store.getters['seeded_types/getByName'](route_params.seeded_type);
                     this.multiplayer_type = this.$store.getters['multiplayer_types/getByName'](route_params.multiplayer_type);
                     this.soundtrack = this.$store.getters['soundtracks/getByName'](route_params.soundtrack);
-                    this.leaderboard_details_column = this.$store.getters['leaderboard_details_columns/getByName'](this.leaderboard_type.details_column_name);
+                    this.details_columns = this.$store.getters['details_columns/getAllByNames'](this.leaderboard_type.details_columns);
                     
                     this.leaderboard = this.$store.getters['leaderboards/getByAttributes'](
                         route_params.leaderboard_source,

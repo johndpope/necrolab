@@ -5,13 +5,12 @@ function get_record_hash(leaderboard_source, leaderboard_type, character, releas
 const LeaderboardsStore = {
     namespaced: true,
     state: {
-        records: {},
+        records: {}
     },
     mutations: {
-        //TODO: Add leaderboard_source to the response retrieval of leaderboards since record.leaderboard_source comes back as undefined right now
-        setRecord(state, record) {
-            let hash = get_record_hash(
-                record.leaderboard_source,
+        setRecord(state, { leaderboard_source, record }) {
+            const hash = get_record_hash(
+                leaderboard_source,
                 record.leaderboard_type,
                 record.character,
                 record.release,
@@ -26,7 +25,7 @@ const LeaderboardsStore = {
     },
     getters: {
         getByAttributes: (state) => (leaderboard_source, leaderboard_type, character, release, mode, seeded_type, multiplayer_type, soundtrack) => {            
-            let hash = get_record_hash(
+            const hash = get_record_hash(
                 leaderboard_source,
                 leaderboard_type,
                 character,
@@ -49,7 +48,7 @@ const LeaderboardsStore = {
     actions: {
         loadByAttributes({ commit, state }, { leaderboard_source, leaderboard_type, character, release, mode, seeded_type, multiplayer_type, soundtrack }) {
             return new Promise((resolve, reject) => {
-                let hash = get_record_hash(
+                const hash = get_record_hash(
                     leaderboard_source,
                     leaderboard_type,
                     character,
@@ -59,7 +58,7 @@ const LeaderboardsStore = {
                     multiplayer_type,
                     soundtrack
                 );
-                
+
                 if(state.records[hash] == null) {
                     axios.get('/api/1/leaderboard/by_attributes', {
                         params: {
@@ -74,7 +73,10 @@ const LeaderboardsStore = {
                         }
                     })
                     .then(response => {                    
-                        commit('setRecord', response.data.data);
+                        commit('setRecord', {
+                            leaderboard_source: leaderboard_source,
+                            record: response.data.data
+                        });
                         
                         resolve();
                     })

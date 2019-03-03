@@ -20,18 +20,12 @@
                 <td>
                     {{ row.players }}
                 </td>
-                <td>
-                    <template v-if="leaderboard_details_column.data_type == 'seconds'">
-                        <seconds-to-time 
-                            :unformatted="row[leaderboard_details_column.name]" 
-                            :include_hours="true" 
-                            :zero_pad_hours="true"
-                        >
-                        </seconds-to-time>
-                    </template>
-                    <template v-else>
-                        {{ row[leaderboard_details_column.name] }}
-                    </template>
+                <td v-for="details_column in details_columns">
+                    <details-column
+                        :details_name="details_column.name"
+                        :details_value="row.details[details_column.name] != null ? row.details[details_column.name] : ''"
+                    >
+                    </details-column>
                 </td>  
             </template>
         </necrotable>
@@ -42,7 +36,7 @@
 import LeaderboardBasePage from './LeaderboardBasePage.vue';
 import WithNavBody from '../layouts/WithNavBody.vue';
 import NecroTable from '../table/NecroTable.vue';
-import SecondsToTime from '../formatting/SecondsToTime';
+import DetailsColumn from '../formatting/DetailsColumn.vue';
 
 const LeaderboardSnapshotsPage = {
     extends: LeaderboardBasePage,
@@ -50,7 +44,7 @@ const LeaderboardSnapshotsPage = {
     components: {
         'with-nav-body': WithNavBody,
         'necrotable': NecroTable,
-        'seconds-to-time': SecondsToTime
+        'details-column': DetailsColumn
     },
     data() {
         return {};
@@ -79,11 +73,16 @@ const LeaderboardSnapshotsPage = {
             ]
         },
         headerColumns() {
-            return [
+            const leaderboard_columns = [
                 'Date',
-                'Players',
-                this.leaderboard_details_column.display_name
+                'Players'
             ];
+            
+            this.details_columns.forEach((details_column) => {
+                leaderboard_columns.push(details_column.display_name);
+            });
+            
+            return leaderboard_columns;
         }
     },
     methods: {
