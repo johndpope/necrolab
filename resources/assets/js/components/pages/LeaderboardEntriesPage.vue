@@ -18,19 +18,18 @@
                     {{ row.rank }}
                 </td>
                 <td>
-                    <player-profile-modal :player="row.player"></player-profile-modal>
+                    <player-profile-modal 
+                        :leaderboard_source="leaderboard_source"
+                        :player="row.player"
+                    >
+                    </player-profile-modal>
                 </td>
-                <td>
-                    <template v-if="leaderboard_details_column.data_type == 'seconds'">
-                        <seconds-to-time 
-                            :unformatted="row.pb[leaderboard_details_column.name]" 
-                            :include_hours="true"
-                        >
-                        </seconds-to-time>
-                    </template>
-                    <template v-else>
-                        {{ row.pb[leaderboard_details_column.name] }}
-                    </template>
+                <td v-for="details_column in details_columns">
+                    <details-column
+                        :details_name="details_column.name"
+                        :details_value="row.pb.details[details_column.name] != null ? row.pb.details[details_column.name] : ''"
+                    >
+                    </details-column>
                 </td>
                 <td v-if="leaderboard.show_seed === 1">
                     <seed :record="row"></seed>
@@ -57,7 +56,7 @@ import NecroTable from '../table/NecroTable.vue';
 import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
 import PlayerProfileModal from '../player/PlayerProfileModal.vue';
 import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
-import SecondsToTime from '../formatting/SecondsToTime';
+import DetailsColumn from '../formatting/DetailsColumn.vue';
 import Seed from '../leaderboards/Seed.vue';
 import ReplayDownloadLink from '../leaderboards/ReplayDownloadLink.vue';
 import LeaderboardEntryDetailsTable from '../table/LeaderboardEntryDetailsTable.vue';
@@ -69,7 +68,7 @@ const LeaderboardEntriesPage = {
         'with-nav-body': WithNavBody,
         'necrotable': NecroTable,
         'player-profile-modal': PlayerProfileModal,
-        'seconds-to-time': SecondsToTime,
+        'details-column': DetailsColumn,
         'seed': Seed,
         'replay-download-link': ReplayDownloadLink,
         'toggle-details': ToggleDetails,
@@ -93,7 +92,7 @@ const LeaderboardEntriesPage = {
             };
         },
         breadcrumbs() {
-            let snapshots_url = '#/leaderboards/' + this.name + '/' + this.$route.params.url_name + '/snapshots';
+            const snapshots_url = '#/leaderboards/' + this.name + '/' + this.$route.params.url_name + '/snapshots';
             
             return [
                 {
@@ -111,11 +110,14 @@ const LeaderboardEntriesPage = {
             ]
         },
         headerColumns() {
-            let header_columns = [
+            const header_columns = [
                 'Rank',
-                'Player',
-                this.leaderboard_details_column.display_name
+                'Player'
             ];
+            
+            this.details_columns.forEach((details_column) => {
+                header_columns.push(details_column.display_name);
+            });
             
             if(this.leaderboard.show_seed === 1) {
                 header_columns.push('Seed');

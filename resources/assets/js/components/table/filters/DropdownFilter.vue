@@ -106,25 +106,19 @@ const DropdownFilter = {
     },
     computed: {
         options() {            
-            let options = this.getDefaultOptions();  
-
-            let options_length = options.length;
+            const options = this.getDefaultOptions();  
                 
             if(this.has_blank_option) {
                 let contains_blank_option = false;
                 
-                for(let options_index = 0; options_index < options_length; options_index++) {
-                    let option = options[options_index];
-                    
+                options.forEach((option) => {
                     if(option[this.option_value_name] == '') {
                         contains_blank_option = true;
-                        
-                        break;
                     }
-                }
+                });
                 
                 if(!contains_blank_option) {
-                    let blank_option = {};
+                    const blank_option = {};
                     
                     blank_option[this.option_value_name] = '';
                     blank_option[this.option_display_name] = this.blank_option_display;
@@ -133,20 +127,16 @@ const DropdownFilter = {
                 }
             }
             
-            options_length = options.length;
+            const options_length = options.length;
             
             if(!this.options_initialized) {
-                for(let options_index = 0; options_index < options_length; options_index++) {
-                    let option = options[options_index];
-
+                options.forEach((option) => {
                     if(option['is_default'] != null && option.is_default == 1) {
                         this.selected = option;
-                        
-                        break;
                     }
-                }
-                
-                if(this.selected == null && options[0] != null) {
+                });
+
+                if(this.selected['name'] == null && options[0]['name'] != null) {
                     this.selected = options[0];
                 }
             }
@@ -183,7 +173,7 @@ const DropdownFilter = {
             set(selected_option) {
                 this.selected_option = selected_option;
 
-                let selected = null;
+                let selected = {};
                 
                 if(this.selected_option[this.option_value_name] != null) {
                     selected = this.selected_option[this.option_value_name];
