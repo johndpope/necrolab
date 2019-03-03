@@ -1,28 +1,28 @@
 <template>
     <with-nav-body 
         :loaded="loaded"
+        :key="leaderboard_type.name"
         :breadcrumbs="breadcrumbs"
         :title="leaderboard_type.display_name + ' Leaderboards'"
     >
         <necrotable 
-            api_endpoint_url="/api/1/leaderboards/category"
+            api_endpoint_url="/api/1/leaderboards/characters"
             :default_request_parameters="apiRequestParameters"
             :has_pagination="false" 
-            :filters="filters" 
-            :data_processor="dataProcessor"
+            :filters="filters"
         >
             <template slot="table-row" slot-scope="{ row_index, row }">
                 <td>
-                    {{ row.name }}
+                    <character-icon-selector :name="row.character">
+                    </character-icon-selector>
                 </td>
-                <td>
+                <td class="align-middle">
                     <a 
-                        v-if="row['leaderboard'] != null" 
-                        :href="getSnapshotsUrl(row.leaderboard)" 
-                        class="h3" 
-                        @click="$store.commit('leaderboards/setRecord', row.leaderboard)"
+                        :href="getSnapshotsUrl(row)" 
+                        @click="$store.commit('leaderboards/setRecord', row)"
                     >
-                        <right-arrow></right-arrow>
+                        View Snapshots
+                        <!-- <right-arrow></right-arrow> -->
                     </a>
                 </td>
             </template>
@@ -34,9 +34,12 @@
 import BasePage from './BasePage.vue';
 import WithNavBody from '../layouts/WithNavBody.vue';
 import NecroTable from '../table/NecroTable.vue';
-import CharacterDropdownFilter from '../table/filters/CharacterDropdownFilter.vue';
 import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
 import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
+import SeededTypeDropdownFilter from '../table/filters/SeededTypeDropdownFilter.vue';
+import MultiplayerTypeDropdownFilter from '../table/filters/MultiplayerTypeDropdownFilter.vue';
+import SoundtrackDropdownFilter from '../table/filters/SoundtrackDropdownFilter.vue';
+import CharacterIconSelector from '../characters/CharacterIconSelector.vue';
 import RightArrow from '../formatting/RightArrow.vue';
 
 const LeaderboardsPage = {
@@ -45,7 +48,7 @@ const LeaderboardsPage = {
     components: {
         'with-nav-body': WithNavBody,
         'necrotable': NecroTable,
-        'right-arrow': RightArrow
+        'character-icon-selector': CharacterIconSelector
     },
     props: {
         name: {
@@ -66,9 +69,11 @@ const LeaderboardsPage = {
             leaderboard_type: {},
             leaderboard_source: {},
             filters: [
-                CharacterDropdownFilter,
                 ReleaseDropdownFilter,
-                ModeDropdownFilter
+                ModeDropdownFilter,
+                SeededTypeDropdownFilter,
+                MultiplayerTypeDropdownFilter,
+                SoundtrackDropdownFilter
             ]
         }
     },
@@ -95,7 +100,6 @@ const LeaderboardsPage = {
         getSnapshotsUrl(leaderboard) { 
             return '#/leaderboards/' + 
                 leaderboard.leaderboard_type + '/' +
-                //TODO: update this to leaderboard.leaderboard_source when leaderboard sources are implemented for leaderboards
                 this.leaderboard_source.name + '/' + 
                 leaderboard.character + '/' +
                 leaderboard.release + '/' +
@@ -105,150 +109,24 @@ const LeaderboardsPage = {
                 leaderboard.soundtrack + '/' +
                 'snapshots';
         },
-        dataProcessor: function(leaderboards) {
-            let all_zones_row = {
-                name: 'Standard'
-            };
-            
-            let seeded_row = {
-                name: 'Seeded'
-            };
-            
-            let custom_music_row = {
-                name: 'Custom Music'
-            };
-            
-            let seeded_custom_music_row = {
-                name: 'Seeded Custom Music'
-            };
-            
-            let co_op_row = {
-                name: 'Co-Op'
-            };
-            
-            let seeded_co_op_row = {
-                name: 'Seeded Co-Op'
-            };
-            
-            let co_op_custom_music_row = {
-                name: 'Co-Op Custom Music'
-            };
-            
-            let seeded_co_op_custom_music_row = {
-                name: 'Seeded Co-Op Custom Music'
-            };
-            
-            let leaderboards_length = leaderboards.length;
-            
-            for(let index = 0; index < leaderboards_length; index++) {
-                let leaderboard = leaderboards[index];
-                
-                if(leaderboard.multiplayer_type == 'single') {
-                    if(leaderboard.seeded_type == 'unseeded') {
-                        // All zones
-                        if(leaderboard.soundtrack == 'default') {
-                            all_zones_row['leaderboard'] = leaderboard;
-                        }
-                        // Custom Music
-                        else {
-                            custom_music_row['leaderboard'] = leaderboard;
-                        }
-                    }
-                    else {
-                        // All zones seeded
-                        if(leaderboard.soundtrack == 'default') {
-                            seeded_row['leaderboard'] = leaderboard;
-                        }
-                        // Seeded custom music
-                        else {
-                            seeded_custom_music_row['leaderboard'] = leaderboard;
-                        }
-                    }
-                }
-                else {
-                    if(leaderboard.seeded_type == 'unseeded') {
-                        // Co-op all zopnes
-                        if(leaderboard.soundtrack == 'default') {
-                            co_op_row['leaderboard'] = leaderboard;
-                        }
-                        // Co-op custom music
-                        else {
-                            co_op_custom_music_row['leaderboard'] = leaderboard;
-                        }
-                    }
-                    else {
-                        // Seeded co-op
-                        if(leaderboard.soundtrack == 'default') {
-                            seeded_co_op_row['leaderboard'] = leaderboard;
-                        }
-                        // Seeded co-op custom music
-                        else {
-                            seeded_co_op_custom_music_row['leaderboard'] = leaderboard;
-                        }
-                    }
-                }
-            }
-            
-            let ordered_leaderboards = [];
-            
-            if(!this.has_seeded) {
-                ordered_leaderboards = [
-                    all_zones_row,
-                    custom_music_row,
-                    co_op_row,
-                    co_op_custom_music_row,
-                ];
-            }
-            else {
-                ordered_leaderboards = [
-                    all_zones_row,
-                    seeded_row,
-                    custom_music_row,
-                    seeded_custom_music_row,
-                    co_op_row,
-                    seeded_co_op_row,
-                    co_op_custom_music_row,
-                    seeded_co_op_custom_music_row
-                ];
-            }
-            
-            return ordered_leaderboards;
-        },
         loadState(route_params) {
-            let promise = this.$store.dispatch('page/loadModules', [
-                'leaderboard_sources',
-                'leaderboard_types',
-                'characters',
+            this.$store.commit('releases/setFilterStores', [
+                'leaderboard_sources'
+            ]);
+            
+            this.$store.commit('modes/setFilterStores', [
                 'releases',
-                'modes',
-                'seeded_types'
+                'leaderboard_types'
+            ]);
+            
+            this.$store.commit('multiplayer_types/setFilterStores', [
+                'leaderboard_sources'
             ]);
 
-            promise.then(() => {
-                this.$store.commit('characters/setFilterStores', [
-                    'leaderboard_sources',
-                    'releases',
-                    'leaderboard_types',
-                    'modes'
-                ]);
+            this.leaderboard_source = this.$store.getters['leaderboard_sources/getSelected'];
+            this.leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
 
-                this.$store.commit('releases/setFilterStores', [
-                    'leaderboard_sources'
-                ]);
-                
-                this.$store.commit('modes/setFilterStores', [
-                    'releases',
-                    'leaderboard_types'
-                ]);
-                
-                this.$store.commit('leaderboard_sources/setSelected', route_params.leaderboard_source);
-                this.$store.commit('leaderboard_types/setSelected', route_params.leaderboard_type);
-
-                this.leaderboard_source = this.$store.getters['leaderboard_sources/getByName'](route_params.leaderboard_source);
-                this.leaderboard_type = this.$store.getters['leaderboard_types/getByName'](route_params.leaderboard_type);
-
-                this.loaded = true;
-            });
+            this.loaded = true;
         }
     }
 };
