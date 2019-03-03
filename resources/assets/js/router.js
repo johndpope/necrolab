@@ -88,7 +88,7 @@ const routes = [
                 component: DailyLeaderboardsPage
             },
             {
-                path: '/leaderboards/daily/:leaderboard_source/:character/:release/:mode/:multiplayer_type/:date',
+                path: '/leaderboards/daily/:leaderboard_source/:character/:release/:mode/:multiplayer_type/:soundtrack/:date',
                 component: DailyLeaderboardEntriesPage
             },
             {

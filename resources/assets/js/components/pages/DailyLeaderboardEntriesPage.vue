@@ -3,7 +3,7 @@
         :loaded="loaded"
         :breadcrumbs="breadcrumbs"
         title="Daily Leaderboard Entries"
-        :sub_title="sub_title"
+        :sub_title="subTitle"
     >
         <necrotable 
             :api_endpoint_url="api_endpoint_url"
@@ -18,19 +18,18 @@
                     {{ row.rank }}
                 </td>
                 <td>
-                    <player-profile-modal :player="row.player"></player-profile-modal>
+                    <player-profile-modal 
+                        :leaderboard_source="leaderboard_source"
+                        :player="row.player"
+                    >
+                    </player-profile-modal>
                 </td>
-                <td>
-                    <template v-if="leaderboard_details_column.data_type == 'seconds'">
-                        <seconds-to-time 
-                            :unformatted="row.pb[leaderboard_details_column.name]" 
-                            :include_hours="true"
-                        >
-                        </seconds-to-time>
-                    </template>
-                    <template v-else>
-                        {{ row.pb[leaderboard_details_column.name] }}
-                    </template>
+                <td v-for="details_column in details_columns">
+                    <details-column
+                        :details_name="details_column.name"
+                        :details_value="row.pb.details[details_column.name] != null ? row.pb.details[details_column.name] : ''"
+                    >
+                    </details-column>
                 </td>
                 <td v-if="leaderboard_type.show_seed === 1">
                     <seed :record="row"></seed>
@@ -54,7 +53,7 @@ import NecroTable from '../table/NecroTable.vue';
 import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
 import PlayerProfileModal from '../player/PlayerProfileModal.vue';
 import Seed from '../leaderboards/Seed.vue';
-import SecondsToTime from '../formatting/SecondsToTime';
+import DetailsColumn from '../formatting/DetailsColumn.vue';
 import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
 import LeaderboardEntryDetailsTable from '../table/LeaderboardEntryDetailsTable.vue';
 
@@ -66,7 +65,7 @@ export default {
         'necrotable': NecroTable,
         'player-profile-modal': PlayerProfileModal,
         'seed': Seed,
-        'seconds-to-time': SecondsToTime,
+        'details-column': DetailsColumn,
         'toggle-details': ToggleDetails,
         'leaderboard-entry-details-table': LeaderboardEntryDetailsTable
     },
@@ -78,8 +77,9 @@ export default {
             release: {},
             mode: {},
             multiplayer_type: {},
+            soundtrack: {},
             leaderboard_type: {},
-            leaderboard_details_column: {},
+            details_columns: [],
             api_endpoint_url: '/api/1/leaderboards/daily/entries',
             filters: [
                 SiteDropdownFilter
@@ -97,7 +97,7 @@ export default {
                     href: '#/leaderboards/daily'
                 },
                 {
-                    text: 'Entries - ' + this.sub_title
+                    text: 'Entries - ' + this.subTitle
                 }
             ];
         },
@@ -108,23 +108,28 @@ export default {
                 release: this.release.name,
                 mode: this.mode.name,
                 multiplayer_type: this.multiplayer_type.name,
+                soundtrack: this.soundtrack.name,
                 date: this.date
             };
         },
-        sub_title() {
+        subTitle() {
             return this.leaderboard_source.display_name + ' ' + 
                 this.character.display_name + ' ' + 
                 this.release.display_name + ' ' + 
                 this.mode.display_name + ' ' + 
                 this.multiplayer_type.display_name + ' ' + 
-                this.$route.params.date;
+                this.soundtrack.display_name + ' ' + 
+                this.date;
         },
         headerColumns() {
-            let header_columns = [
+            const header_columns = [
                 'Rank',
-                'Player',
-                this.leaderboard_details_column.display_name
+                'Player'
             ];
+            
+            this.details_columns.forEach((details_column) => {
+                header_columns.push(details_column.display_name);
+            });
             
             if(this.leaderboard_type.show_seed === 1) {
                 header_columns.push('Seed');
@@ -135,52 +140,40 @@ export default {
     },
     methods: {
         loadState(route_params) {
-            let promise = this.$store.dispatch('page/loadModules', [
+            this.$store.commit('characters/setFilterStores', [
                 'leaderboard_sources',
                 'leaderboard_types',
-                'characters',
                 'releases',
-                'modes',
-                'multiplayer_types',
-                'leaderboard_details_columns'
+                'modes'
+            ]);
+            
+            this.$store.commit('releases/setFilterStores', [
+                'leaderboard_sources'
+            ]);
+            
+            this.$store.commit('modes/setFilterStores', [
+                'releases',
+                'leaderboard_types'
+            ]);
+            
+            this.$store.commit('multiplayer_types/setFilterStores', [
+                'leaderboard_sources'
             ]);
 
-            promise.then(() => {
-                this.$store.commit('characters/setFilterStores', [
-                    'leaderboard_sources',
-                    'leaderboard_types',
-                    'releases',
-                    'modes'
-                ]);
-                
-                this.$store.commit('releases/setFilterStores', [
-                    'leaderboard_sources'
-                ]);
-                
-                this.$store.commit('modes/setFilterStores', [
-                    'releases',
-                    'leaderboard_types'
-                ]);
-                
-                this.$store.commit('multiplayer_types/setFilterStores', [
-                    'leaderboard_sources'
-                ]);
-
-                this.$store.commit('leaderboard_sources/setSelected', route_params.leaderboard_source);
-                this.$store.commit('leaderboard_types/setSelected', 'daily');
-                
-                this.leaderboard_source = this.$store.getters['leaderboard_sources/getByName'](route_params.leaderboard_source);
-                this.leaderboard_type = this.$store.getters['leaderboard_types/getByName']('daily');
-                this.character = this.$store.getters['characters/getByName'](route_params.character);
-                this.release = this.$store.getters['releases/getByName'](route_params.release);
-                this.mode = this.$store.getters['modes/getByName'](route_params.mode);
-                this.multiplayer_type = this.$store.getters['multiplayer_types/getByName'](route_params.multiplayer_type);
-                this.leaderboard_details_column = this.$store.getters['leaderboard_details_columns/getByName'](this.leaderboard_type.details_column_name);
-                
-                this.date = route_params.date;
-                
-                this.loaded = true;
-            });
+            this.$store.commit('leaderboard_types/setSelected', 'daily');
+            
+            this.leaderboard_source = this.$store.getters['leaderboard_sources/getSelected'];
+            this.leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
+            this.character = this.$store.getters['characters/getSelected'];
+            this.release = this.$store.getters['releases/getSelected'];
+            this.mode = this.$store.getters['modes/getSelected'];
+            this.multiplayer_type = this.$store.getters['multiplayer_types/getSelected'];
+            this.soundtrack = this.$store.getters['soundtracks/getSelected'];
+            this.details_columns = this.$store.getters['details_columns/getAllByNames'](this.leaderboard_type.details_columns);
+            
+            this.date = route_params.date;
+            
+            this.loaded = true;
         }
     }
 };
