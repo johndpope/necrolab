@@ -16,7 +16,7 @@
                 <td>
                     <player-profile-modal 
                         :leaderboard_source="leaderboard_source"
-                        :player="row.player"
+                        :player="row"
                     >
                     </player-profile-modal>
                 </td>
