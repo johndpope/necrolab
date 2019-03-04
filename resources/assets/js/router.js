@@ -31,7 +31,7 @@ import LeaderboardSnapshotsPage from './components/pages/LeaderboardSnapshotsPag
 import LeaderboardEntriesPage from './components/pages/LeaderboardEntriesPage.vue';
 import DailyLeaderboardEntriesPage from './components/pages/DailyLeaderboardEntriesPage.vue';
 
-//import LeaderboardSourcePlayersPage from './components/player/LeaderboardSourcePlayersPage.vue';
+import LeaderboardSourcePlayersPage from './components/pages/players/LeaderboardSourcePlayersPage.vue';
 //import LeaderboardSourcePlayerProfilePage from './components/player/LeaderboardSourcePlayerProfilePage.vue';
 //import PlayerProfileLeaderboards from './components/player/PlayerProfileLeaderboards.vue';
 
@@ -103,10 +103,10 @@ const routes = [
                 path: '/leaderboards/:leaderboard_type/:leaderboard_source/:character/:release/:mode/:seeded_type/:multiplayer_type/:soundtrack/snapshots/:date',
                 component: LeaderboardEntriesPage
             },
-            /*{
+            {
                 path: '/players/:leaderboard_source', 
                 component: LeaderboardSourcePlayersPage
-            },*/
+            },
             //{
             //    path: '/players/:leaderboard_source/:player_id', 
             //    component: LeaderboardSourcePlayerProfilePage,

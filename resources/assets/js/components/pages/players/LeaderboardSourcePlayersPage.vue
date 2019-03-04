@@ -14,7 +14,11 @@
         >
             <template slot="table-row" slot-scope="{ row_index, row }">
                 <td>
-                    <player-profile-modal :player="row"></player-profile-modal>
+                    <player-profile-modal 
+                        :leaderboard_source="leaderboard_source"
+                        :player="row.player"
+                    >
+                    </player-profile-modal>
                 </td>
             </template>
         </necrotable>
@@ -22,15 +26,15 @@
 </template>
 
 <script>
-import BasePage from './BasePage.vue';
-import WithNavBody from '../layouts/WithNavBody.vue';
-import NecroTable from '../table/NecroTable.vue';
-import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
-import PlayerProfileModal from '../player/PlayerProfileModal.vue';
+import BasePage from '../BasePage.vue';
+import WithNavBody from '../../layouts/WithNavBody.vue';
+import NecroTable from '../../table/NecroTable.vue';
+import SiteDropdownFilter from '../../table/filters/SiteDropdownFilter.vue';
+import PlayerProfileModal from '../../player/PlayerProfileModal.vue';
 
 export default {
     extends: BasePage,
-    name: 'PlayersPageTable',
+    name: 'LeaderboardSourcePlayersPage',
     components: {
         'with-nav-body': WithNavBody,
         'necrotable': NecroTable,
@@ -69,15 +73,9 @@ export default {
     },
     methods: {
         loadState(route_params) {
-            let promise = this.$store.dispatch('page/loadModules', [
-                'leaderboard_sources'
-            ]);
+            this.leaderboard_source = this.$store.getters['leaderboard_sources/getSelected'];
 
-            promise.then(() => {
-                this.leaderboard_source = this.$store.getters['leaderboard_sources/getByName'](route_params.leaderboard_source);
-
-                this.loaded = true;
-            });
+            this.loaded = true;
         }
     }
 };
