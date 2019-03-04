@@ -51,15 +51,15 @@
 
 <script>
 import LeaderboardBasePage from './LeaderboardBasePage.vue';
-import WithNavBody from '../layouts/WithNavBody.vue';
-import NecroTable from '../table/NecroTable.vue';
-import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
-import PlayerProfileModal from '../player/PlayerProfileModal.vue';
-import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
-import DetailsColumn from '../formatting/DetailsColumn.vue';
-import Seed from '../leaderboards/Seed.vue';
-import ReplayDownloadLink from '../leaderboards/ReplayDownloadLink.vue';
-import LeaderboardEntryDetailsTable from '../table/LeaderboardEntryDetailsTable.vue';
+import WithNavBody from '../../layouts/WithNavBody.vue';
+import NecroTable from '../../table/NecroTable.vue';
+import SiteDropdownFilter from '../../table/filters/SiteDropdownFilter.vue';
+import PlayerProfileModal from '../../player/PlayerProfileModal.vue';
+import ToggleDetails from '../../table/action_columns/ToggleDetails.vue';
+import DetailsColumn from '../../formatting/DetailsColumn.vue';
+import Seed from '../../leaderboards/Seed.vue';
+import ReplayDownloadLink from '../../leaderboards/ReplayDownloadLink.vue';
+import LeaderboardEntryDetailsTable from '../../table/LeaderboardEntryDetailsTable.vue';
 
 const LeaderboardEntriesPage = {
     extends: LeaderboardBasePage,

@@ -31,10 +31,10 @@
 </template>
 
 <script>
-import WithNavBody from '../layouts/WithNavBody.vue';
-import NecroTable from '../table/NecroTable.vue';
-import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
-import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
+import WithNavBody from '../../layouts/WithNavBody.vue';
+import NecroTable from '../../table/NecroTable.vue';
+import SiteDropdownFilter from '../../table/filters/SiteDropdownFilter.vue';
+import ToggleDetails from '../../table/action_columns/ToggleDetails.vue';
 
 const RankingEntriesPage = {
     name: 'ranking-entries-page',

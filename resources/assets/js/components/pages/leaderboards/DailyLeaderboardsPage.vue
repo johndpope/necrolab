@@ -33,15 +33,15 @@
 </template>
 
 <script>
-import BasePage from './BasePage.vue';
-import WithNavBody from '../layouts/WithNavBody.vue';
-import NecroTable from '../table/NecroTable.vue';
-import CharacterDropdownFilter from '../table/filters/CharacterDropdownFilter.vue';
-import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
-import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
-import MultiplayerTypeDropdownFilter from '../table/filters/MultiplayerTypeDropdownFilter.vue';
-import SoundtrackDropdownFilter from '../table/filters/SoundtrackDropdownFilter.vue';
-import DetailsColumn from '../formatting/DetailsColumn.vue';
+import BasePage from '../BasePage.vue';
+import WithNavBody from '../../layouts/WithNavBody.vue';
+import NecroTable from '../../table/NecroTable.vue';
+import CharacterDropdownFilter from '../../table/filters/CharacterDropdownFilter.vue';
+import ReleaseDropdownFilter from '../../table/filters/ReleaseDropdownFilter.vue';
+import ModeDropdownFilter from '../../table/filters/ModeDropdownFilter.vue';
+import MultiplayerTypeDropdownFilter from '../../table/filters/MultiplayerTypeDropdownFilter.vue';
+import SoundtrackDropdownFilter from '../../table/filters/SoundtrackDropdownFilter.vue';
+import DetailsColumn from '../../formatting/DetailsColumn.vue';
 
 const LeaderboardSnapshotsPage = {
     extends: BasePage,

@@ -28,9 +28,9 @@
 </template>
 
 <script>
-import BasePage from './BasePage.vue';
-import RankingsOverviewPage from '../rankings/RankingsOverviewPage.vue';
-import RankingSummaryDetailsTable from '../table/RankingSummaryDetailsTable.vue'
+import BasePage from '../BasePage.vue';
+import RankingsOverviewPage from './RankingsOverviewPage.vue';
+import RankingSummaryDetailsTable from '../../table/RankingSummaryDetailsTable.vue'
 
 export default {
     extends: BasePage,

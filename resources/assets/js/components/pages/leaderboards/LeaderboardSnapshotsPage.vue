@@ -34,9 +34,9 @@
 
 <script>
 import LeaderboardBasePage from './LeaderboardBasePage.vue';
-import WithNavBody from '../layouts/WithNavBody.vue';
-import NecroTable from '../table/NecroTable.vue';
-import DetailsColumn from '../formatting/DetailsColumn.vue';
+import WithNavBody from '../../layouts/WithNavBody.vue';
+import NecroTable from '../../table/NecroTable.vue';
+import DetailsColumn from '../../formatting/DetailsColumn.vue';
 
 const LeaderboardSnapshotsPage = {
     extends: LeaderboardBasePage,

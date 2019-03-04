@@ -40,10 +40,10 @@
 </template>
 
 <script>
-import BasePage from './BasePage.vue';
-import RankingsOverviewPage from '../rankings/RankingsOverviewPage.vue';
-import RankingCategorySummaryDetailsTable from '../table/RankingCategorySummaryDetailsTable.vue';
-import DetailsColumn from '../formatting/DetailsColumn.vue';
+import BasePage from '../BasePage.vue';
+import RankingsOverviewPage from './RankingsOverviewPage.vue';
+import RankingCategorySummaryDetailsTable from '../../table/RankingCategorySummaryDetailsTable.vue';
+import DetailsColumn from '../../formatting/DetailsColumn.vue';
 
 export default {
     extends: BasePage,

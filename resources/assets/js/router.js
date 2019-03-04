@@ -13,23 +13,23 @@ import HomePage from './components/pages/HomePage.vue';
 
 import LoginPage from  './components/pages/LoginPage.vue';
 
-import PowerRankingsPage from './components/pages/PowerRankingsPage.vue';
-import CategoryRankingsPage from './components/pages/CategoryRankingsPage.vue';
-import CharacterRankingsPage from './components/pages/CharacterRankingsPage.vue';
-import DailyRankingsPage from './components/pages/DailyRankingsPage.vue';
+import PowerRankingsPage from './components/pages/rankings/PowerRankingsPage.vue';
+import CategoryRankingsPage from './components/pages/rankings/CategoryRankingsPage.vue';
+import CharacterRankingsPage from './components/pages/rankings/CharacterRankingsPage.vue';
+import DailyRankingsPage from './components/pages/rankings/DailyRankingsPage.vue';
 
-import PowerRankingEntriesPage from './components/pages/PowerRankingEntriesPage.vue';
-import CategoryRankingEntriesPage from './components/pages/CategoryRankingEntriesPage.vue';
-import CharacterRankingEntriesPage from './components/pages/CharacterRankingEntriesPage.vue';
-import DailyRankingEntriesPage from './components/pages/DailyRankingEntriesPage.vue';
+import PowerRankingEntriesPage from './components/pages/rankings/PowerRankingEntriesPage.vue';
+import CategoryRankingEntriesPage from './components/pages/rankings/CategoryRankingEntriesPage.vue';
+import CharacterRankingEntriesPage from './components/pages/rankings/CharacterRankingEntriesPage.vue';
+import DailyRankingEntriesPage from './components/pages/rankings/DailyRankingEntriesPage.vue';
 
-import LeaderboardsPage from './components/pages/LeaderboardsPage.vue';
-import DailyLeaderboardsPage from './components/pages/DailyLeaderboardsPage.vue';
+import LeaderboardsPage from './components/pages/leaderboards/LeaderboardsPage.vue';
+import DailyLeaderboardsPage from './components/pages/leaderboards/DailyLeaderboardsPage.vue';
 
-import LeaderboardSnapshotsPage from './components/pages/LeaderboardSnapshotsPage.vue';
+import LeaderboardSnapshotsPage from './components/pages/leaderboards/LeaderboardSnapshotsPage.vue';
 
-import LeaderboardEntriesPage from './components/pages/LeaderboardEntriesPage.vue';
-import DailyLeaderboardEntriesPage from './components/pages/DailyLeaderboardEntriesPage.vue';
+import LeaderboardEntriesPage from './components/pages/leaderboards/LeaderboardEntriesPage.vue';
+import DailyLeaderboardEntriesPage from './components/pages/leaderboards/DailyLeaderboardEntriesPage.vue';
 
 import LeaderboardSourcePlayersPage from './components/pages/players/LeaderboardSourcePlayersPage.vue';
 //import LeaderboardSourcePlayerProfilePage from './components/player/LeaderboardSourcePlayerProfilePage.vue';

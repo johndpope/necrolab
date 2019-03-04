@@ -1,5 +1,5 @@
 <script>
-import BasePage from './BasePage.vue';
+import BasePage from '../BasePage.vue';
 
 const LeaderboardBasePage = {
     extends: BasePage,

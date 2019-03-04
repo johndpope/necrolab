@@ -30,16 +30,16 @@
 </template>
 
 <script>
-import BasePage from './BasePage.vue';
-import RankingsOverviewPage from '../rankings/RankingsOverviewPage.vue';
-import CharacterDropdownFilter from '../table/filters/CharacterDropdownFilter.vue';
-import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
-import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
-import SeededTypeDropdownFilter from '../table/filters/SeededTypeDropdownFilter.vue';
-import MultiplayerTypeDropdownFilter from '../table/filters/MultiplayerTypeDropdownFilter.vue';
-import SoundtrackDropdownFilter from '../table/filters/SoundtrackDropdownFilter.vue';
-import PlayerProfileModal from '../player/PlayerProfileModal.vue';
-import RankingSummaryDetailsTable from '../table/RankingSummaryDetailsTable.vue';
+import BasePage from '../BasePage.vue';
+import RankingsOverviewPage from './RankingsOverviewPage.vue';
+import CharacterDropdownFilter from '../../table/filters/CharacterDropdownFilter.vue';
+import ReleaseDropdownFilter from '../../table/filters/ReleaseDropdownFilter.vue';
+import ModeDropdownFilter from '../../table/filters/ModeDropdownFilter.vue';
+import SeededTypeDropdownFilter from '../../table/filters/SeededTypeDropdownFilter.vue';
+import MultiplayerTypeDropdownFilter from '../../table/filters/MultiplayerTypeDropdownFilter.vue';
+import SoundtrackDropdownFilter from '../../table/filters/SoundtrackDropdownFilter.vue';
+import PlayerProfileModal from '../../player/PlayerProfileModal.vue';
+import RankingSummaryDetailsTable from '../../table/RankingSummaryDetailsTable.vue';
 
 export default {
     extends: BasePage,

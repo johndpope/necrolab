@@ -39,16 +39,16 @@
 </template>
 
 <script>
-import BasePage from './BasePage.vue';
-import RankingsOverviewPage from '../rankings/RankingsOverviewPage.vue';
-import DailyRankingSummaryDetailsTable from '../table/DailyRankingSummaryDetailsTable.vue';
-import CharacterDropdownFilter from '../table/filters/CharacterDropdownFilter.vue';
-import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
-import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
-import MultiplayerTypeDropdownFilter from '../table/filters/MultiplayerTypeDropdownFilter.vue';
-import SoundtrackDropdownFilter from '../table/filters/SoundtrackDropdownFilter.vue';
-import NumberOfDaysDropdownFilter from '../table/filters/NumberOfDaysDropdownFilter.vue';
-import DetailsColumn from '../formatting/DetailsColumn.vue';
+import BasePage from '../BasePage.vue';
+import RankingsOverviewPage from './RankingsOverviewPage.vue';
+import DailyRankingSummaryDetailsTable from '../../table/DailyRankingSummaryDetailsTable.vue';
+import CharacterDropdownFilter from '../../table/filters/CharacterDropdownFilter.vue';
+import ReleaseDropdownFilter from '../../table/filters/ReleaseDropdownFilter.vue';
+import ModeDropdownFilter from '../../table/filters/ModeDropdownFilter.vue';
+import MultiplayerTypeDropdownFilter from '../../table/filters/MultiplayerTypeDropdownFilter.vue';
+import SoundtrackDropdownFilter from '../../table/filters/SoundtrackDropdownFilter.vue';
+import NumberOfDaysDropdownFilter from '../../table/filters/NumberOfDaysDropdownFilter.vue';
+import DetailsColumn from '../../formatting/DetailsColumn.vue';
 
 export default {
     extends: BasePage,

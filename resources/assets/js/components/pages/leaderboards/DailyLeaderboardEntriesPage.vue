@@ -47,15 +47,15 @@
 </template>
 
 <script>
-import BasePage from './BasePage.vue';
-import WithNavBody from '../layouts/WithNavBody.vue';
-import NecroTable from '../table/NecroTable.vue';
-import SiteDropdownFilter from '../table/filters/SiteDropdownFilter.vue';
-import PlayerProfileModal from '../player/PlayerProfileModal.vue';
-import Seed from '../leaderboards/Seed.vue';
-import DetailsColumn from '../formatting/DetailsColumn.vue';
-import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
-import LeaderboardEntryDetailsTable from '../table/LeaderboardEntryDetailsTable.vue';
+import BasePage from '../BasePage.vue';
+import WithNavBody from '../../layouts/WithNavBody.vue';
+import NecroTable from '../../table/NecroTable.vue';
+import SiteDropdownFilter from '../../table/filters/SiteDropdownFilter.vue';
+import PlayerProfileModal from '../../player/PlayerProfileModal.vue';
+import Seed from '../../leaderboards/Seed.vue';
+import DetailsColumn from '../../formatting/DetailsColumn.vue';
+import ToggleDetails from '../../table/action_columns/ToggleDetails.vue';
+import LeaderboardEntryDetailsTable from '../../table/LeaderboardEntryDetailsTable.vue';
 
 export default {
     extends: BasePage,

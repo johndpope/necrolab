@@ -31,16 +31,16 @@
 </template>
 
 <script>
-import BasePage from './BasePage.vue';
-import WithNavBody from '../layouts/WithNavBody.vue';
-import NecroTable from '../table/NecroTable.vue';
-import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
-import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
-import SeededTypeDropdownFilter from '../table/filters/SeededTypeDropdownFilter.vue';
-import MultiplayerTypeDropdownFilter from '../table/filters/MultiplayerTypeDropdownFilter.vue';
-import SoundtrackDropdownFilter from '../table/filters/SoundtrackDropdownFilter.vue';
-import CharacterIconSelector from '../characters/CharacterIconSelector.vue';
-import RightArrow from '../formatting/RightArrow.vue';
+import BasePage from '../BasePage.vue';
+import WithNavBody from '../../layouts/WithNavBody.vue';
+import NecroTable from '../../table/NecroTable.vue';
+import ReleaseDropdownFilter from '../../table/filters/ReleaseDropdownFilter.vue';
+import ModeDropdownFilter from '../../table/filters/ModeDropdownFilter.vue';
+import SeededTypeDropdownFilter from '../../table/filters/SeededTypeDropdownFilter.vue';
+import MultiplayerTypeDropdownFilter from '../../table/filters/MultiplayerTypeDropdownFilter.vue';
+import SoundtrackDropdownFilter from '../../table/filters/SoundtrackDropdownFilter.vue';
+import CharacterIconSelector from '../../characters/CharacterIconSelector.vue';
+import RightArrow from '../../formatting/RightArrow.vue';
 
 const LeaderboardsPage = {
     extends: BasePage,

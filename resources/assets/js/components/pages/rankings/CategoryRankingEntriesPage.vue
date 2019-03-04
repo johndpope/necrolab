@@ -47,12 +47,12 @@
 </template>
 
 <script>
-import BasePage from './BasePage.vue';
-import RankingEntriesPage from '../rankings/RankingEntriesPage.vue';
-import PlayerProfileModal from '../player/PlayerProfileModal.vue';
-import RoundedDecimal from '../formatting/RoundedDecimal.vue';
-import DetailsColumn from '../formatting/DetailsColumn.vue';
-import RankingCategorySummaryDetailsTable from '../table/RankingCategorySummaryDetailsTable.vue';
+import BasePage from '../BasePage.vue';
+import RankingEntriesPage from './RankingEntriesPage.vue';
+import PlayerProfileModal from '../../player/PlayerProfileModal.vue';
+import RoundedDecimal from '../../formatting/RoundedDecimal.vue';
+import DetailsColumn from '../../formatting/DetailsColumn.vue';
+import RankingCategorySummaryDetailsTable from '../../table/RankingCategorySummaryDetailsTable.vue';
 
 export default {
     extends: BasePage,

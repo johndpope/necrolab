@@ -32,12 +32,12 @@
 </template>
 
 <script>
-import BasePage from './BasePage.vue';
-import RankingEntriesPage from '../rankings/RankingEntriesPage.vue';
-import PlayerProfileModal from '../player/PlayerProfileModal.vue';
-import RoundedDecimal from '../formatting/RoundedDecimal.vue';
-import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
-import RankingSummaryDetailsTable from '../table/RankingSummaryDetailsTable.vue';
+import BasePage from '../BasePage.vue';
+import RankingEntriesPage from './RankingEntriesPage.vue';
+import PlayerProfileModal from '../../player/PlayerProfileModal.vue';
+import RoundedDecimal from '../../formatting/RoundedDecimal.vue';
+import ToggleDetails from '../../table/action_columns/ToggleDetails.vue';
+import RankingSummaryDetailsTable from '../../table/RankingSummaryDetailsTable.vue';
 
 export default {
     extends: BasePage,
