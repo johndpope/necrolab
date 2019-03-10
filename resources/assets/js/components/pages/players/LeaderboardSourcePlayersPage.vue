@@ -30,6 +30,7 @@ import BasePage from '../BasePage.vue';
 import WithNavBody from '../../layouts/WithNavBody.vue';
 import NecroTable from '../../table/NecroTable.vue';
 import SiteDropdownFilter from '../../table/filters/SiteDropdownFilter.vue';
+import Datepicker from '../../date/Datepicker.vue';
 import PlayerProfileModal from '../../player/PlayerProfileModal.vue';
 
 export default {
@@ -38,13 +39,14 @@ export default {
     components: {
         'with-nav-body': WithNavBody,
         'necrotable': NecroTable,
-        'player-profile-modal': PlayerProfileModal  
+        'player-profile-modal': PlayerProfileModal
     },
     data() {
         return {
             leaderboard_source: {},
             api_endpoint_url: '/api/1/players',
             filters: [
+                Datepicker,
                 SiteDropdownFilter
             ],
             header_columns: [

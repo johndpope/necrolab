@@ -22,7 +22,7 @@ const ReplayDownloadLink = {
         hasUploadedReplay() {        
             return 
                 this.record.pb['replay'] != null && 
-                this.record.pb.replay.length > 0 &&
+                this.record.pb.replay['file_url'] != null &&
                 this.record.pb.replay.file_url.length > 0;
         }
     }

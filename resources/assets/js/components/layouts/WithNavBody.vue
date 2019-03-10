@@ -1,7 +1,7 @@
 <template>
     <div>
         <div v-if="loaded" class="container-fluid">
-            <div class="row">
+            <div v-if="show_breadcrumbs" class="row">
                 <div class="col-12">
                     <b-breadcrumb :items="breadcrumbItems"></b-breadcrumb>
                 </div>
@@ -42,6 +42,10 @@ const WithNavBody = {
         loaded: {
             type: Boolean,
             default: false
+        },
+        show_breadcrumbs: {
+            type: Boolean,
+            default: true,
         },
         breadcrumbs: {
             type: Array,

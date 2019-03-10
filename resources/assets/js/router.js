@@ -32,8 +32,8 @@ import LeaderboardEntriesPage from './components/pages/leaderboards/LeaderboardE
 import DailyLeaderboardEntriesPage from './components/pages/leaderboards/DailyLeaderboardEntriesPage.vue';
 
 import LeaderboardSourcePlayersPage from './components/pages/players/LeaderboardSourcePlayersPage.vue';
-//import LeaderboardSourcePlayerProfilePage from './components/player/LeaderboardSourcePlayerProfilePage.vue';
-//import PlayerProfileLeaderboards from './components/player/PlayerProfileLeaderboards.vue';
+import LeaderboardSourcePlayerProfilePage from './components/pages/players/LeaderboardSourcePlayerProfilePage.vue';
+import PlayerProfilePbs from './components/pages/players/PlayerProfilePbs.vue';
 
 
 /* --------- Define routes ---------- */
@@ -107,14 +107,15 @@ const routes = [
                 path: '/players/:leaderboard_source', 
                 component: LeaderboardSourcePlayersPage
             },
-            //{
-            //    path: '/players/:leaderboard_source/:player_id', 
-            //    component: LeaderboardSourcePlayerProfilePage,
-            //    children: [
-                    /*{
+            {
+                path: '/players/:leaderboard_source/:player_id', 
+                component: LeaderboardSourcePlayerProfilePage,
+                children: [
+                    {
                         path: 'pbs/:leaderboard_type',
                         component: PlayerProfilePbs
-                    },
+                    }
+                    /*
                     {
                         path: 'leaderboards/daily',
                         component: PlayerProfileDailyLeaderboards
@@ -137,8 +138,8 @@ const routes = [
                         path: 'rankings/:leaderboard_type',
                         component: PlayerProfileRankingCategories
                     }*/
-                //]
-            //}
+                ]
+            }
         ]
     }
 ];

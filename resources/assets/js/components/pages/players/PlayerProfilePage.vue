@@ -1,7 +1,7 @@
 <template>
-    <with-nav-layout
+    <with-nav-body
+        :loaded="loaded"
         title="Player Profile"
-        :show_body="properties_loaded"
     >
         <div class="container-fluid">
             <div class="row">
@@ -37,7 +37,7 @@
                             v-for="leaderboard_type in leaderboard_types" 
                             :key="leaderboard_type.name"
                             v-if="leaderboard_type.name != 'daily'"
-                            :href="getPbUrl(leaderboard_type.name)"
+                            :href="getPbUrl(leaderboard_type)"
                             :active="active_link == 'pbs_' + leaderboard_type.name"
                             @click="setActiveLink('pbs_' + leaderboard_type.name)"
                         >
@@ -51,7 +51,7 @@
                         <b-nav-item 
                             v-for="leaderboard_type in leaderboard_types" 
                             :key="leaderboard_type.name"
-                            :href="getLeaderboardUrl(leaderboard_type.name)"
+                            :href="getLeaderboardUrl(leaderboard_type)"
                             :active="active_link == 'leaderboards_' + leaderboard_type.name"
                             @click="setActiveLink('leaderboards_' + leaderboard_type.name)"
                         >
@@ -90,11 +90,12 @@
                 </div>
             </div>
         </div>
-    </with-nav-layout>
+    </with-nav-body>
 </template>
 
 <script>
-import WithNavLayout from '../layouts/WithNavLayout.vue';
+import BasePage from '../BasePage.vue';
+import WithNavBody from '../../layouts/WithNavBody.vue';
 import bNav from 'bootstrap-vue/es/components/nav/nav';
 import bNavbar from 'bootstrap-vue/es/components/navbar/navbar';
 import bNavItem from 'bootstrap-vue/es/components/nav/nav-item';
@@ -104,9 +105,10 @@ import bNavbarBrand from 'bootstrap-vue/es/components/navbar/navbar-brand';
 import bCollapse from 'bootstrap-vue/es/components/collapse/collapse';
 
 export default {
+    extends: BasePage,
     name: 'player-profile-page',
     components: {
-        'with-nav-layout': WithNavLayout,
+        'with-nav-body': WithNavBody,
         'b-nav': bNav,
         'b-navbar': bNavbar,
         'b-nav-item': bNavItem,
@@ -123,39 +125,40 @@ export default {
     },
     data() {
         return {
+            player_id: '',
             profile_url: '',
-            properties_loaded: false,
             leaderboard_types: [],
             active_link: ''
         };
     },
     methods: {
+        loadState(route_params) {
+            this.leaderboard_source = this.$store.getters['leaderboard_sources/getSelected'];
+            this.leaderboard_types = this.$store.getters['leaderboard_types/getAll'];
+            this.player_id = route_params.player_id;
+            
+            this.generateProfileUrl();
+
+            this.loaded = true;
+        },
+        loadPlayer() {
+            
+        },
         generateProfileUrl() {
-            this.profile_url = '#/players/' + this.$route.params.leaderboard_source + '/' + this.$route.params.player_id;
+            this.profile_url = '#/players/' + this.leaderboard_source.name + '/' + this.player_id;
         },
         setActiveLink(active_link) {
             this.active_link = active_link;
         },
-        getPbUrl(leaderboard_type_name) {
-            return this.profile_url + '/pbs/' + leaderboard_type_name;
+        getPbUrl(leaderboard_type) {
+            return this.profile_url + '/pbs/' + leaderboard_type.name;
         },
-        getLeaderboardUrl(leaderboard_type_name) {
-             return this.profile_url + '/leaderboards/' + leaderboard_type_name;
+        getLeaderboardUrl(leaderboard_type) {
+             return this.profile_url + '/leaderboards/' + leaderboard_type.name;
         },
-        getRankingUrl(leaderboard_type_name) {
-             return this.profile_url + '/rankings/' + leaderboard_type_name;
+        getRankingUrl(leaderboard_type) {
+             return this.profile_url + '/rankings/' + leaderboard_type.name;
         }
-    },
-    created() {
-        this.generateProfileUrl();
-        
-        let promise = this.$store.dispatch('leaderboard_types/loadAll');
-        
-        promise.then(() => {
-            this.leaderboard_types = this.$store.getters['leaderboard_types/getAll'];
-            
-            this.properties_loaded = true;
-        });
     }
 };
 </script>
