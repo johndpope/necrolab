@@ -17,6 +17,9 @@
                 <td>
                     {{ row.date }}
                 </td>
+                <td>
+                    {{ row.rank }}
+                </td>
                 <td v-for="details_column in details_columns">
                     <details-column
                         :details_name="details_column.name"
@@ -117,7 +120,8 @@ const LeaderboardsPage = {
         },
         headerColumns() {
             const header_columns = [
-                'Date'
+                'Date',
+                'Rank'
             ];
             
             this.details_columns.forEach((details_column) => {
