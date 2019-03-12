@@ -34,6 +34,11 @@ import DailyLeaderboardEntriesPage from './components/pages/leaderboards/DailyLe
 import LeaderboardSourcePlayersPage from './components/pages/players/LeaderboardSourcePlayersPage.vue';
 import LeaderboardSourcePlayerProfilePage from './components/pages/players/LeaderboardSourcePlayerProfilePage.vue';
 import PlayerProfilePbs from './components/pages/players/PlayerProfilePbs.vue';
+import PlayerProfileLeaderboards from './components/pages/players/PlayerProfileLeaderboards.vue';
+import PlayerProfilePowerRankings from './components/pages/players/PlayerProfilePowerRankings.vue';
+import PlayerProfileCharacterRankings from './components/pages/players/PlayerProfileCharacterRankings.vue';
+import PlayerProfileDailyRankings from './components/pages/players/PlayerProfileDailyRankings.vue';
+import PlayerProfileCategoryRankings from './components/pages/players/PlayerProfileCategoryRankings.vue';
 
 
 /* --------- Define routes ---------- */
@@ -114,19 +119,12 @@ const routes = [
                     {
                         path: 'pbs/:leaderboard_type',
                         component: PlayerProfilePbs
-                    }
-                    /*
-                    {
-                        path: 'leaderboards/daily',
-                        component: PlayerProfileDailyLeaderboards
-                    },*/
-                    /*
+                    },
                     {
                         path: 'leaderboards/:leaderboard_type',
                         component: PlayerProfileLeaderboards
                     },
-                    */
-                    /*{
+                    {
                         path: 'rankings/power',
                         component: PlayerProfilePowerRankings
                     },
@@ -135,9 +133,13 @@ const routes = [
                         component: PlayerProfileCharacterRankings
                     },
                     {
+                        path: 'rankings/daily',
+                        component: PlayerProfileDailyRankings
+                    },
+                    {
                         path: 'rankings/:leaderboard_type',
-                        component: PlayerProfileRankingCategories
-                    }*/
+                        component: PlayerProfileCategoryRankings
+                    }
                 ]
             }
         ]

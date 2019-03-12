@@ -1,16 +1,15 @@
 <template>
     <with-nav-body 
         :loaded="loaded"
-        :key="leaderboard_type.name"
-        :sub_title="leaderboard_type.display_name + ' PBs'"
+        sub_title="Daily Rankings"
         :show_breadcrumbs="false"
     >
-        <necrotable 
-            api_endpoint_url="/api/1/player/pbs"
+        <necrotable
+            :key="$route.fullPath"
+            api_endpoint_url="/api/1/player/rankings/daily/entries"
             :header_columns="headerColumns" 
             :default_request_parameters="apiRequestParameters"
-            :has_pagination="false"
-            :has_action_column="leaderboard_type.show_zone_level === 1"
+            :has_action_column="true"
             :filters="filters"
         >
             <template slot="table-row" slot-scope="{ row_index, row }">
@@ -20,26 +19,26 @@
                 <td>
                     {{ row.rank }}
                 </td>
-                <td v-for="details_column in details_columns">
+                <td>
+                    <rounded-decimal :original_number="row.points"></rounded-decimal>
+                </td>
+                <td
+                    v-for="details_column in details_columns"
+                    :key="details_column.name"
+                >
                     <details-column
                         :details_name="details_column.name"
-                        :details_value="row.details[details_column.name] != null ? row.details[details_column.name] : ''"
+                        :details_value="getDetailsValue(row, details_column.name)"
                     >
                     </details-column>
-                </td>
-                <td v-if="leaderboard_type.show_seed === 1">
-                    <seed :record="{ pb: row }"></seed>
-                </td>
-                <td v-if="leaderboard_type.show_replay === 1">
-                    <replay-download-link :record="{ pb: row }"></replay-download-link>
-                </td>
+            </td>
             </template>
-            <template v-if="leaderboard_type.show_zone_level === 1" slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
+            <template slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
                 <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
             </template>
-            <template v-if="leaderboard_type.show_zone_level === 1" slot="row-details" slot-scope="{ row }">
-                <leaderboard-entry-details-table :record="{ pb: row } ">
-                </leaderboard-entry-details-table>
+            <template slot="row-details" slot-scope="{ row }">
+                <daily-ranking-details-table :record="row">
+                </daily-ranking-details-table>
             </template>
         </necrotable>
     </with-nav-body>
@@ -52,36 +51,24 @@ import NecroTable from '../../table/NecroTable.vue';
 import CharacterDropdownFilter from '../../table/filters/CharacterDropdownFilter.vue';
 import ReleaseDropdownFilter from '../../table/filters/ReleaseDropdownFilter.vue';
 import ModeDropdownFilter from '../../table/filters/ModeDropdownFilter.vue';
-import SeededTypeDropdownFilter from '../../table/filters/SeededTypeDropdownFilter.vue';
 import MultiplayerTypeDropdownFilter from '../../table/filters/MultiplayerTypeDropdownFilter.vue';
 import SoundtrackDropdownFilter from '../../table/filters/SoundtrackDropdownFilter.vue';
-import ToggleDetails from '../../table/action_columns/ToggleDetails.vue';
+import NumberOfDaysDropdownFilter from '../../table/filters/NumberOfDaysDropdownFilter.vue';
+import RoundedDecimal from '../../formatting/RoundedDecimal.vue';
 import DetailsColumn from '../../formatting/DetailsColumn.vue';
-import Seed from '../../leaderboards/Seed.vue';
-import ReplayDownloadLink from '../../leaderboards/ReplayDownloadLink.vue';
-import LeaderboardEntryDetailsTable from '../../table/LeaderboardEntryDetailsTable.vue';
+import ToggleDetails from '../../table/action_columns/ToggleDetails.vue';
+import DailyRankingDetailsTable from '../../table/DailyRankingDetailsTable.vue';
 
-const LeaderboardsPage = {
+const PlayerProfileDailyRankings = {
     extends: BasePage,
-    name: 'player-profile-pbs',
+    name: 'player-profile-daily-rankings',
     components: {
         'with-nav-body': WithNavBody,
         'necrotable': NecroTable,
+        'rounded-decimal': RoundedDecimal,
         'details-column': DetailsColumn,
-        'seed': Seed,
-        'replay-download-link': ReplayDownloadLink,
         'toggle-details': ToggleDetails,
-        'leaderboard-entry-details-table': LeaderboardEntryDetailsTable
-    },
-    props: {
-        name: {
-            type: String,
-            default: ''
-        },
-        display_name: {
-            type: String,
-            default: ''
-        }
+        'daily-ranking-details-table': DailyRankingDetailsTable
     },
     data() {
         return {
@@ -90,12 +77,23 @@ const LeaderboardsPage = {
             leaderboard_type: {},
             details_columns: [],
             filters: [
+                CharacterDropdownFilter,
                 ReleaseDropdownFilter,
                 ModeDropdownFilter,
-                CharacterDropdownFilter,
-                SeededTypeDropdownFilter,
                 MultiplayerTypeDropdownFilter,
-                SoundtrackDropdownFilter
+                SoundtrackDropdownFilter,
+                NumberOfDaysDropdownFilter
+            ],
+            details_table_rows: [
+                {
+                    name: 'rank',
+                    display_name: 'Rank'
+                },
+                {
+                    name: 'points',
+                    display_name: 'Points',
+                    rounded: true
+                }
             ]
         }
     },
@@ -114,33 +112,25 @@ const LeaderboardsPage = {
         apiRequestParameters() {
             return {
                 player_id: this.player_id,
-                leaderboard_source: this.leaderboard_source.name,
-                leaderboard_type: this.leaderboard_type.name
+                leaderboard_source: this.leaderboard_source.name
             }
         },
         headerColumns() {
             const header_columns = [
                 'Date',
-                'Rank'
+                'Rank',
+                'Points'
             ];
             
             this.details_columns.forEach((details_column) => {
                 header_columns.push(details_column.display_name);
             });
             
-            if(this.leaderboard_type.show_seed === 1) {
-                header_columns.push('Seed');
-            }
-            
-            if(this.leaderboard_type.show_replay === 1) {
-                header_columns.push('Replay');
-            }
-            
             return header_columns;
         }
     },
     methods: {
-        loadState(route_params) {
+        loadState(route_params) {            
             this.$store.commit('characters/setFilterStores', [
                 'leaderboard_sources',
                 'releases',
@@ -153,8 +143,8 @@ const LeaderboardsPage = {
             ]);
             
             this.$store.commit('modes/setFilterStores', [
-                'releases',
-                'leaderboard_types'
+                'leaderboard_types',
+                'releases'
             ]);
             
             this.$store.commit('multiplayer_types/setFilterStores', [
@@ -163,14 +153,29 @@ const LeaderboardsPage = {
 
             this.player_id = route_params.player_id,
             this.leaderboard_source = this.$store.getters['leaderboard_sources/getSelected'];
-            this.leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
             
-            this.details_columns = this.$store.getters['details_columns/getAllByNames'](this.leaderboard_type.details_columns);
+            this.$store.commit('leaderboard_types/setSelected', 'daily');
+            
+            const leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
+            
+            this.details_columns = this.$store.getters['details_columns/getAllByNames'](leaderboard_type.details_columns);
 
             this.loaded = true;
+        },
+        getDetailsValue(row, details_name) {            
+            let details_value = '';
+            
+            if(
+                row['details'] != null &&
+                row['details'][details_name] != null
+            ) {
+                details_value = row['details'][details_name];
+            }
+            
+            return details_value;
         }
     }
 };
 
-export default LeaderboardsPage;
+export default PlayerProfileDailyRankings;
 </script> 

@@ -25,7 +25,7 @@
         <template slot="row-details" slot-scope="{ row }">
             <ranking-summary-details-table 
                 :leaderboard_types="$store.getters['leaderboard_types/getFiltered']"
-                :record="row"
+                :record="row.characters[character_name]"
                 :rows="details_table_rows"
             >
             </ranking-summary-details-table>

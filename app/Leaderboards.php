@@ -120,7 +120,7 @@ class Leaderboards extends Model {
             !empty($daily_date) &&
             $leaderboard->soundtrack->name == 'default' && 
             $leaderboard->multiplayer_type->name == 'single' && 
-            $leaderboard->seeded_type->name == 'unseeded'
+            $leaderboard->seeded_type->name == 'seeded'
         ) {
             $leaderboard->ranking_types[] = RankingTypes::getByName('daily');
         }

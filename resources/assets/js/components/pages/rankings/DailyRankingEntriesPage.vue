@@ -108,14 +108,10 @@ export default {
         }
     },
     methods: {
-        loadState(route_params) {
-            this.$store.commit('leaderboard_types/setFilterStores', [
-                'modes'
-            ]);
-            
+        loadState(route_params) {            
             this.$store.commit('leaderboard_types/setSelected', 'daily');
             
-            let leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
+            const leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
             
             this.details_columns = this.$store.getters['details_columns/getAllByNames'](leaderboard_type.details_columns);
             

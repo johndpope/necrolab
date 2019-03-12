@@ -111,7 +111,7 @@ const RankingEntriesPage = {
             sub_title: '',
             api_request_parameters: this.default_api_request_parameters,
             filters: [
-                
+                SiteDropdownFilter
             ]
         }
     },

@@ -1,198 +1,216 @@
 <template>
-    <div v-if="properties_loaded">
-        <h2>{{ leaderboard_type.display_name }} Leaderboard Entries</h2>
-        <necrotable
+    <with-nav-body 
+        :loaded="loaded"
+        :key="leaderboard_type.name"
+        :sub_title="leaderboard_type.display_name + ' Leaderboards'"
+        :show_breadcrumbs="false"
+    >
+        <necrotable 
             :api_endpoint_url="apiEndpointUrl"
-            :header_columns="headerColumns"
-            :has_action_column="has_details_row"
+            :header_columns="headerColumns" 
             :default_request_parameters="apiRequestParameters"
+            :has_pagination="false"
+            :has_action_column="leaderboard_type.show_zone_level === 1"
             :filters="filters"
-            :pagination="false"
         >
             <template slot="table-row" slot-scope="{ row_index, row }">
-                <td>
-                    <character-icon-selector 
-                        :name="row.pb.character"
-                        :display_name="getCharacterByName(row.pb.character).display_name"
-                    >
+                <td v-if="leaderboard_type.name != 'daily'">
+                    <character-icon-selector :name="row.pb.character" :display_name="getCharacterDisplayName(row.pb.character)">
                     </character-icon-selector>
+                </td>
+                <td v-if="leaderboard_type.name == 'daily'">
+                    {{ row.pb.date }}
                 </td>
                 <td>
                     {{ row.rank }}
                 </td>
-                <td>
-                    {{ row.pb[leaderboard_type.details_field_name] }}
+                <td v-for="details_column in details_columns">
+                    <details-column
+                        :details_name="details_column.name"
+                        :details_value="row.pb.details[details_column.name] != null ? row.pb.details[details_column.name] : ''"
+                    >
+                    </details-column>
                 </td>
-                <td v-if="has_seed">
+                <td v-if="leaderboard_type.show_seed === 1">
                     <seed :record="row"></seed>
                 </td>
-                <td v-if="has_replay">
+                <td v-if="leaderboard_type.show_replay === 1">
                     <replay-download-link :record="row"></replay-download-link>
                 </td>
             </template>
-            <template v-if="has_details_row" slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
+            <template v-if="leaderboard_type.show_zone_level === 1" slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
                 <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
             </template>
-            <template v-if="has_details_row" slot="row-details" slot-scope="{ row }">
-                <slot name="row-details" :row="row">
-                    Override this slot to specify a details row.
-                </slot>
+            <template v-if="leaderboard_type.show_zone_level === 1" slot="row-details" slot-scope="{ row }">
+                <leaderboard-entry-details-table :record="row">
+                </leaderboard-entry-details-table>
             </template>
         </necrotable>
-    </div>
+    </with-nav-body>
 </template>
 
 <script>
-import NecroTable from '../table/NecroTable.vue';
-import DateTimeFilter from '../table/filters/DateTimeFilter.vue';
-import ReleaseDropdownFilter from '../table/filters/ReleaseDropdownFilter.vue';
-import ModeDropdownFilter from '../table/filters/ModeDropdownFilter.vue';
-import SeededTypeDropdownFilter from '../table/filters/SeededTypeDropdownFilter.vue';
-import MultiplayerTypeDropdownFilter from '../table/filters/MultiplayerTypeDropdownFilter.vue';
-import SoundtrackDropdownFilter from '../table/filters/SoundtrackDropdownFilter.vue';
-import CharacterIconSelector from '../characters/CharacterIconSelector.vue';
-import ToggleDetails from '../table/action_columns/ToggleDetails.vue';
-import Seed from '../leaderboards/Seed.vue';
-import ReplayDownloadLink from '../leaderboards/ReplayDownloadLink.vue';
+import BasePage from '../BasePage.vue';
+import WithNavBody from '../../layouts/WithNavBody.vue';
+import NecroTable from '../../table/NecroTable.vue';
+import Datepicker from '../../date/Datepicker.vue';
+import CharacterDropdownFilter from '../../table/filters/CharacterDropdownFilter.vue';
+import ReleaseDropdownFilter from '../../table/filters/ReleaseDropdownFilter.vue';
+import ModeDropdownFilter from '../../table/filters/ModeDropdownFilter.vue';
+import SeededTypeDropdownFilter from '../../table/filters/SeededTypeDropdownFilter.vue';
+import MultiplayerTypeDropdownFilter from '../../table/filters/MultiplayerTypeDropdownFilter.vue';
+import SoundtrackDropdownFilter from '../../table/filters/SoundtrackDropdownFilter.vue';
+import CharacterIconSelector from '../../characters/CharacterIconSelector.vue';
+import ToggleDetails from '../../table/action_columns/ToggleDetails.vue';
+import DetailsColumn from '../../formatting/DetailsColumn.vue';
+import Seed from '../../leaderboards/Seed.vue';
+import ReplayDownloadLink from '../../leaderboards/ReplayDownloadLink.vue';
+import LeaderboardEntryDetailsTable from '../../table/LeaderboardEntryDetailsTable.vue';
 
-const PlayerProfileLeaderboardsPage = {
-    name: 'player-profile-leaderboards-page',
+const PlayerProfileLeaderboards = {
+    extends: BasePage,
+    name: 'player-profile-leaderboards',
     components: {
+        'with-nav-body': WithNavBody,
         'necrotable': NecroTable,
+        'character-icon-selector': CharacterIconSelector,
+        'details-column': DetailsColumn,
         'seed': Seed,
         'replay-download-link': ReplayDownloadLink,
-        'character-icon-selector': CharacterIconSelector,
-        'toggle-details': ToggleDetails
+        'toggle-details': ToggleDetails,
+        'leaderboard-entry-details-table': LeaderboardEntryDetailsTable
     },
     props: {
-        has_seed: {
-            type: Boolean,
-            default: true
+        name: {
+            type: String,
+            default: ''
         },
-        has_replay: {
-            type: Boolean,
-            default: true
-        },
-        has_details_row: {
-            type: Boolean,
-            default: true
+        display_name: {
+            type: String,
+            default: ''
         }
     },
     data() {
         return {
-            properties_loaded: false,
-            leaderboard_type: {},
+            player_id: '',
             leaderboard_source: {},
-            filters: [
-                DateTimeFilter,
-                ReleaseDropdownFilter,
-                ModeDropdownFilter,
-                SeededTypeDropdownFilter,
-                MultiplayerTypeDropdownFilter,
-                SoundtrackDropdownFilter
-            ]
+            leaderboard_type: {},
+            details_columns: []
         }
     },
     computed: {
-        apiEndpointUrl() {
-            let url = '/api/1/players';
-            
-            if(this.hasLeaderboardSource()) {
-                url += '/' + this.$route.params.leaderboard_source;
-            }
-            
-            url += '/' + this.$route.params.player_id + '/leaderboards/' + this.$route.params.leaderboard_type + '/entries';
-            
-            return url;
-        },
-        apiRequestParameters() {
-            let parameters = {};
-            
-            if(this.hasLeaderboardSource()) {
-                //parameters['leaderboard_source'] = this.$route.params.leaderboard_source;
-            }
-            
-            return parameters;
-        },
-        /*breadcrumbs() {
-            let snapshots_url = '#/leaderboards/' + this.name + '/' + this.$route.params.url_name + '/snapshots';
-            
+        breadcrumbs() {
             return [
                 {
                     text: 'Leaderboards'
                 },
                 {
-                    text: this.display_name,
-                    href: '#/leaderboards/' + this.name
-                },
-                {
-                    text: this.leaderboard.display_name
-                },
-                {
-                    text: 'Snapshots',
-                    href: snapshots_url
-                },
-                {
-                    text: this.date,
-                    href: snapshots_url + '/' + this.date
+                    text: this.leaderboard_type.display_name,
+                    href: '/leaderboards/' + this.leaderboard_type.name
                 }
-            ]
-        },*/
-        headerColumns() {
-            let header_columns = [
-                'Character',
-                'Rank',
-                this.leaderboard_type.display_name
             ];
+        },
+        apiEndpointUrl() {
+            let api_endpoint_url = '';
             
-            if(this.has_seed) {
+            if(this.leaderboard_type.name == 'daily') {
+                api_endpoint_url = '/api/1/player/leaderboards/daily/entries';
+            }
+            else {
+                api_endpoint_url = '/api/1/player/leaderboards/category/entries';
+            }
+            
+            return api_endpoint_url;
+        },
+        apiRequestParameters() {
+            return {
+                player_id: this.player_id,
+                leaderboard_source: this.leaderboard_source.name,
+                leaderboard_type: this.leaderboard_type.name
+            }
+        },
+        headerColumns() {
+            const header_columns = [];
+            
+            if(this.leaderboard_type.name != 'daily') {
+                header_columns.push('Character');
+            }
+            else {
+                header_columns.push('Date');
+            }
+            
+            header_columns.push('Rank');
+            
+            this.details_columns.forEach((details_column) => {
+                header_columns.push(details_column.display_name);
+            });
+            
+            if(this.leaderboard_type.show_seed === 1) {
                 header_columns.push('Seed');
             }
             
-            if(this.has_replay) {
+            if(this.leaderboard_type.show_replay === 1) {
                 header_columns.push('Replay');
             }
             
             return header_columns;
+        },
+        filters() {
+            const filters = [];
+            
+            if(this.leaderboard_type.name == 'daily') {
+                filters.push(CharacterDropdownFilter);
+            }
+            else {
+                filters.push(Datepicker);
+            }
+            
+            filters.push(
+                ReleaseDropdownFilter,
+                ModeDropdownFilter,
+                SeededTypeDropdownFilter,
+                MultiplayerTypeDropdownFilter,
+                SoundtrackDropdownFilter
+            );
+            
+            return filters;
         }
     },
     methods: {
-        initializeProperties() {
-            this.leaderboard_type = this.$store.getters['leaderboard_types/getByField']('name', this.$route.params.leaderboard_type);
-            this.leaderboard_source = this.$store.getters['leaderboard_sources/getByField']('name', this.$route.params.leaderboard_source);
+        loadState(route_params) {
+            this.$store.commit('characters/setFilterStores', [
+                'leaderboard_sources',
+                'releases',
+                'leaderboard_types',
+                'modes'
+            ]);
             
-            //Set if has seed
-        
-            //Set if has replay
+            this.$store.commit('releases/setFilterStores', [
+                'leaderboard_sources'
+            ]);
             
-            //Set if has details row
+            this.$store.commit('modes/setFilterStores', [
+                'releases',
+                'leaderboard_types'
+            ]);
+            
+            this.$store.commit('multiplayer_types/setFilterStores', [
+                'leaderboard_sources'
+            ]);
+
+            this.player_id = route_params.player_id,
+            this.leaderboard_source = this.$store.getters['leaderboard_sources/getSelected'];
+            this.leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
+            
+            this.details_columns = this.$store.getters['details_columns/getAllByNames'](this.leaderboard_type.details_columns);
+
+            this.loaded = true;
         },
-        hasLeaderboardSource() {
-            return this.$route.params['leaderboard_source'] != null;
-        },
-        getCharacterByName(character_name) {
-            return this.$store.getters['characters/getByField']('name', character_name);
+        getCharacterDisplayName(character_name) {
+            return this.$store.getters['characters/getByName'](character_name).display_name;
         }
-    },
-    created() {
-        let promises = [
-            this.$store.dispatch('leaderboard_sources/loadAll'),
-            this.$store.dispatch('leaderboard_types/loadAll'),
-            this.$store.dispatch('characters/loadAll')
-        ];
-        
-        Promise.all(promises).then(() => {            
-            this.initializeProperties();
-            
-            this.properties_loaded = true;
-        });
-    },
-    beforeRouteUpdate(to, from, next) {
-        this.initializeProperties();
-        
-        next();
     }
 };
 
-export default PlayerProfileLeaderboardsPage;
+export default PlayerProfileLeaderboards;
 </script> 

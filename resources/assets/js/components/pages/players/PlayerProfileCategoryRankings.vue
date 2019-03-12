@@ -1,16 +1,15 @@
 <template>
     <with-nav-body 
         :loaded="loaded"
-        :key="leaderboard_type.name"
-        :sub_title="leaderboard_type.display_name + ' PBs'"
+        :sub_title="leaderboard_type.display_name + ' Rankings'"
         :show_breadcrumbs="false"
     >
-        <necrotable 
-            api_endpoint_url="/api/1/player/pbs"
+        <necrotable
+            :key="$route.fullPath"
+            api_endpoint_url="/api/1/player/rankings/category/entries"
             :header_columns="headerColumns" 
             :default_request_parameters="apiRequestParameters"
-            :has_pagination="false"
-            :has_action_column="leaderboard_type.show_zone_level === 1"
+            :has_action_column="true"
             :filters="filters"
         >
             <template slot="table-row" slot-scope="{ row_index, row }">
@@ -20,26 +19,32 @@
                 <td>
                     {{ row.rank }}
                 </td>
-                <td v-for="details_column in details_columns">
+                <td>
+                    <rounded-decimal :original_number="row.points"></rounded-decimal>
+                </td>
+                <td
+                    v-for="details_column in details_columns"
+                    :key="details_column.name"
+                >
                     <details-column
                         :details_name="details_column.name"
-                        :details_value="row.details[details_column.name] != null ? row.details[details_column.name] : ''"
+                        :details_value="row.categories[leaderboard_type.name].details[details_column.name]"
                     >
                     </details-column>
-                </td>
-                <td v-if="leaderboard_type.show_seed === 1">
-                    <seed :record="{ pb: row }"></seed>
-                </td>
-                <td v-if="leaderboard_type.show_replay === 1">
-                    <replay-download-link :record="{ pb: row }"></replay-download-link>
-                </td>
+            </td>
             </template>
-            <template v-if="leaderboard_type.show_zone_level === 1" slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
+            <template slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
                 <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
             </template>
-            <template v-if="leaderboard_type.show_zone_level === 1" slot="row-details" slot-scope="{ row }">
-                <leaderboard-entry-details-table :record="{ pb: row } ">
-                </leaderboard-entry-details-table>
+            <template slot="row-details" slot-scope="{ row }">
+                <ranking-category-summary-details-table
+                    :characters="$store.getters['characters/getFiltered']"
+                    :record="row.characters"
+                    :leaderboard_type="leaderboard_type"
+                    :details_columns="details_columns"
+                    :rows="details_table_rows"
+                >
+                </ranking-category-summary-details-table>
             </template>
         </necrotable>
     </with-nav-body>
@@ -49,39 +54,26 @@
 import BasePage from '../BasePage.vue';
 import WithNavBody from '../../layouts/WithNavBody.vue';
 import NecroTable from '../../table/NecroTable.vue';
-import CharacterDropdownFilter from '../../table/filters/CharacterDropdownFilter.vue';
 import ReleaseDropdownFilter from '../../table/filters/ReleaseDropdownFilter.vue';
 import ModeDropdownFilter from '../../table/filters/ModeDropdownFilter.vue';
 import SeededTypeDropdownFilter from '../../table/filters/SeededTypeDropdownFilter.vue';
 import MultiplayerTypeDropdownFilter from '../../table/filters/MultiplayerTypeDropdownFilter.vue';
 import SoundtrackDropdownFilter from '../../table/filters/SoundtrackDropdownFilter.vue';
-import ToggleDetails from '../../table/action_columns/ToggleDetails.vue';
+import RoundedDecimal from '../../formatting/RoundedDecimal.vue';
 import DetailsColumn from '../../formatting/DetailsColumn.vue';
-import Seed from '../../leaderboards/Seed.vue';
-import ReplayDownloadLink from '../../leaderboards/ReplayDownloadLink.vue';
-import LeaderboardEntryDetailsTable from '../../table/LeaderboardEntryDetailsTable.vue';
+import ToggleDetails from '../../table/action_columns/ToggleDetails.vue';
+import RankingCategorySummaryDetailsTable from '../../table/RankingCategorySummaryDetailsTable.vue';
 
-const LeaderboardsPage = {
+const PlayerProfileCategoryRankings = {
     extends: BasePage,
-    name: 'player-profile-pbs',
+    name: 'player-profile-category-rankings',
     components: {
         'with-nav-body': WithNavBody,
         'necrotable': NecroTable,
+        'rounded-decimal': RoundedDecimal,
         'details-column': DetailsColumn,
-        'seed': Seed,
-        'replay-download-link': ReplayDownloadLink,
         'toggle-details': ToggleDetails,
-        'leaderboard-entry-details-table': LeaderboardEntryDetailsTable
-    },
-    props: {
-        name: {
-            type: String,
-            default: ''
-        },
-        display_name: {
-            type: String,
-            default: ''
-        }
+        'ranking-category-summary-details-table': RankingCategorySummaryDetailsTable
     },
     data() {
         return {
@@ -92,10 +84,20 @@ const LeaderboardsPage = {
             filters: [
                 ReleaseDropdownFilter,
                 ModeDropdownFilter,
-                CharacterDropdownFilter,
                 SeededTypeDropdownFilter,
                 MultiplayerTypeDropdownFilter,
                 SoundtrackDropdownFilter
+            ],
+            details_table_rows: [
+                {
+                    name: 'rank',
+                    display_name: 'Rank'
+                },
+                {
+                    name: 'points',
+                    display_name: 'Points',
+                    rounded: true
+                }
             ]
         }
     },
@@ -121,26 +123,23 @@ const LeaderboardsPage = {
         headerColumns() {
             const header_columns = [
                 'Date',
-                'Rank'
+                'Rank',
+                'Points'
             ];
             
             this.details_columns.forEach((details_column) => {
                 header_columns.push(details_column.display_name);
             });
             
-            if(this.leaderboard_type.show_seed === 1) {
-                header_columns.push('Seed');
-            }
-            
-            if(this.leaderboard_type.show_replay === 1) {
-                header_columns.push('Replay');
-            }
-            
             return header_columns;
         }
     },
     methods: {
         loadState(route_params) {
+            this.$store.commit('leaderboard_types/setFilterStores', [
+                'modes'
+            ]);
+            
             this.$store.commit('characters/setFilterStores', [
                 'leaderboard_sources',
                 'releases',
@@ -153,8 +152,7 @@ const LeaderboardsPage = {
             ]);
             
             this.$store.commit('modes/setFilterStores', [
-                'releases',
-                'leaderboard_types'
+                'releases'
             ]);
             
             this.$store.commit('multiplayer_types/setFilterStores', [
@@ -172,5 +170,5 @@ const LeaderboardsPage = {
     }
 };
 
-export default LeaderboardsPage;
+export default PlayerProfileCategoryRankings;
 </script> 

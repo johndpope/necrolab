@@ -64,19 +64,21 @@
                     <b-nav vertical pills>
                         <b-nav-item
                             :href="getRankingUrl('power')"
+                            :active="active_link == 'rankings_power'"
                             @click="setActiveLink('rankings_power')"
                         >
                             Power
                         </b-nav-item>
                         <b-nav-item
                             :href="getRankingUrl('character')"
+                            :active="active_link == 'rankings_character'"
                             @click="setActiveLink('rankings_character')"
                         >
                             Character
                         </b-nav-item>
                         <b-nav-item 
                             v-for="leaderboard_type in leaderboard_types" 
-                            :key="leaderboard_type.name"
+                            :key="'rankings_' + leaderboard_type.name"
                             :href="getRankingUrl(leaderboard_type.name)"
                             :active="active_link == 'rankings_' + leaderboard_type.name"
                             @click="setActiveLink('rankings_' + leaderboard_type.name)"
@@ -156,8 +158,8 @@ export default {
         getLeaderboardUrl(leaderboard_type) {
              return this.profile_url + '/leaderboards/' + leaderboard_type.name;
         },
-        getRankingUrl(leaderboard_type) {
-             return this.profile_url + '/rankings/' + leaderboard_type.name;
+        getRankingUrl(ranking_type) {
+             return this.profile_url + '/rankings/' + ranking_type;
         }
     }
 };
