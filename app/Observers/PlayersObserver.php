@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\LeaderboardSources;
 use App\Players;
 
 class PlayersObserver {
@@ -12,6 +13,8 @@ class PlayersObserver {
      * @return void
      */
     public function saved(Players $model) {
-        Players::updateRecordSearchIndex($model);
+        $leaderboard_source = LeaderboardSources::getByName($model->getSchema());
+    
+        Players::updateRecordSearchIndex($leaderboard_source, $model);
     }
 }

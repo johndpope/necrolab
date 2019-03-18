@@ -39,6 +39,31 @@ trait IsSchemaTable {
      */
     public function setSchema(string $schema) {
         $this->schema = $schema;
+        
+        return $this;
+    }
+    
+    /**
+     * Set the schema that this model belongs to in a static context.
+     *
+     * @param string $schema The name of the schema this model belongs to.
+     * @return object The instance of the model that was created.
+     */
+    public static function setSchemaStatic(string $schema) {
+        $instance = new static();
+        
+        $instance->setSchema($schema);
+        
+        return $instance;
+    }
+    
+    /**
+     * Returns the schema set for this model.
+     *
+     * @return string
+     */
+    public function getSchema(): string {
+        return $this->schema;
     }
     
     /**

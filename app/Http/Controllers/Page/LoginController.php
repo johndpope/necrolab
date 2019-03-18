@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use App\Http\Controllers\Controller;
 use App\Players;
 use App\Users;
+use App\UserSteamPlayer;
 
 class LoginController extends Controller {
     /**
@@ -50,30 +51,50 @@ class LoginController extends Controller {
             return redirect('/');
         }
     
-        $steam_user = Players::where('steamid', $user->user['steamid'])->first();
+        $player = Players::setSchemaStatic('steam')->where('external_id', $user->user['steamid'])->first();
         
-        if(empty($steam_user)) {
+        if(empty($player)) {
             /* ---------- Redirect back to the login page indicating that the user cannot be found ---------- */
             redirect('/#login?error=steam_not_exists');
         }
         
         /* ---------- Save this user's profile data ---------- */
         
-        $steam_user->communityvisibilitystate = $user->user['communityvisibilitystate'];
-        $steam_user->profilestate = $user->user['profilestate'];
-        $steam_user->personaname = $user->user['personaname'];
-        $steam_user->profileurl = $user->user['profileurl'];
-        $steam_user->avatar = $user->user['avatar'];
-        $steam_user->avatarmedium = $user->user['avatarmedium'];
-        $steam_user->avatarfull = $user->user['avatarfull'];
+        $player->setSchema('steam');
         
-        $steam_user->save();
+        $player->username = $user->user['personaname'];
+        $player->profile_url = $user->user['profileurl'];
+        $player->avatar_url  = $user->user['avatar'];
+        $player->updated = date('Y-m-d H:i:s');
         
-        $user = Users::firstOrCreate([
-            'steam_user_id' => $steam_user->steam_user_id
-        ]);
+        $player->save();
         
-        Auth::login($user, true);
+        
+        $user_steam_player = UserSteamPlayer::where('player_id', $player->id)->first();
+        
+        $user_record = NULL;
+        
+        if(empty($user_steam_player)) {
+            // Create the user record
+            $user_record = new Users();
+            
+            $user_record->created_at = date('Y-m-d H:i:s');
+            
+            $user_record->save();
+            
+            // Create the record that links a user to a player
+            $user_steam_player = new UserSteamPlayer();
+            
+            $user_steam_player->user_id = $user_record->id;
+            $user_steam_player->player_id = $player->id;
+            
+            $user_steam_player->save();
+        }
+        else {
+            $user_record = Users::where('id', $user_steam_player->user_id)->first();
+        }
+        
+        Auth::login($user_record, true);
         
         $request->session()->regenerate();
         
