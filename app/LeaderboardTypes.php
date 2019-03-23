@@ -77,7 +77,7 @@ class LeaderboardTypes extends Model {
             ->leftJoinSub($characters_query, 'leaderboard_type_characters', function($join) {
                 $join->on('leaderboard_type_characters.leaderboard_type_id', '=', 'lt.id');
             })
-            ->orderBy('lt.id', 'asc');
+            ->orderBy('lt.sort_order', 'asc');
     }
     
     protected static function processDataBeforeCache(Collection $records): void {    

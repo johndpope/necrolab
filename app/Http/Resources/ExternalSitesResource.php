@@ -15,15 +15,9 @@ class ExternalSitesResource extends JsonResource {
         $authenticated_user = $request->user();
     
         return [
-            'id' => (int)$this->external_site_id,
+            'id' => (int)$this->id,
             'name' => $this->name,
-            'display_name' => $this->display_name,
-            $this->mergeWhen(!empty($authenticated_user) && $authenticated_user->hasAnyPermission([
-                'permission:external_sites:store',
-                'permission:external_sites:update'
-            ]), [
-                'active' => (int)$this->active
-            ])
+            'display_name' => $this->display_name
         ];
     }
 }

@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-class CreateMixerUserTables extends Migration
+class CreateRedditUserTables extends Migration
 {
     /**
      * Run the migrations.
@@ -13,50 +13,50 @@ class CreateMixerUserTables extends Migration
      * @return void
      */
     public function up() {
-        Schema::create('mixer_users', function (Blueprint $table) {
+        Schema::create('reddit_users', function (Blueprint $table) {
             $table->increments('id');
             $table->string('external_id')->unique();
-            $table->string('username')->nullable();
-            $table->text('avatar_url')->nullable();
-            $table->text('description')->nullable();
-            $table->text('bio')->nullable();
-            $table->text('channel_title')->nullable();
-            $table->integer('views')->nullable();
-            $table->integer('followers')->nullable();
-            $table->timestamp('updated')->nullable();
+            $table->string('username');
+            $table->integer('comment_karma');
+            $table->integer('link_karma');
+            $table->smallInteger('over_18');
+            $table->smallInteger('has_gold');
+            $table->smallInteger('is_employee');
+            $table->timestamp('reddit_created');
+            $table->timestamps();
         });
         
-        Schema::create('mixer_user_tokens', function (Blueprint $table) {
+        Schema::create('reddit_user_tokens', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('mixer_user_id');
+            $table->integer('reddit_user_id');
             $table->text('token');
             $table->text('refresh_token');
             $table->timestamp('expires')->nullable();
             $table->timestamp('created');
             $table->timestamp('expired')->nullable();
             
-            $table->foreign('mixer_user_id')
+            $table->foreign('reddit_user_id')
                 ->references('id')
-                ->on('mixer_users')
+                ->on('reddit_users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             
             $table->unique([
-                'mixer_user_id',
+                'reddit_user_id',
                 'token'
             ]);
         });
         
         Schema::table('users', function (Blueprint $table) {            
-            $table->integer('mixer_user_id')->nullable();
+            $table->integer('reddit_user_id')->nullable();
             
-            $table->foreign('mixer_user_id')
+            $table->foreign('reddit_user_id')
                 ->references('id')
-                ->on('mixer_users')
+                ->on('reddit_users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
                 
-            $table->index('mixer_user_id');
+            $table->index('reddit_user_id');
         });
     }
 
@@ -66,12 +66,12 @@ class CreateMixerUserTables extends Migration
      * @return void
      */
     public function down() {            
-        Schema::drop('mixer_users');
+        Schema::drop('reddit_users');
         
-        Schema::drop('mixer_user_tokens');
+        Schema::drop('reddit_user_tokens');
         
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('mixer_user_id');
+            $table->dropColumn('reddit_user_id');
         });
     }
 }

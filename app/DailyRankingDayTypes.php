@@ -27,7 +27,7 @@ class DailyRankingDayTypes extends Model {
     
     public static function getStoredInCacheQuery() {
         return static::where('enabled', 1)
-            ->orderBy('name', 'asc');
+            ->orderBy('sort_order', 'asc');
     }
     
     public static function getAllByNameForDate(LeaderboardSources $leaderboard_source, DateTime $date): array {

@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-class CreateMixerUserTables extends Migration
+class CreateTwitterUserTables extends Migration
 {
     /**
      * Run the migrations.
@@ -13,50 +13,51 @@ class CreateMixerUserTables extends Migration
      * @return void
      */
     public function up() {
-        Schema::create('mixer_users', function (Blueprint $table) {
+        Schema::create('twitter_users', function (Blueprint $table) {
             $table->increments('id');
             $table->string('external_id')->unique();
-            $table->string('username')->nullable();
-            $table->text('avatar_url')->nullable();
-            $table->text('description')->nullable();
-            $table->text('bio')->nullable();
-            $table->text('channel_title')->nullable();
-            $table->integer('views')->nullable();
-            $table->integer('followers')->nullable();
-            $table->timestamp('updated')->nullable();
+            $table->string('nickname');
+            $table->string('name');
+            $table->text('description');
+            $table->text('avatar_url');
+            $table->integer('followers_count');
+            $table->integer('friends_count');
+            $table->integer('statuses_count');
+            $table->smallInteger('verified');
+            $table->timestamps();
         });
         
-        Schema::create('mixer_user_tokens', function (Blueprint $table) {
+        Schema::create('twitter_user_tokens', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('mixer_user_id');
-            $table->text('token');
-            $table->text('refresh_token');
+            $table->integer('twitter_user_id');
+            $table->text('identifier');
+            $table->text('secret')->nullable();
             $table->timestamp('expires')->nullable();
             $table->timestamp('created');
             $table->timestamp('expired')->nullable();
             
-            $table->foreign('mixer_user_id')
+            $table->foreign('twitter_user_id')
                 ->references('id')
-                ->on('mixer_users')
+                ->on('twitter_users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             
             $table->unique([
-                'mixer_user_id',
-                'token'
+                'twitter_user_id',
+                'identifier'
             ]);
         });
         
         Schema::table('users', function (Blueprint $table) {            
-            $table->integer('mixer_user_id')->nullable();
+            $table->integer('twitter_user_id')->nullable();
             
-            $table->foreign('mixer_user_id')
+            $table->foreign('twitter_user_id')
                 ->references('id')
-                ->on('mixer_users')
+                ->on('twitter_users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
                 
-            $table->index('mixer_user_id');
+            $table->index('twitter_user_id');
         });
     }
 
@@ -66,12 +67,12 @@ class CreateMixerUserTables extends Migration
      * @return void
      */
     public function down() {            
-        Schema::drop('mixer_users');
+        Schema::drop('twitter_users');
         
-        Schema::drop('mixer_user_tokens');
+        Schema::drop('twitter_user_tokens');
         
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('mixer_user_id');
+            $table->dropColumn('twitter_user_id');
         });
     }
 }

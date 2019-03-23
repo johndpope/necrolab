@@ -20,13 +20,6 @@ class ExternalSites extends Model {
     protected $table = 'external_sites';
     
     /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'external_site_id';
-    
-    /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
@@ -34,8 +27,8 @@ class ExternalSites extends Model {
     public $timestamps = false;
     
     public static function getStoredInCacheQuery() {
-        return static::where('active', 1)
-            ->orderBy('name', 'asc');
+        return static::where('enabled', 1)
+            ->orderBy('sort_order', 'asc');
     }
     
     public static function addSiteIdSelectFields($query) {        
@@ -64,14 +57,14 @@ class ExternalSites extends Model {
                         if(!isset($index_key)) {
                             $indexes[
                                 CacheNames::getIndex($base_index_name, [
-                                    $site->external_site_id
+                                    $site->id
                                 ])
                             ][] = $index_value;
                         }
                         else {
                             $indexes[
                                 CacheNames::getIndex($base_index_name, [
-                                    $site->external_site_id
+                                    $site->id
                                 ])
                             ][$index_key] = $index_value;
                         }

@@ -65,7 +65,7 @@ class Releases extends Model {
             ->leftJoinSub($characters_query, 'release_characters', function($join) {
                 $join->on('release_characters.release_id', '=', 'r.id');
             })
-            ->orderBy('r.start_date', 'asc');
+            ->orderBy('r.sort_order', 'asc');
     }
     
     protected static function processDataBeforeCache(Collection $records): void {    
