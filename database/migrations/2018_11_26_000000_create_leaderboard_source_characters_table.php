@@ -35,11 +35,6 @@ class CreateLeaderboardSourceCharactersTable extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });
-        
-        Artisan::call('db:seed', [
-            '--class' => 'LeaderboardSourceCharactersSeeder',
-            '--force' => true 
-        ]);
     }
 
     /**

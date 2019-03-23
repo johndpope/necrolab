@@ -35,11 +35,6 @@ class CreateLeaderboardTypeModesTable extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });
-        
-        Artisan::call('db:seed', [
-            '--class' => 'LeaderboardTypeModesSeeder',
-            '--force' => true 
-        ]);
     }
 
     /**

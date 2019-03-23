@@ -18,9 +18,10 @@ class CreateLeaderboardSourcesTable extends Migration
             $table->smallIncrements('id');
             $table->string('name', 100);
             $table->string('display_name', 255);
-            $table->string('url_name', 100);
             $table->smallInteger('sort_order');
             $table->smallInteger('enabled');
+            $table->date('start_date');
+            $table->date('end_date')->nullable();
         });
         
         Artisan::call('db:seed', [

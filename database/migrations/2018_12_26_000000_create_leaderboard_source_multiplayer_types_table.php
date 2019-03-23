@@ -35,11 +35,6 @@ class CreateLeaderboardSourceMultiplayerTypesTable extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });
-        
-        Artisan::call('db:seed', [
-            '--class' => 'LeaderboardSourceMultiplayerTypesSeeder',
-            '--force' => true 
-        ]);
     }
 
     /**

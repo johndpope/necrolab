@@ -21,6 +21,7 @@ class CreateLeaderboardDetailsColumnsTable extends Migration
             $table->smallInteger('data_type_id');
             $table->smallInteger('sort_order');
             $table->smallInteger('enabled');
+            $table->string('import_field');
             
             $table->foreign('data_type_id')
                 ->references('id')
@@ -30,27 +31,6 @@ class CreateLeaderboardDetailsColumnsTable extends Migration
             
             $table->index('data_type_id');
         });
-        
-        Schema::table('leaderboard_types', function (Blueprint $table) {
-            $table->integer('leaderboard_details_column_id')->nullable();
-            
-            $table->foreign('leaderboard_details_column_id')
-                ->references('id')
-                ->on('leaderboard_details_columns')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
-            
-            $table->index('leaderboard_details_column_id');
-        });
-        
-        Artisan::call('db:seed', [
-            '--class' => 'LeaderboardDetailsColumnsSeeder',
-            '--force' => true 
-        ]);
-        
-        Schema::table('leaderboard_types', function (Blueprint $table) {
-            $table->integer('leaderboard_details_column_id')->nullable(false)->change();
-        });
     }
 
     /**
@@ -58,12 +38,7 @@ class CreateLeaderboardDetailsColumnsTable extends Migration
      *
      * @return void
      */
-    public function down()
-    {    
-        Schema::table('leaderboard_types', function (Blueprint $table) {
-            $table->dropColumn('leaderboard_details_column_id');
-        });
-    
+    public function down() {        
         Schema::dropIfExists('leaderboard_details_columns');
     }
 }

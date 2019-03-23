@@ -19,11 +19,6 @@ class CreateDataTypesTable extends Migration
             $table->string('name', 100);
             $table->string('display_name', 255);
         });
-        
-        Artisan::call('db:seed', [
-            '--class' => 'DataTypesSeeder',
-            '--force' => true 
-        ]);
     }
 
     /**

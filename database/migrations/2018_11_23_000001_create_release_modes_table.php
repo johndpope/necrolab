@@ -35,11 +35,6 @@ class CreateReleaseModesTable extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });
-        
-        Artisan::call('db:seed', [
-            '--class' => 'ReleaseModesSeeder',
-            '--force' => true 
-        ]);
     }
 
     /**

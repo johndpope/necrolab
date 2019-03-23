@@ -43,6 +43,18 @@ class CreateMixerUserTables extends Migration
             
             $table->index('mixer_user_id');
         });
+        
+        Schema::table('users', function (Blueprint $table) {            
+            $table->integer('mixer_user_id')->nullable();
+            
+            $table->foreign('mixer_user_id')
+                ->references('id')
+                ->on('mixer_users')
+                ->onDelete('cascade')
+                ->onUpdate('cascade');
+                
+            $table->index('mixer_user_id');
+        });
     }
 
     /**
@@ -54,5 +66,9 @@ class CreateMixerUserTables extends Migration
         Schema::drop('mixer_users');
         
         Schema::drop('mixer_user_tokens');
+        
+        Schema::table('users', function (Blueprint $table) {
+            $table->dropColumn('mixer_user_id');
+        });
     }
 }

@@ -35,11 +35,6 @@ class CreateModeCharactersTable extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });
-        
-        Artisan::call('db:seed', [
-            '--class' => 'ModeCharactersSeeder',
-            '--force' => true 
-        ]);
     }
 
     /**

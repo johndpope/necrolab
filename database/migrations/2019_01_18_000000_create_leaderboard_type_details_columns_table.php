@@ -35,11 +35,6 @@ class CreateLeaderboardTypeDetailsColumnsTable extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });
-        
-        Artisan::call('db:seed', [
-            '--class' => 'LeaderboardTypeDetailsColumnsSeeder',
-            '--force' => true 
-        ]);
     }
 
     /**

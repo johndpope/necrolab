@@ -29,11 +29,6 @@ class AddDailyDateFormatsTable extends Migration
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });
-        
-        Artisan::call('db:seed', [
-            '--class' => 'DailyDateFormatsSeeder',
-            '--force' => true 
-        ]);
     }
 
     /**
