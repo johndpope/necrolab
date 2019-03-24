@@ -23,11 +23,6 @@ class CreateLeaderboardSourcesTable extends Migration
             $table->date('start_date');
             $table->date('end_date')->nullable();
         });
-        
-        Artisan::call('db:seed', [
-            '--class' => 'LeaderboardSourcesSeeder',
-            '--force' => true 
-        ]);
     }
 
     /**

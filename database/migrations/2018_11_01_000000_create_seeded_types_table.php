@@ -17,41 +17,8 @@ class CreateSeededTypesTable extends Migration
             $table->smallIncrements('id');
             $table->string('name', 100);
             $table->string('display_name', 255);
-        });
-        
-        Artisan::call('db:seed', [
-            '--class' => 'SeededTypesSeeder',
-            '--force' => true 
-        ]);
-        
-        Schema::table('leaderboards', function (Blueprint $table) {
-            $table->integer('seeded_type_id')->nullable();
-            
-            $table->foreign('seeded_type_id')
-                ->references('id')
-                ->on('seeded_types')
-                ->onDelete('cascade')
-                ->onUpdate('cascade');
-                
-            $table->index('seeded_type_id');
-        });
-        
-        DB::update("
-            UPDATE leaderboards
-            SET seeded_type_id = 1
-            WHERE is_seeded = 0
-        ");
-        
-        DB::update("
-            UPDATE leaderboards
-            SET seeded_type_id = 2
-            WHERE is_seeded = 1
-        ");
-        
-        Schema::table('leaderboards', function (Blueprint $table) {
-            $table->integer('seeded_type_id')->nullable(false)->change();
-            
-            $table->dropColumn('is_seeded');
+            $table->smallInteger('is_default');
+            $table->smallInteger('sort_order');
         });
     }
 
@@ -60,12 +27,7 @@ class CreateSeededTypesTable extends Migration
      *
      * @return void
      */
-    public function down()
-    {
-        Schema::table('leaderboards', function (Blueprint $table) {            
-            $table->dropColumn('seeded_type_id');
-        });
-        
+    public function down() {        
         Schema::dropIfExists('seeded_types');        
     }
 }

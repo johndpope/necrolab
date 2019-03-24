@@ -17,12 +17,7 @@ class LeaderboardSourcesSeeder extends Seeder {
                 'display_name' => 'Steam',
                 'sort_order' => 1,
                 'enabled' => 1
-            ],
-            [
-                'name' => 'google_play',
-                'display_name' => 'Google Play',
-                'sort_order' => 2,
-                'enabled' => 1
+                'start_date' => '2014-07-30'
             ]
         ]);
     }
