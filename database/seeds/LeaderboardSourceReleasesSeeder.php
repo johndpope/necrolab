@@ -24,31 +24,19 @@ class LeaderboardSourceReleasesSeeder extends Seeder {
         LeaderboardSourceReleases::insert([
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'release_id' => $releases['early_access']->release_id
+                'release_id' => $releases['early_access']->id
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'release_id' => $releases['original']->release_id
+                'release_id' => $releases['original']->id
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'release_id' => $releases['amplified_dlc_early_access']->release_id
+                'release_id' => $releases['amplified_dlc_early_access']->id
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'release_id' => $releases['amplified_dlc']->release_id
-            ]
-        ]);
-        
-        
-        /* ---------- Google Play ----------*/
-        
-        $leaderboard_source_id = $leaderboard_sources['google_play']->id;
-        
-        LeaderboardSourceReleases::insert([
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'release_id' => $releases['amplified_dlc']->release_id
+                'release_id' => $releases['amplified_dlc']->id
             ]
         ]);
     }

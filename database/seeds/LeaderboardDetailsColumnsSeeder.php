@@ -38,27 +38,5 @@ class LeaderboardDetailsColumnsSeeder extends Seeder {
                 'enabled' => 1
             ],
         ]);
-        
-        $leaderboard_details_columns = LeaderboardDetailsColumns::getAllByName();
-        
-        LeaderboardTypes::where('name', 'score')
-            ->update([
-                'leaderboard_details_column_id' => $leaderboard_details_columns['score']->id
-            ]);
-        
-        LeaderboardTypes::where('name', 'speed')
-            ->update([
-                'leaderboard_details_column_id' => $leaderboard_details_columns['time']->id
-            ]);
-            
-        LeaderboardTypes::where('name', 'deathless')
-            ->update([
-                'leaderboard_details_column_id' => $leaderboard_details_columns['win_count']->id
-            ]);
-        
-        LeaderboardTypes::where('name', 'daily')
-            ->update([
-                'leaderboard_details_column_id' => $leaderboard_details_columns['score']->id
-            ]);
     }
 }

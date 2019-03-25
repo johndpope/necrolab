@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-class CreateReleaseModesTable extends Migration
+class CreateLeaderboardSourceReleasesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,24 +14,24 @@ class CreateReleaseModesTable extends Migration
      */
     public function up()
     {
-        Schema::create('release_modes', function (Blueprint $table) {
+        Schema::create('leaderboard_source_releases', function (Blueprint $table) {
+            $table->smallInteger('leaderboard_source_id');
             $table->smallInteger('release_id');
-            $table->smallInteger('mode_id');
             
             $table->primary([
-                'release_id',
-                'mode_id'
+                'leaderboard_source_id',
+                'release_id'
             ]);
             
-            $table->foreign('release_id')
-                ->references('release_id')
-                ->on('releases')
+            $table->foreign('leaderboard_source_id')
+                ->references('id')
+                ->on('leaderboard_sources')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             
-            $table->foreign('mode_id')
-                ->references('mode_id')
-                ->on('modes')
+            $table->foreign('release_id')
+                ->references('id')
+                ->on('releases')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });
@@ -44,6 +44,6 @@ class CreateReleaseModesTable extends Migration
      */
     public function down()
     {    
-        Schema::dropIfExists('release_modes');
+        Schema::dropIfExists('leaderboard_source_releases');
     }
 }

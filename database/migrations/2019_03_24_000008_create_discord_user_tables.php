@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-class CreateRedditUserTables extends Migration
+class CreateDiscordUserTables extends Migration
 {
     /**
      * Run the migrations.
@@ -13,50 +13,47 @@ class CreateRedditUserTables extends Migration
      * @return void
      */
     public function up() {
-        Schema::create('reddit_users', function (Blueprint $table) {
+        Schema::create('discord_users', function (Blueprint $table) {
             $table->increments('id');
             $table->string('external_id')->unique();
             $table->string('username');
-            $table->integer('comment_karma');
-            $table->integer('link_karma');
-            $table->smallInteger('over_18');
-            $table->smallInteger('has_gold');
-            $table->smallInteger('is_employee');
-            $table->timestamp('reddit_created');
+            $table->text('email');
+            $table->string('discriminator');
+            $table->text('avatar_url')->nullable();
             $table->timestamps();
         });
         
-        Schema::create('reddit_user_tokens', function (Blueprint $table) {
+        Schema::create('discord_user_tokens', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('reddit_user_id');
+            $table->integer('discord_user_id');
             $table->text('token');
             $table->text('refresh_token');
             $table->timestamp('expires')->nullable();
             $table->timestamp('created');
             $table->timestamp('expired')->nullable();
             
-            $table->foreign('reddit_user_id')
+            $table->foreign('discord_user_id')
                 ->references('id')
-                ->on('reddit_users')
+                ->on('discord_users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             
             $table->unique([
-                'reddit_user_id',
+                'discord_user_id',
                 'token'
             ]);
         });
         
         Schema::table('users', function (Blueprint $table) {            
-            $table->integer('reddit_user_id')->nullable();
+            $table->integer('discord_user_id')->nullable();
             
-            $table->foreign('reddit_user_id')
+            $table->foreign('discord_user_id')
                 ->references('id')
-                ->on('reddit_users')
+                ->on('discord_users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
                 
-            $table->index('reddit_user_id');
+            $table->index('discord_user_id');
         });
     }
 
@@ -65,13 +62,13 @@ class CreateRedditUserTables extends Migration
      *
      * @return void
      */
-    public function down() {            
-        Schema::drop('reddit_users');
-        
-        Schema::drop('reddit_user_tokens');
-        
+    public function down() {
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('reddit_user_id');
+            $table->dropColumn('discord_user_id');
         });
+        
+        Schema::drop('discord_user_tokens');        
+        
+        Schema::drop('discord_users');
     }
 }

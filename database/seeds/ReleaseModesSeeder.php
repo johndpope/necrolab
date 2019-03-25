@@ -19,100 +19,100 @@ class ReleaseModesSeeder extends Seeder {
         
         /* ---------- Alpha ----------*/
         
-        $release_id = $releases['alpha']->release_id;
+        $release_id = $releases['alpha']->id;
         
         ReleaseModes::insert([
             [
                 'release_id' => $release_id,
-                'mode_id' => $modes['normal']->mode_id,
+                'mode_id' => $modes['normal']->id,
             ]
         ]);
         
         
         /* ---------- Early Access ----------*/
         
-        $release_id = $releases['early_access']->release_id;
+        $release_id = $releases['early_access']->id;
         
         ReleaseModes::insert([
             [
                 'release_id' => $release_id,
-                'mode_id' => $modes['normal']->mode_id,
+                'mode_id' => $modes['normal']->id,
             ]
         ]);
     
     
         /* ---------- Original ----------*/
         
-        $release_id = $releases['original']->release_id;
+        $release_id = $releases['original']->id;
         
         ReleaseModes::insert([
             [
                 'release_id' => $release_id,
-                'mode_id' => $modes['normal']->mode_id,
+                'mode_id' => $modes['normal']->id,
             ]
         ]);
         
         
         /* ---------- Amplified Early Access ----------*/
         
-        $release_id = $releases['amplified_dlc_early_access']->release_id;
+        $release_id = $releases['amplified_dlc_early_access']->id;
         
         ReleaseModes::insert([
             [
                 'release_id' => $release_id,
-                'mode_id' => $modes['normal']->mode_id,
+                'mode_id' => $modes['normal']->id,
             ],
             [
                 'release_id' => $release_id,
-                'mode_id' => $modes['hard']->mode_id,
+                'mode_id' => $modes['hard']->id,
             ],
             [
                 'release_id' => $release_id,
-                'mode_id' => $modes['no_return']->mode_id,
+                'mode_id' => $modes['no_return']->id,
             ],
             [
                 'release_id' => $release_id,
-                'mode_id' => $modes['phasing']->mode_id,
+                'mode_id' => $modes['phasing']->id,
             ],
             [
                 'release_id' => $release_id,
-                'mode_id' => $modes['randomizer']->mode_id,
+                'mode_id' => $modes['randomizer']->id,
             ],
             [
                 'release_id' => $release_id,
-                'mode_id' => $modes['mystery']->mode_id,
+                'mode_id' => $modes['mystery']->id,
             ]
         ]);
         
         
         /* ---------- Amplified----------*/
         
-        $release_id = $releases['amplified_dlc']->release_id;
+        $release_id = $releases['amplified_dlc']->id;
         
         ReleaseModes::insert([
             [
                 'release_id' => $release_id,
-                'mode_id' => $modes['normal']->mode_id,
+                'mode_id' => $modes['normal']->id,
             ],
             [
                 'release_id' => $release_id,
-                'mode_id' => $modes['hard']->mode_id,
+                'mode_id' => $modes['hard']->id,
             ],
             [
                 'release_id' => $release_id,
-                'mode_id' => $modes['no_return']->mode_id,
+                'mode_id' => $modes['no_return']->id,
             ],
             [
                 'release_id' => $release_id,
-                'mode_id' => $modes['phasing']->mode_id,
+                'mode_id' => $modes['phasing']->id,
             ],
             [
                 'release_id' => $release_id,
-                'mode_id' => $modes['randomizer']->mode_id,
+                'mode_id' => $modes['randomizer']->id,
             ],
             [
                 'release_id' => $release_id,
-                'mode_id' => $modes['mystery']->mode_id,
+                'mode_id' => $modes['mystery']->id,
             ]
         ]);
     }

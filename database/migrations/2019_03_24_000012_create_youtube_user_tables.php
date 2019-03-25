@@ -62,13 +62,13 @@ class CreateYoutubeUserTables extends Migration
      *
      * @return void
      */
-    public function down() {            
-        Schema::drop('youtube_users');
-        
-        Schema::drop('youtube_user_tokens');
-        
+    public function down() {                    
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('youtube_user_id');
         });
+        
+        Schema::drop('youtube_user_tokens');
+        
+        Schema::drop('youtube_users');
     }
 }

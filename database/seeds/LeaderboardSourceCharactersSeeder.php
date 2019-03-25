@@ -24,147 +24,71 @@ class LeaderboardSourceCharactersSeeder extends Seeder {
         LeaderboardSourceCharacters::insert([
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['cadence']->character_id,
+                'character_id' => $characters['cadence']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['bard']->character_id,
+                'character_id' => $characters['bard']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['aria']->character_id,
+                'character_id' => $characters['aria']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['bolt']->character_id,
+                'character_id' => $characters['bolt']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['monk']->character_id,
+                'character_id' => $characters['monk']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['dove']->character_id,
+                'character_id' => $characters['dove']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['eli']->character_id,
+                'character_id' => $characters['eli']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['melody']->character_id,
+                'character_id' => $characters['melody']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['dorian']->character_id,
+                'character_id' => $characters['dorian']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['coda']->character_id,
+                'character_id' => $characters['coda']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['nocturna']->character_id,
+                'character_id' => $characters['nocturna']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['diamond']->character_id,
+                'character_id' => $characters['diamond']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['mary']->character_id,
+                'character_id' => $characters['mary']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['tempo']->character_id,
+                'character_id' => $characters['tempo']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['story']->character_id,
+                'character_id' => $characters['story']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['all']->character_id,
+                'character_id' => $characters['all']->id,
             ],
             [
                 'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['all_dlc']->character_id,
-            ]
-        ]);
-    
-    
-        /* ---------- Google Play ----------*/
-        
-        $leaderboard_source_id = $leaderboard_sources['google_play']->id;
-        
-        LeaderboardSourceCharacters::insert([
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['cadence']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['bard']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['aria']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['bolt']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['monk']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['dove']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['eli']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['melody']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['dorian']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['coda']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['nocturna']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['diamond']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['mary']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['tempo']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['story']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['all']->character_id,
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'character_id' => $characters['all_dlc']->character_id,
+                'character_id' => $characters['all_dlc']->id,
             ]
         ]);
     }

@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-class CreateLeaderboardTypeCharactersTable extends Migration
+class CreateLeaderboardTypeModesTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,24 +14,24 @@ class CreateLeaderboardTypeCharactersTable extends Migration
      */
     public function up()
     {
-        Schema::create('leaderboard_type_characters', function (Blueprint $table) {
+        Schema::create('leaderboard_type_modes', function (Blueprint $table) {
             $table->smallInteger('leaderboard_type_id');
-            $table->smallInteger('character_id');
+            $table->smallInteger('mode_id');
             
             $table->primary([
                 'leaderboard_type_id',
-                'character_id'
+                'mode_id'
             ]);
             
             $table->foreign('leaderboard_type_id')
-                ->references('leaderboard_type_id')
+                ->references('id')
                 ->on('leaderboard_types')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             
-            $table->foreign('character_id')
-                ->references('character_id')
-                ->on('characters')
+            $table->foreign('mode_id')
+                ->references('id')
+                ->on('modes')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
         });
@@ -44,6 +44,6 @@ class CreateLeaderboardTypeCharactersTable extends Migration
      */
     public function down()
     {    
-        Schema::dropIfExists('leaderboard_type_characters');
+        Schema::dropIfExists('leaderboard_type_modes');
     }
 }

@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-class CreateTwitterUserTables extends Migration
+class CreateTwitchUserTables extends Migration
 {
     /**
      * Run the migrations.
@@ -13,51 +13,48 @@ class CreateTwitterUserTables extends Migration
      * @return void
      */
     public function up() {
-        Schema::create('twitter_users', function (Blueprint $table) {
+        Schema::create('twitch_users', function (Blueprint $table) {
             $table->increments('id');
             $table->string('external_id')->unique();
-            $table->string('nickname');
-            $table->string('name');
-            $table->text('description');
-            $table->text('avatar_url');
-            $table->integer('followers_count');
-            $table->integer('friends_count');
-            $table->integer('statuses_count');
-            $table->smallInteger('verified');
+            $table->string('username');
+            $table->string('user_display_name');
+            $table->text('logo_url');
+            $table->text('bio');
+            $table->smallInteger('partnered');
             $table->timestamps();
         });
         
-        Schema::create('twitter_user_tokens', function (Blueprint $table) {
+        Schema::create('twitch_user_tokens', function (Blueprint $table) {
             $table->increments('id');
-            $table->integer('twitter_user_id');
-            $table->text('identifier');
-            $table->text('secret')->nullable();
+            $table->integer('twitch_user_id');
+            $table->text('token');
+            $table->text('refresh_token');
             $table->timestamp('expires')->nullable();
             $table->timestamp('created');
             $table->timestamp('expired')->nullable();
             
-            $table->foreign('twitter_user_id')
+            $table->foreign('twitch_user_id')
                 ->references('id')
-                ->on('twitter_users')
+                ->on('twitch_users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             
             $table->unique([
-                'twitter_user_id',
-                'identifier'
+                'twitch_user_id',
+                'token'
             ]);
         });
         
         Schema::table('users', function (Blueprint $table) {            
-            $table->integer('twitter_user_id')->nullable();
+            $table->integer('twitch_user_id')->nullable();
             
-            $table->foreign('twitter_user_id')
+            $table->foreign('twitch_user_id')
                 ->references('id')
-                ->on('twitter_users')
+                ->on('twitch_users')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
                 
-            $table->index('twitter_user_id');
+            $table->index('twitch_user_id');
         });
     }
 
@@ -67,12 +64,12 @@ class CreateTwitterUserTables extends Migration
      * @return void
      */
     public function down() {            
-        Schema::drop('twitter_users');
-        
-        Schema::drop('twitter_user_tokens');
-        
         Schema::table('users', function (Blueprint $table) {
-            $table->dropColumn('twitter_user_id');
+            $table->dropColumn('twitch_user_id');
         });
+        
+        Schema::drop('twitch_user_tokens');
+        
+        Schema::drop('twitch_users');
     }
 }

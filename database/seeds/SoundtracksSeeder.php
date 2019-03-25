@@ -14,11 +14,15 @@ class SoundtracksSeeder extends Seeder {
         Soundtracks::insert([
             [
                 'name' => 'default',
-                'display_name' => 'Default'
+                'display_name' => 'Default',
+                'is_default' => 1,
+                'sort_order' => 1
             ],
             [
                 'name' => 'custom',
-                'display_name' => 'Custom'
+                'display_name' => 'Custom',
+                'is_default' => 0,
+                'sort_order' => 2
             ]
         ]);
     }

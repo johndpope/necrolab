@@ -31,21 +31,5 @@ class LeaderboardSourceMultiplayerTypesSeeder extends Seeder {
                 'multiplayer_type_id' => $multiplayer_types['co_op']->id
             ]
         ]);
-        
-        
-        /* ---------- Google Play ----------*/
-        
-        $leaderboard_source_id = $leaderboard_sources['google_play']->id;
-        
-        LeaderboardSourceMultiplayerTypes::insert([
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'multiplayer_type_id' => $multiplayer_types['single']->id
-            ],
-            [
-                'leaderboard_source_id' => $leaderboard_source_id,
-                'multiplayer_type_id' => $multiplayer_types['co_op']->id
-            ]
-        ]);
     }
 }

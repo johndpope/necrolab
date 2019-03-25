@@ -19,272 +19,272 @@ class ReleaseCharactersSeeder extends Seeder {
         
         /* ---------- Alpha ----------*/
         
-        $release_id = $releases['alpha']->release_id;
+        $release_id = $releases['alpha']->id;
         
         ReleaseCharacters::insert([
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['cadence']->character_id,
+                'character_id' => $characters['cadence']->id,
             ]
         ]);
         
         
         /* ---------- Early Access ----------*/
         
-        $release_id = $releases['early_access']->release_id;
+        $release_id = $releases['early_access']->id;
         
         ReleaseCharacters::insert([
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['cadence']->character_id,
+                'character_id' => $characters['cadence']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['bard']->character_id,
+                'character_id' => $characters['bard']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['aria']->character_id,
+                'character_id' => $characters['aria']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['bolt']->character_id,
+                'character_id' => $characters['bolt']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['monk']->character_id,
+                'character_id' => $characters['monk']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['dove']->character_id,
+                'character_id' => $characters['dove']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['eli']->character_id,
+                'character_id' => $characters['eli']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['melody']->character_id,
+                'character_id' => $characters['melody']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['dorian']->character_id,
+                'character_id' => $characters['dorian']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['story']->character_id,
+                'character_id' => $characters['story']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['all']->character_id,
+                'character_id' => $characters['all']->id,
             ]
         ]);
     
     
         /* ---------- Original ----------*/
         
-        $release_id = $releases['original']->release_id;
+        $release_id = $releases['original']->id;
         
         ReleaseCharacters::insert([
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['cadence']->character_id,
+                'character_id' => $characters['cadence']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['bard']->character_id,
+                'character_id' => $characters['bard']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['aria']->character_id,
+                'character_id' => $characters['aria']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['bolt']->character_id,
+                'character_id' => $characters['bolt']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['monk']->character_id,
+                'character_id' => $characters['monk']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['dove']->character_id,
+                'character_id' => $characters['dove']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['eli']->character_id,
+                'character_id' => $characters['eli']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['melody']->character_id,
+                'character_id' => $characters['melody']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['dorian']->character_id,
+                'character_id' => $characters['dorian']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['coda']->character_id,
+                'character_id' => $characters['coda']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['story']->character_id,
+                'character_id' => $characters['story']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['all']->character_id,
+                'character_id' => $characters['all']->id,
             ]
         ]);
         
         
         /* ---------- Amplified Early Access ----------*/
         
-        $release_id = $releases['amplified_dlc_early_access']->release_id;
+        $release_id = $releases['amplified_dlc_early_access']->id;
         
         ReleaseCharacters::insert([
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['cadence']->character_id,
+                'character_id' => $characters['cadence']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['bard']->character_id,
+                'character_id' => $characters['bard']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['aria']->character_id,
+                'character_id' => $characters['aria']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['bolt']->character_id,
+                'character_id' => $characters['bolt']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['monk']->character_id,
+                'character_id' => $characters['monk']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['dove']->character_id,
+                'character_id' => $characters['dove']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['eli']->character_id,
+                'character_id' => $characters['eli']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['melody']->character_id,
+                'character_id' => $characters['melody']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['dorian']->character_id,
+                'character_id' => $characters['dorian']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['coda']->character_id,
+                'character_id' => $characters['coda']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['nocturna']->character_id,
+                'character_id' => $characters['nocturna']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['diamond']->character_id,
+                'character_id' => $characters['diamond']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['mary']->character_id,
+                'character_id' => $characters['mary']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['tempo']->character_id,
+                'character_id' => $characters['tempo']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['story']->character_id,
+                'character_id' => $characters['story']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['all']->character_id,
+                'character_id' => $characters['all']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['all_dlc']->character_id,
+                'character_id' => $characters['all_dlc']->id,
             ]
         ]);
         
     
         /* ---------- Amplified ----------*/
         
-        $release_id = $releases['amplified_dlc']->release_id;
+        $release_id = $releases['amplified_dlc']->id;
         
         ReleaseCharacters::insert([
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['cadence']->character_id,
+                'character_id' => $characters['cadence']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['bard']->character_id,
+                'character_id' => $characters['bard']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['aria']->character_id,
+                'character_id' => $characters['aria']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['bolt']->character_id,
+                'character_id' => $characters['bolt']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['monk']->character_id,
+                'character_id' => $characters['monk']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['dove']->character_id,
+                'character_id' => $characters['dove']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['eli']->character_id,
+                'character_id' => $characters['eli']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['melody']->character_id,
+                'character_id' => $characters['melody']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['dorian']->character_id,
+                'character_id' => $characters['dorian']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['coda']->character_id,
+                'character_id' => $characters['coda']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['nocturna']->character_id,
+                'character_id' => $characters['nocturna']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['diamond']->character_id,
+                'character_id' => $characters['diamond']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['mary']->character_id,
+                'character_id' => $characters['mary']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['tempo']->character_id,
+                'character_id' => $characters['tempo']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['story']->character_id,
+                'character_id' => $characters['story']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['all']->character_id,
+                'character_id' => $characters['all']->id,
             ],
             [
                 'release_id' => $release_id,
-                'character_id' => $characters['all_dlc']->character_id,
+                'character_id' => $characters['all_dlc']->id,
             ]
         ]);
     }

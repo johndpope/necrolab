@@ -2,16 +2,16 @@
 
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
-use App\Modes;
+use App\Releases;
 
-class ModesSeeder extends Seeder {
+class ReleasesSeeder extends Seeder {
     /**
      * Run the database seeds.
      *
      * @return void
      */
     public function run() {
-        Modes::insert([
+        Releases::insert([
             [
                 'name' => 'amplified_dlc',
                 'display_name' => 'AMPLIFIED DLC',

@@ -16,7 +16,7 @@ class LeaderboardSourcesSeeder extends Seeder {
                 'name' => 'steam',
                 'display_name' => 'Steam',
                 'sort_order' => 1,
-                'enabled' => 1
+                'enabled' => 1,
                 'start_date' => '2014-07-30'
             ]
         ]);

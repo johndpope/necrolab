@@ -19,396 +19,396 @@ class ModeCharactersSeeder extends Seeder {
     
         /* ---------- Normal ----------*/
         
-        $mode_id = $modes['normal']->mode_id;
+        $mode_id = $modes['normal']->id;
         
         ModeCharacters::insert([
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['cadence']->character_id,
+                'character_id' => $characters['cadence']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['bard']->character_id,
+                'character_id' => $characters['bard']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['aria']->character_id,
+                'character_id' => $characters['aria']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['bolt']->character_id,
+                'character_id' => $characters['bolt']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['monk']->character_id,
+                'character_id' => $characters['monk']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['dove']->character_id,
+                'character_id' => $characters['dove']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['eli']->character_id,
+                'character_id' => $characters['eli']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['melody']->character_id,
+                'character_id' => $characters['melody']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['dorian']->character_id,
+                'character_id' => $characters['dorian']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['coda']->character_id,
+                'character_id' => $characters['coda']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['nocturna']->character_id,
+                'character_id' => $characters['nocturna']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['diamond']->character_id,
+                'character_id' => $characters['diamond']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['mary']->character_id,
+                'character_id' => $characters['mary']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['tempo']->character_id,
+                'character_id' => $characters['tempo']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['story']->character_id,
+                'character_id' => $characters['story']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['all']->character_id,
+                'character_id' => $characters['all']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['all_dlc']->character_id,
+                'character_id' => $characters['all_dlc']->id,
             ]
         ]);
         
     
         /* ---------- Hard ----------*/
         
-        $mode_id = $modes['hard']->mode_id;
+        $mode_id = $modes['hard']->id;
         
         ModeCharacters::insert([
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['cadence']->character_id,
+                'character_id' => $characters['cadence']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['bard']->character_id,
+                'character_id' => $characters['bard']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['aria']->character_id,
+                'character_id' => $characters['aria']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['bolt']->character_id,
+                'character_id' => $characters['bolt']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['monk']->character_id,
+                'character_id' => $characters['monk']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['dove']->character_id,
+                'character_id' => $characters['dove']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['eli']->character_id,
+                'character_id' => $characters['eli']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['melody']->character_id,
+                'character_id' => $characters['melody']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['dorian']->character_id,
+                'character_id' => $characters['dorian']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['coda']->character_id,
+                'character_id' => $characters['coda']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['nocturna']->character_id,
+                'character_id' => $characters['nocturna']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['diamond']->character_id,
+                'character_id' => $characters['diamond']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['mary']->character_id,
+                'character_id' => $characters['mary']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['tempo']->character_id,
+                'character_id' => $characters['tempo']->id,
             ]
         ]);
         
         
         /* ---------- No Return ----------*/
         
-        $mode_id = $modes['no_return']->mode_id;
+        $mode_id = $modes['no_return']->id;
         
         ModeCharacters::insert([
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['cadence']->character_id,
+                'character_id' => $characters['cadence']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['bard']->character_id,
+                'character_id' => $characters['bard']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['aria']->character_id,
+                'character_id' => $characters['aria']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['bolt']->character_id,
+                'character_id' => $characters['bolt']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['monk']->character_id,
+                'character_id' => $characters['monk']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['dove']->character_id,
+                'character_id' => $characters['dove']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['eli']->character_id,
+                'character_id' => $characters['eli']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['melody']->character_id,
+                'character_id' => $characters['melody']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['dorian']->character_id,
+                'character_id' => $characters['dorian']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['coda']->character_id,
+                'character_id' => $characters['coda']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['nocturna']->character_id,
+                'character_id' => $characters['nocturna']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['diamond']->character_id,
+                'character_id' => $characters['diamond']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['mary']->character_id,
+                'character_id' => $characters['mary']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['tempo']->character_id,
+                'character_id' => $characters['tempo']->id,
             ]
         ]);
         
         
         /* ---------- Phasing ----------*/
         
-        $mode_id = $modes['phasing']->mode_id;
+        $mode_id = $modes['phasing']->id;
         
         ModeCharacters::insert([
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['cadence']->character_id,
+                'character_id' => $characters['cadence']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['bard']->character_id,
+                'character_id' => $characters['bard']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['aria']->character_id,
+                'character_id' => $characters['aria']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['bolt']->character_id,
+                'character_id' => $characters['bolt']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['monk']->character_id,
+                'character_id' => $characters['monk']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['dove']->character_id,
+                'character_id' => $characters['dove']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['eli']->character_id,
+                'character_id' => $characters['eli']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['melody']->character_id,
+                'character_id' => $characters['melody']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['dorian']->character_id,
+                'character_id' => $characters['dorian']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['coda']->character_id,
+                'character_id' => $characters['coda']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['nocturna']->character_id,
+                'character_id' => $characters['nocturna']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['diamond']->character_id,
+                'character_id' => $characters['diamond']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['mary']->character_id,
+                'character_id' => $characters['mary']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['tempo']->character_id,
+                'character_id' => $characters['tempo']->id,
             ]
         ]);
         
         
         /* ---------- Randomizer ----------*/
         
-        $mode_id = $modes['randomizer']->mode_id;
+        $mode_id = $modes['randomizer']->id;
         
         ModeCharacters::insert([
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['cadence']->character_id,
+                'character_id' => $characters['cadence']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['bard']->character_id,
+                'character_id' => $characters['bard']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['aria']->character_id,
+                'character_id' => $characters['aria']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['bolt']->character_id,
+                'character_id' => $characters['bolt']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['monk']->character_id,
+                'character_id' => $characters['monk']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['dove']->character_id,
+                'character_id' => $characters['dove']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['eli']->character_id,
+                'character_id' => $characters['eli']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['melody']->character_id,
+                'character_id' => $characters['melody']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['dorian']->character_id,
+                'character_id' => $characters['dorian']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['coda']->character_id,
+                'character_id' => $characters['coda']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['nocturna']->character_id,
+                'character_id' => $characters['nocturna']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['diamond']->character_id,
+                'character_id' => $characters['diamond']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['mary']->character_id,
+                'character_id' => $characters['mary']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['tempo']->character_id,
+                'character_id' => $characters['tempo']->id,
             ]
         ]);
         
         
         /* ---------- Mystery ----------*/
         
-        $mode_id = $modes['mystery']->mode_id;
+        $mode_id = $modes['mystery']->id;
         
         ModeCharacters::insert([
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['cadence']->character_id,
+                'character_id' => $characters['cadence']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['bard']->character_id,
+                'character_id' => $characters['bard']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['aria']->character_id,
+                'character_id' => $characters['aria']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['bolt']->character_id,
+                'character_id' => $characters['bolt']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['monk']->character_id,
+                'character_id' => $characters['monk']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['dove']->character_id,
+                'character_id' => $characters['dove']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['eli']->character_id,
+                'character_id' => $characters['eli']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['melody']->character_id,
+                'character_id' => $characters['melody']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['dorian']->character_id,
+                'character_id' => $characters['dorian']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['coda']->character_id,
+                'character_id' => $characters['coda']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['nocturna']->character_id,
+                'character_id' => $characters['nocturna']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['diamond']->character_id,
+                'character_id' => $characters['diamond']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['mary']->character_id,
+                'character_id' => $characters['mary']->id,
             ],
             [
                 'mode_id' => $mode_id,
-                'character_id' => $characters['tempo']->character_id,
+                'character_id' => $characters['tempo']->id,
             ]
         ]);
     }

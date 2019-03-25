@@ -5,7 +5,7 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Support\Facades\DB;
 
-class CreateReleaseCharactersTable extends Migration
+class CreateLeaderboardSourceCharactersTable extends Migration
 {
     /**
      * Run the migrations.
@@ -14,23 +14,23 @@ class CreateReleaseCharactersTable extends Migration
      */
     public function up()
     {
-        Schema::create('release_characters', function (Blueprint $table) {
-            $table->smallInteger('release_id');
+        Schema::create('leaderboard_source_characters', function (Blueprint $table) {
+            $table->smallInteger('leaderboard_source_id');
             $table->smallInteger('character_id');
             
             $table->primary([
-                'release_id',
+                'leaderboard_source_id',
                 'character_id'
             ]);
             
-            $table->foreign('release_id')
-                ->references('release_id')
-                ->on('releases')
+            $table->foreign('leaderboard_source_id')
+                ->references('id')
+                ->on('leaderboard_sources')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
             
             $table->foreign('character_id')
-                ->references('character_id')
+                ->references('id')
                 ->on('characters')
                 ->onDelete('cascade')
                 ->onUpdate('cascade');
@@ -44,6 +44,6 @@ class CreateReleaseCharactersTable extends Migration
      */
     public function down()
     {    
-        Schema::dropIfExists('release_characters');
+        Schema::dropIfExists('leaderboard_source_characters');
     }
 }

@@ -21,7 +21,6 @@ class CreateLeaderboardDetailsColumnsTable extends Migration
             $table->smallInteger('data_type_id');
             $table->smallInteger('sort_order');
             $table->smallInteger('enabled');
-            $table->string('import_field');
             
             $table->foreign('data_type_id')
                 ->references('id')

@@ -3,6 +3,7 @@
 namespace App;
 
 use ElcoBvg\Opcache\Model;
+use ElcoBvg\Opcache\Builder;
 use App\Traits\GetByName;
 use App\Traits\GetById;
 use App\Traits\MatchesOnString;
@@ -26,6 +27,10 @@ class MultiplayerTypes extends Model {
      * @var bool
      */
     public $timestamps = false;
+    
+    protected static function getStoredInCacheQuery(): Builder {
+        return static::orderBy('sort_order', 'asc');
+    }
     
     protected static function getMatchModel(): string {
         return MultiplayerTypeMatches::class;

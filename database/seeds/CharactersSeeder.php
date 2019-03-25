@@ -104,6 +104,13 @@ class CharactersSeeder extends Seeder {
                 'is_default' => 0
             ],
             [
+                'name' => 'tempo',
+                'display_name' => 'Tempo',
+                'is_active' => 1,
+                'sort_order' => 14,
+                'is_default' => 0
+            ],
+            [
                 'name' => 'story',
                 'display_name' => 'Story',
                 'is_active' => 1,
