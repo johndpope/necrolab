@@ -1,11 +1,15 @@
 version: '3.7'
 services:
 
-  #PHP Service
-  #necrolab-node-watcher:
-  #  image: node:lts-alpine
+  #Node watcher service
+  #necrolab-npm-watcher:
+  #  image: node:alpine
+  #  container_name: necrolab-npm-watcher
   #  expose:
   #    - "8081"
+  #  environment:
+  #    SERVICE_NAME: necrolab-npm-watcher
+  #    SERVICE_TAGS: development
   #  volumes:
   #    - ../../:/var/www
   #  command: /bin/sh -c "cd /var/www; npm install; npm run watch"
