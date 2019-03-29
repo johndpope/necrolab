@@ -115,23 +115,15 @@ return [
             'database' => 0,
         ],
         'power_rankings' => [
-            'host' => env('REDIS_POWER_RANKING_HOST', '127.0.0.1'),
-            'password' => env('REDIS_POWER_RANKING_PASSWORD', null),
-            'port' => env('REDIS_POWER_RANKING_PORT', 6380),
+            'scheme' => env('REDIS_POWER_RANKINGS_SCHEME'),
+            'path' => env('REDIS_POWER_RANKINGS_PATH'),
             'database' => 0,
         ],
         'daily_rankings' => [
-            'host' => env('REDIS_DAILY_RANKING_HOST', '127.0.0.1'),
-            'password' => env('REDIS_DAILY_RANKING_PASSWORD', null),
-            'port' => env('REDIS_DAILY_RANKING_PORT', 6381),
+            'scheme' => env('REDIS_DAILY_RANKINGS_SCHEME'),
+            'path' => env('REDIS_DAILY_RANKINGS_PATH'),
             'database' => 0,
-        ],
-        'read' => [
-            'host' => env('REDIS_READ_HOST', '127.0.0.1'),
-            'password' => env('REDIS_READ_PASSWORD', null),
-            'port' => env('REDIS_READ_PORT', 6382),
-            'database' => 0,
-        ],
+        ]
     ],
 
 ];
