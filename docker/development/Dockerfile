@@ -12,19 +12,19 @@ RUN apk update && apk upgrade
 RUN apk add --no-cache --virtual .build-dependencies \
     $PHPIZE_DEPS \
     build-base \
-    freetype-dev \
-    libjpeg-turbo-dev \
-    libpng-dev \
     curl-dev \
     libtool \
     libxml2-dev \
     postgresql-dev \
-    zlib-dev \
-    libzip-dev
+    zlib-dev
 
 # Install dependencies
 RUN apk add \
     shadow \
+    freetype-dev \
+    libjpeg-turbo-dev \
+    libpng-dev \
+    libzip-dev \
     postgresql-libs \
     jpegoptim optipng pngquant gifsicle \
     vim \
@@ -32,10 +32,12 @@ RUN apk add \
     curl \
     nodejs \
     nodejs-npm \
-    bash
+    bash \
+    zip \
+    unzip
 
-# Install extensions
-RUN docker-php-ext-install curl json mbstring opcache pdo pdo_pgsql soap xml xmlrpc exif pcntl
+# Install extensionsl
+RUN docker-php-ext-install opcache pdo_pgsql pdo_mysql soap xmlrpc exif pcntl
 RUN docker-php-ext-configure zip --with-libzip
 RUN docker-php-ext-install zip
 RUN docker-php-ext-configure gd --with-gd --with-freetype-dir=/usr/include/ --with-jpeg-dir=/usr/include/ --with-png-dir=/usr/include/
