@@ -15,7 +15,10 @@ if [ ! -f ./.env ]
     printf "Running seeders.\n"
     php artisan db:seed
     
-    printf "Creating public storage."
+    printf "Generating dates.\n"
+    php artisan dates:add_range --start_date=2014-07-01
+    
+    printf "Creating public storage.\n"
     php artisan storage:link
     
     printf "Generating attributes json.\n"
