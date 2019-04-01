@@ -105,6 +105,23 @@ class LeaderboardSnapshots extends Model {
         return $snapshots_by_leaderboard_id;
     }
     
+    public static function getLegacyImportQuery(): Builder {
+        return DB::table('leaderboard_snapshots AS ls')
+            ->select([
+                'ls.leaderboard_snapshot_id',
+                'ls.leaderboard_id',
+                'ls.created',
+                'ls.date',
+                'ls.updated',
+                'l.is_daily',
+                'l.daily_date'
+            ])
+            ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'ls.leaderboard_id')
+            ->join('characters AS c', 'c.character_id', '=', 'l.character_id')
+            ->join('releases AS r', 'r.release_id', '=', 'l.release_id')
+            ->join('modes AS m', 'm.mode_id', '=', 'l.mode_id');
+    }
+    
     public static function getApiReadQuery(LeaderboardSources $leaderboard_source, string $leaderboard_id): Builder {
         return DB::table(Leaderboards::getSchemaTableName($leaderboard_source) . ' AS l')
             ->select([

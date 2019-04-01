@@ -66,6 +66,19 @@ return [
             'schema' => 'public',
             'sslmode' => env('DB_SSL_MODE', 'prefer'),
         ],
+        
+        'legacy' => [
+            'driver' => 'pgsql',
+            'host' => env('LEGACY_DB_HOST', '127.0.0.1'),
+            'port' => env('LEGACY_DB_PORT', '5432'),
+            'database' => env('LEGACY_DB_DATABASE', 'forge'),
+            'username' => env('LEGACY_DB_USERNAME', 'forge'),
+            'password' => env('LEGACY_DB_PASSWORD', ''),
+            'charset' => 'utf8',
+            'prefix' => '',
+            'schema' => 'public',
+            'sslmode' => env('LEGACY_DB_SSL_MODE', 'prefer'),
+        ],
 
         'sqlsrv' => [
             'driver' => 'sqlsrv',

@@ -5,6 +5,8 @@ use Illuminate\Database\Query\Builder;
 use Illuminate\Support\Facades\DB;
 
 class PostgresCursor {
+    protected $connection;
+
     protected $name;
     
     protected $query;
@@ -19,8 +21,12 @@ class PostgresCursor {
         $this->chunk_size = $chunk_size;
     }
     
+    public function setConnection(string $connection) {
+        $this->connection = $connection;
+    }
+    
     public function getRecord() {        
-        DB::statement("
+        DB::connection($this->connection)->statement("
             DECLARE {$this->name} CURSOR FOR
             {$this->query->toSql()}
         ", $this->query->getBindings());
@@ -28,7 +34,7 @@ class PostgresCursor {
         $records = [];
         
         do {
-            $records = DB::select("
+            $records = DB::connection($this->connection)->select("
                 FETCH {$this->chunk_size}
                 FROM {$this->name}
             ");

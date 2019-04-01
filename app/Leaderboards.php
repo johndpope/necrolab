@@ -230,6 +230,35 @@ class Leaderboards extends Model {
         return $ids_by_external_id;
     }
     
+    public static function getLegacyImportQuery(): Builder {
+        return DB::table('leaderboards AS l')
+            ->select([
+                'l.leaderboard_id',
+                'l.name',
+                'l.url',
+                'l.lbid',
+                'l.display_name',
+                'l.is_speedrun',
+                'l.is_custom',
+                'l.is_co_op',
+                'l.is_seeded',
+                'l.is_daily',
+                'l.daily_date',
+                'l.is_score_run',
+                'l.is_deathless',
+                'l.is_dev',
+                'l.is_prod',
+                'l.is_power_ranking',
+                'l.is_daily_ranking',
+                'c.name AS character',
+                'r.name AS release',
+                'm.name AS mode'
+            ])
+            ->join('characters AS c', 'c.character_id', '=', 'l.character_id')
+            ->join('releases AS r', 'r.release_id', '=', 'l.release_id')
+            ->join('modes AS m', 'm.mode_id', '=', 'l.mode_id');
+    }
+    
     public static function getApiReadQuery(LeaderboardSources $leaderboard_source): Builder {
         $leaderboard_ranking_types_query = DB::table(LeaderboardRankingTypes::getSchemaTableName($leaderboard_source) . ' AS lrt')
             ->select([

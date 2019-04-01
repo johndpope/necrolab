@@ -51,4 +51,12 @@ class LeaderboardEntryDetails extends Model {
     }
     
     public static function updateFromTemp(LeaderboardSources $leaderboard_source): void {}
+    
+    public static function getLegacyImportQuery(): \Illuminate\Database\Query\Builder {
+        return DB::table('leaderboard_entry_details')
+            ->select([
+                'leaderboard_entry_details_id',
+                'details'
+            ]);
+    }
 }
