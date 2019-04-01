@@ -79,6 +79,31 @@ class Players extends Model {
         ");
     }
     
+    public static function saveLegacyTemp(LeaderboardSources $leaderboard_source): void {    
+        DB::update("
+            INSERT INTO " . static::getSchemaTableName($leaderboard_source) . " (
+                created,
+                updated,
+                id,
+                external_id,
+                username,
+                username_search_index,
+                profile_url,
+                avatar_url
+            )
+            SELECT
+                created,
+                updated,
+                id, 
+                external_id,
+                username,
+                to_tsvector(username),
+                profile_url,
+                avatar_url
+            FROM " . static::getTempTableName($leaderboard_source) . "
+        ");
+    }
+    
     public static function updateRecordSearchIndex(LeaderboardSources $leaderboard_source, \App\Players $record): void {    
         DB::update("
             UPDATE " . static::getSchemaTableName($leaderboard_source) . "
@@ -145,6 +170,18 @@ class Players extends Model {
         }
         
         return $ids_by_player_id;
+    }
+    
+    public static function getLegacyImportQuery(): \Illuminate\Database\Query\Builder {
+        return DB::table('steam_users')
+            ->select([
+                'steam_user_id',
+                'steamid',
+                'personaname',
+                'profileurl',
+                'avatarfull',
+                'updated'
+            ]);
     }
     
     public static function getOutdatedIdsQuery(LeaderboardSources $leaderboard_source): Builder {        
