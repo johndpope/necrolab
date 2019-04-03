@@ -255,6 +255,29 @@ class PlayerPbs extends Model {
         $query->leftJoin(Seeds::getSchemaTableName($leaderboard_source) . ' AS se', 'se.id', '=', 'sr.seed_id');
     }
     
+    public static function getLegacyImportQuery(): Builder {
+        return DB::table('steam_user_pbs AS sup')
+            ->select([
+                'sup.steam_user_pb_id',
+                'l.lbid',
+                'sup.leaderboard_id',
+                'sup.steam_user_id',
+                'sup.score',
+                'sup.first_leaderboard_snapshot_id',
+                'sup.first_rank',
+                'sup.time',
+                'sup.win_count',
+                'sup.zone',
+                'sup.level',
+                'sup.is_win',
+                'sup.leaderboard_entry_details_id',
+                'l.is_score_run',
+                'l.is_deathless',
+                'l.is_speedrun'
+            ])
+            ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id');
+    }
+    
     public static function getAllIdsByUnique(LeaderboardSources $leaderboard_source): array {        
         $query = DB::table(static::getSchemaTableName($leaderboard_source))->select([
             'id',
