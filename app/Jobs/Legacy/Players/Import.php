@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs\Players;
+namespace App\Jobs\Legacy\Players;
 
 use DateTime;
 use Illuminate\Bus\Queueable;
@@ -13,7 +13,7 @@ use App\Components\PostgresCursor;
 use App\LeaderboardSources;
 use App\Players;
 
-class ImportLegacy implements ShouldQueue {
+class Import implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     
     /**

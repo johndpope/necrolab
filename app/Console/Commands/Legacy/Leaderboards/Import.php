@@ -1,24 +1,24 @@
 <?php
 
-namespace App\Console\Commands\Players;
+namespace App\Console\Commands\Legacy\Leaderboards;
 
 use App\Console\Commands\Date as Command;
-use App\Jobs\Players\ImportLegacy as ImportLegacyJob;
+use App\Jobs\Legacy\Leaderboards\Import as ImportJob;
 
-class ImportLegacy extends Command {
+class Import extends Command {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'players:legacy:import';
+    protected $signature = 'legacy:leaderboards:import';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = "Imports players from the legacy site.";
+    protected $description = "Imports leaderboards from the legacy site.";
 
     /**
      * Create a new command instance.
@@ -35,6 +35,6 @@ class ImportLegacy extends Command {
      * @return mixed
      */
     public function handle() {
-        ImportLegacyJob::dispatch()->onConnection('sync');
+        ImportJob::dispatch()->onConnection('sync');
     }
 }

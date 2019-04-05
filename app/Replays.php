@@ -117,6 +117,33 @@ class Replays extends Model {
         ");
     }
     
+    public static function saveLegacyTemp(LeaderboardSources $leaderboard_source): void {
+        DB::statement("
+            INSERT INTO " . static::getSchemaTableName($leaderboard_source) . " (
+                seed_id,
+                player_pb_id,
+                player_id,
+                run_result_id,
+                replay_version_id,
+                downloaded,
+                invalid,
+                uploaded_to_s3,
+                external_id
+            )
+            SELECT 
+                seed_id,
+                player_pb_id,
+                player_id,
+                run_result_id,
+                replay_version_id,
+                downloaded,
+                invalid,
+                uploaded_to_s3,
+                external_id
+            FROM " . static::getTempTableName($leaderboard_source) . "
+        ");
+    }
+    
     public static function updateFromTemp(LeaderboardSources $leaderboard_source): void {}
     
     public static function updateDownloadedFromTemp(LeaderboardSources $leaderboard_source): void {
@@ -141,6 +168,25 @@ class Replays extends Model {
             FROM " . static::getTempTableName($leaderboard_source) . " srt
             WHERE sr.player_pb_id = srt.player_pb_id
         ");
+    }
+    
+    public static function getLegacyImportQuery(): Builder {
+        return DB::table('steam_replays AS sr')
+            ->select([
+                'sup.steam_user_pb_id',
+                'l.lbid',
+                'sr.steam_user_id',
+                'sr.ugcid',
+                'sr.downloaded',
+                'sr.invalid',
+                'sr.seed',
+                'rr.name AS run_result',
+                'sr.steam_replay_version_id',
+                'sr.uploaded_to_s3'
+            ])
+            ->join('run_results AS rr', 'rr.run_result_id', '=', 'sr.run_result_id')
+            ->join('steam_user_pbs AS sup', 'sup.steam_replay_id', '=', 'sr.steam_replay_id')
+            ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id');
     }
     
     public static function getUnsavedQuery(LeaderboardSources $leaderboard_source): Builder {

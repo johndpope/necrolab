@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Query\Builder;
 use App\Traits\SchemaGetByName;
 use App\Traits\GetById;
 use App\Traits\IsSchemaTable;
@@ -52,4 +53,12 @@ class ReplayVersions extends Model {
     }
     
     public static function updateFromTemp(LeaderboardSources $leaderboard_source): void {}
+    
+    public static function getLegacyImportQuery(): Builder {
+        return DB::table('steam_replay_versions')
+            ->select([
+                'steam_replay_version_id',
+                'name'
+            ]);
+    }
 }

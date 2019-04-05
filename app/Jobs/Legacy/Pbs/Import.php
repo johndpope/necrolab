@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs\Pbs;
+namespace App\Jobs\Legacy\Pbs;
 
 use DateTime;
 use Illuminate\Bus\Queueable;
@@ -14,7 +14,7 @@ use App\LeaderboardSources;
 use App\PlayerPbs;
 use App\Leaderboards;
 
-class ImportLegacy implements ShouldQueue {
+class Import implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     
     /**

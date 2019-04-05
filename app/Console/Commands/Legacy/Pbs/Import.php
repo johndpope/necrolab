@@ -1,17 +1,17 @@
 <?php
 
-namespace App\Console\Commands\Pbs;
+namespace App\Console\Commands\Legacy\Pbs;
 
 use App\Console\Commands\Date as Command;
-use App\Jobs\Pbs\ImportLegacy as ImportLegacyJob;
+use App\Jobs\Legacy\Pbs\Import as ImportJob;
 
-class ImportLegacy extends Command {
+class Import extends Command {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'pbs:legacy:import';
+    protected $signature = 'legacy:pbs:import';
 
     /**
      * The console command description.
@@ -35,6 +35,6 @@ class ImportLegacy extends Command {
      * @return mixed
      */
     public function handle() {
-        ImportLegacyJob::dispatch()->onConnection('sync');
+        ImportJob::dispatch()->onConnection('sync');
     }
 }

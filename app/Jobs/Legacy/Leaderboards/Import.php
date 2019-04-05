@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Jobs\Leaderboards;
+namespace App\Jobs\Legacy\Leaderboards;
 
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
@@ -24,7 +24,7 @@ use App\MultiplayerTypes;
 use App\Soundtracks;
 use App\RankingTypes;
 
-class ImportLegacy implements ShouldQueue {
+class Import implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
     
     /**

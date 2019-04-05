@@ -4,6 +4,7 @@ namespace App;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Query\Builder;
 use App\Traits\IsSchemaTable;
 use App\Traits\SchemaGetByName;
 use App\Traits\GetById;
@@ -55,4 +56,14 @@ class RunResults extends Model {
     }
     
     public static function updateFromTemp(LeaderboardSources $leaderboard_source) {}
+    
+    public static function getLegacyImportQuery(): Builder {
+        return DB::table('run_results')
+            ->select([
+                DB::raw('MIN(run_result_id) AS run_result_id'),
+                'name',
+                DB::raw('min(is_win) AS is_win')
+            ])
+            ->groupBy('name');
+    }
 }

@@ -77,6 +77,21 @@ class LeaderboardEntries extends Model {
     }
     
     public static function saveNewTemp(LeaderboardSources $leaderboard_source, DateTime $date): void {
+        $temp_table_name = static::getTempTableName($leaderboard_source);
+        
+        DB::statement("
+            CREATE INDEX {$temp_table_name}_pkey 
+            ON {$temp_table_name} (leaderboard_snapshot_id, player_pb_id)
+        ");
+        
+        DB::statement("
+            DELETE FROM {$temp_table_name} a
+            USING {$temp_table_name} b
+            WHERE a.leaderboard_snapshot_id = b.leaderboard_snapshot_id
+                AND a.player_pb_id = b.player_pb_id
+                AND a.rank < b.rank
+        ");
+    
         DB::statement("
             INSERT INTO " . static::getTableName($leaderboard_source, $date) . " (
                 leaderboard_snapshot_id,
@@ -89,11 +104,41 @@ class LeaderboardEntries extends Model {
                 player_id,
                 player_pb_id,
                 rank
-            FROM " . static::getTempTableName($leaderboard_source) . "
+            FROM {$temp_table_name}
+            ON CONFLICT (leaderboard_snapshot_id, player_pb_id) DO 
+            UPDATE
+                SET rank = excluded.rank
         ");
     } 
     
     public static function updateFromTemp(LeaderboardSources $leaderboard_source): void {}
+    
+    public static function getLegacyImportQuery(LeaderboardSources $leaderboard_source, DateTime $date): Builder {
+        $start_date = new DateTime($date->format('Y-m-01'));
+        $end_date = new DateTime($date->format('Y-m-t'));
+        
+        $table_name = str_replace(
+            "{$leaderboard_source->name}.", 
+            '',
+            static::getTableName($leaderboard_source, $date)
+        );
+            
+        return DB::table('leaderboard_snapshots AS ls')
+            ->select([
+                'l.lbid',
+                'ls.leaderboard_snapshot_id',
+                'le.steam_user_pb_id',
+                'sup.steam_user_id',
+                'le.rank'
+            ])
+            ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'ls.leaderboard_id')
+            ->join("{$table_name} AS le", 'le.leaderboard_snapshot_id', '=', 'ls.leaderboard_snapshot_id')
+            ->join('steam_user_pbs AS sup', 'sup.steam_user_pb_id', '=', 'le.steam_user_pb_id')
+            ->whereBetween('ls.date', [
+                $start_date->format('Y-m-d'),
+                $end_date->format('Y-m-d')
+            ]);
+    }
     
     public static function getPowerRankingsQuery(LeaderboardSources $leaderboard_source, Dates $date): Builder {
         return DB::table(LeaderboardSnapshots::getSchemaTableName($leaderboard_source) . ' AS ls')
