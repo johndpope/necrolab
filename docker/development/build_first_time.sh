@@ -15,6 +15,9 @@ if [ ! -f ./.env ]
     printf "Running seeders.\n"
     php artisan db:seed
     
+    printf "Creating Steam schema.\n"
+    php artisan leaderboards:sources:create_schema --leaderboard_source=steam
+    
     printf "Generating dates.\n"
     php artisan dates:add_range --start_date=2014-07-01
     
