@@ -10,6 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
+use App\Jobs\Replays\UploadToS3 as UploadToS3Job;
 use App\Components\DataManagers\Replays as DataManager;
 use App\Replays;
 use App\RunResults;
@@ -193,5 +194,7 @@ class SaveImported implements ShouldQueue {
         Replays::updateDownloadedFromTemp($leaderboard_source);
         
         DB::commit();
+        
+        UploadToS3Job::dispatch($this->data_manager)->onQueue(QueueNames::REPLAYS);
     }
 }
