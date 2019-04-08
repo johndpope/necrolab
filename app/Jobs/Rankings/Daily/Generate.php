@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
+use App\Components\QueueNames;
 use App\Components\RecordQueue;
 use App\Components\CallbackHandler;
 use App\Components\Redis\DatabaseSelector;
@@ -27,6 +28,7 @@ use App\DailyRankingEntries;
 use App\LeaderboardEntries;
 use App\RankPoints;
 use App\Jobs\Rankings\Daily\Entries\Cache as CacheJob;
+use App\Jobs\Rankings\Daily\Entries\UpdateStats as UpdateStatsJob;
 
 class Generate implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
@@ -346,7 +348,8 @@ class Generate implements ShouldQueue {
             
             DB::commit();
             
-            CacheJob::dispatch($this->leaderboard_source, $this->date);
+            CacheJob::dispatch($this->leaderboard_source, $this->date)->onQueue(QueueNames::DAILY_RANKINGS);
+            UpdateStatsJob::dispatch($this->leaderboard_source, $this->date)->onQueue(QueueNames::DAILY_RANKINGS);
         }
     
         $this->redis->flushDb();

@@ -12,6 +12,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
+use App\Components\QueueNames;
 use App\Components\RecordQueue;
 use App\Components\CallbackHandler;
 use App\Components\PostgresCursor;
@@ -361,8 +362,8 @@ class Generate implements ShouldQueue {
             PowerRankings::saveNewTemp($this->leaderboard_source);
             PowerRankingEntries::saveNewTemp($this->leaderboard_source, $this->date);
 
-            CacheJob::dispatch($this->leaderboard_source, $this->date);
-            UpdateStatsJob::dispatch($this->leaderboard_source, $this->date);
+            CacheJob::dispatch($this->leaderboard_source, $this->date)->onQueue(QueueNames::POWER_RANKINGS);
+            UpdateStatsJob::dispatch($this->leaderboard_source, $this->date)->onQueue(QueueNames::POWER_RANKINGS);
         }
         
         DB::commit();

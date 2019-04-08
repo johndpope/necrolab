@@ -10,6 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
+use App\Components\QueueNames;
 use App\Components\DataManagers\Leaderboards as DataManager;
 use App\Dates;
 use App\DailyDateFormats;
@@ -349,12 +350,12 @@ class SaveToDatabase implements ShouldQueue {
             DB::commit();
             
             // Dispatch all asynchronous jobs that utilize this imported data
-            PowerRankingsGenerateJob::dispatch($this->leaderboard_source, $this->date);
-            DailyRankingsGenerateJob::dispatch($this->leaderboard_source, $this->date);
-            PlayersCacheJob::dispatch($this->leaderboard_source);
-            UpdateStatsJob::dispatch($this->leaderboard_source, $this->date);
-            CacheNonDailyLeadeboardEntriesJob::dispatch($this->leaderboard_source, $this->date);
-            CacheDailyLeadeboardEntriesJob::dispatch($this->leaderboard_source, $this->date);
+            PowerRankingsGenerateJob::dispatch($this->leaderboard_source, $this->date)->onQueue(QueueNames::POWER_RANKINGS);
+            DailyRankingsGenerateJob::dispatch($this->leaderboard_source, $this->date)->onQueue(QueueNames::DAILY_RANKINGS);
+            UpdateStatsJob::dispatch($this->leaderboard_source, $this->date)->onQueue(QueueNames::LEADERBOARDS);
+            PlayersCacheJob::dispatch($this->leaderboard_source)->onQueue(QueueNames::PLAYERS);
+            CacheNonDailyLeadeboardEntriesJob::dispatch($this->leaderboard_source, $this->date)->onQueue(QueueNames::LEADERBOARDS);
+            CacheDailyLeadeboardEntriesJob::dispatch($this->leaderboard_source, $this->date)->onQueue(QueueNames::LEADERBOARDS);
             
             // Remove local temporary files
             $this->data_manager->deleteTemp();

@@ -15,6 +15,7 @@ use Steam\Runner\GuzzleRunner;
 use Steam\Steam as SteamApi;
 use Steam\Utility\GuzzleUrlBuilder;
 use Steam\Command\User\GetPlayerSummaries;
+use App\Components\QueueNames;
 use App\Components\RecordQueue;
 use App\Components\CallbackHandler;
 use App\Components\DataManagers\Steam\Players as PlayersManager;
@@ -124,6 +125,6 @@ class Import implements ShouldQueue {
         
         DB::commit();
         
-        SaveImportedJob::dispatch($this->data_manager);
+        SaveImportedJob::dispatch($this->data_manager)->onQueue(QueueNames::PLAYERS);
     }
 }

@@ -17,6 +17,7 @@ use Steam\Runner\DecodeJsonStringRunner;
 use Steam\Steam as SteamApi;
 use Steam\Utility\GuzzleUrlBuilder;
 use Steam\Command\RemoteStorage\GetUGCFileDetails;
+use App\Components\QueueNames;
 use App\Components\CallbackHandler;
 use App\Components\PostgresCursor;
 use App\Components\DataManagers\Steam\Replays as DataManager;
@@ -154,6 +155,6 @@ class Import implements ShouldQueue {
         
         DB::commit();
         
-        SaveImportedJob::dispatch($this->data_manager);
+        SaveImportedJob::dispatch($this->data_manager)->onQueue(QueueNames::REPLAYS);
     }
 }

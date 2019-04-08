@@ -11,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Storage;
 use App\Components\LeaderboardNameGenerator;
 use App\Components\DataManagers\Steam\Leaderboards\Csv as CsvManager;
+use App\Components\QueueNames;
 use App\Jobs\Leaderboards\UploadToS3;
 use App\Jobs\Leaderboards\SaveToDatabase;
 use App\Dates;
@@ -68,7 +69,7 @@ class Import implements ShouldQueue {
         
         $steam_leaderboard_data_manager->deleteTemp();
         
-        UploadToS3::dispatch($steam_leaderboard_data_manager);
-        SaveToDatabase::dispatch($steam_leaderboard_data_manager);
+        UploadToS3::dispatch($steam_leaderboard_data_manager)->onQueue(QueueNames::LEADERBOARDS);
+        SaveToDatabase::dispatch($steam_leaderboard_data_manager)->onQueue(QueueNames::LEADERBOARDS);
     }
 }
