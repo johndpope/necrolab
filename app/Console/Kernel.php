@@ -25,27 +25,30 @@ class Kernel extends ConsoleKernel {
      * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
      * @return void
      */
-    protected function schedule(Schedule $schedule) {
+    protected function schedule(Schedule $schedule) {        
         // Add tomorrow's date
         $schedule->job(
             new \App\Jobs\Dates\Add(new DateTime('tomorrow')), 
             QueueNames::DATES
         )->daily();
     
-        $today_date = Dates::where('name', (new DateTime())->format('Y-m-d'))->firstOrFail();
-        $leaderboard_sources = LeaderboardSources::all();
+        $today_date = Dates::where('name', (new DateTime())->format('Y-m-d'))->first();
     
-        // Import Steam leaderboards CSV data
-        $schedule->job(
-            new \App\Jobs\Steam\Leaderboards\Csv\Import($today_date), 
-            QueueNames::LEADERBOARDS
-        )->everyThirtyMinutes();
+        if(!empty($today_date)) {
+            // Import Steam leaderboards CSV data
+            $schedule->job(
+                new \App\Jobs\Steam\Leaderboards\Csv\Import($today_date), 
+                QueueNames::LEADERBOARDS
+            )->everyThirtyMinutes();
+            
+            // Import Steam leaderboards XML data
+            $schedule->job(
+                new \App\Jobs\Steam\Leaderboards\Xml\Import($today_date), 
+                QueueNames::LEADERBOARDS
+            )->everyThirtyMinutes();
+        }
         
-        // Import Steam leaderboards XML data
-        $schedule->job(
-            new \App\Jobs\Steam\Leaderboards\Xml\Import($today_date), 
-            QueueNames::LEADERBOARDS
-        )->everyThirtyMinutes();
+        $leaderboard_sources = LeaderboardSources::all();
         
         // Create next month's leaderboard_entries, power_ranking_entries, and daily_ranking_entries partition tables
         $schedule->job(
