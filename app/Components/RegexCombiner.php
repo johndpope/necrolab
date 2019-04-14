@@ -3,7 +3,9 @@ namespace App\Components;
 
 /*
  * This class is designed to combine multiple regex statements into one for a significant performance improvement.
- * Further reading: https://medium.com/@nicolas.grekas/making-symfonys-router-77-7x-faster-1-2-958e3754f0e1
+ * Further reading: 
+ * - https://medium.com/@nicolas.grekas/making-symfonys-router-77-7x-faster-1-2-958e3754f0e1
+ * - https://stackoverflow.com/questions/16195011/combine-multiple-match-regular-expression-into-one-and-get-the-matching-ones
  */
 class RegexCombiner {  
     protected $segments = [];

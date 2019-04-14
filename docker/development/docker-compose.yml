@@ -1,19 +1,6 @@
 version: '3.7'
 services:
 
-  #Node watcher service
-  #necrolab-npm-watcher:
-  #  image: node:alpine
-  #  container_name: necrolab-npm-watcher
-  #  expose:
-  #    - "8081"
-  #  environment:
-  #    SERVICE_NAME: necrolab-npm-watcher
-  #    SERVICE_TAGS: development
-  #  volumes:
-  #    - ../../:/var/www
-  #  command: /bin/sh -c "cd /var/www; npm install; npm run watch"
-
   #Power Rankings Redis Service
   necrolab-power-rankings-redis:
     image: redis:5.0.4-alpine
@@ -27,7 +14,7 @@ services:
       SERVICE_TAGS: development
     volumes:
       - ./redis/power_rankings.conf:/etc/power_rankings.conf
-      - redis-power-rankings-tmp:/tmp/docker/redis
+      - redis-power-rankings-tmp:/tmp
     networks:
       - necrolab-network
 
@@ -44,7 +31,7 @@ services:
       SERVICE_TAGS: development
     volumes:
       - ./redis/daily_rankings.conf:/etc/daily_rankings.conf
-      - redis-daily-rankings-tmp:/tmp/docker/redis
+      - redis-daily-rankings-tmp:/tmp
     networks:
       - necrolab-network
 
@@ -64,14 +51,13 @@ services:
       SERVICE_TAGS: development
     volumes:
       - necrolab-db-data:/var/lib/postgresql/data
+      - necrolab-db-tmp:/run
     networks:
       - necrolab-network
 
   #PHP Web Service
   necrolab-app:
-    build:
-      context: ../../
-      dockerfile: ./docker/development/Dockerfile
+    image: necrolab-app-development:latest
     container_name: necrolab-app
     restart: unless-stopped
     tty: true
@@ -81,7 +67,10 @@ services:
     working_dir: /var/www
     volumes:
       - ../../:/var/www
+      - ./php/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - necrolab-app-tmp:/tmp
+      - necrolab-db-tmp:/run
     networks:
       - necrolab-network
     depends_on:
@@ -103,6 +92,7 @@ services:
       - ../../:/var/www
       - ./nginx/conf.d/:/etc/nginx/conf.d/
       - ./nginx/ssl_keys/:/etc/nginx/ssl/
+      - necrolab-app-tmp:/tmp
     networks:
       - necrolab-network
 
@@ -118,4 +108,8 @@ volumes:
   redis-power-rankings-tmp:
     driver: local
   redis-daily-rankings-tmp:
+    driver: local
+  necrolab-app-tmp:
+    driver: local
+  necrolab-db-tmp:
     driver: local

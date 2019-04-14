@@ -21,6 +21,7 @@ RUN apk add --no-cache --virtual .build-dependencies \
 # Install dependencies
 RUN apk add \
     shadow \
+    ncurses \
     freetype-dev \
     libjpeg-turbo-dev \
     libpng-dev \
@@ -36,7 +37,7 @@ RUN apk add \
     zip \
     unzip
 
-# Install extensionsl
+# Install extensions
 RUN docker-php-ext-install opcache pdo_pgsql pdo_mysql soap xmlrpc exif pcntl
 RUN docker-php-ext-configure zip --with-libzip
 RUN docker-php-ext-install zip
@@ -49,7 +50,9 @@ RUN git clone https://github.com/phpredis/phpredis.git /tmp/phpredis \
     && phpize \
     && ./configure \
     && make \
-    && make install
+    && make install \
+    && cd ../ \
+    && rm -rf /tmp/phpredis
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
@@ -70,6 +73,8 @@ COPY --chown=www:www . /var/www
 # Change current user to www
 USER www
 
-# Expose port 9000 and start php-fpm server
-EXPOSE 9000
+# Run composer install
+#RUN composer install --no-interaction
+
+# Start php-fpm server
 CMD ["php-fpm"]
