@@ -21,7 +21,7 @@ RUN apk add --no-cache --virtual .build-dependencies \
 # Install dependencies
 RUN apk add \
     shadow \
-    ncurses \
+    ncurses \ # This package is needed because of this issue: https://github.com/opencollective/opencollective/issues/1443
     freetype-dev \
     libjpeg-turbo-dev \
     libpng-dev \

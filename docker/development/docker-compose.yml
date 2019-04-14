@@ -68,6 +68,7 @@ services:
     volumes:
       - ../../:/var/www
       - ./php/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
+      - ./php/docker-php-ext-phpredis.ini:/usr/local/etc/php/conf.d/docker-php-ext-phpredis.ini
       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
       - necrolab-app-tmp:/tmp
       - necrolab-db-tmp:/run

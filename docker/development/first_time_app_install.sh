@@ -20,6 +20,10 @@ then
     printf "========== Running seeders. ==========\n"
     php artisan db:seed
     
+    printf "========== Clearing cache and opcache. ==========\n"
+    php artisan cache:opcache:clear
+    php artisan cache:clear
+    
     printf "========== Creating Steam schema. ==========\n"
     php artisan leaderboards:sources:create_schema --leaderboard_source=steam
     

@@ -128,13 +128,13 @@ return [
             'database' => 0,
         ],
         'power_rankings' => [
-            'scheme' => env('REDIS_POWER_RANKINGS_SCHEME'),
-            'path' => env('REDIS_POWER_RANKINGS_PATH'),
+            'host' => env('REDIS_POWER_RANKINGS_HOST'),
+            'port' => 0,
             'database' => 0,
         ],
         'daily_rankings' => [
-            'scheme' => env('REDIS_DAILY_RANKINGS_SCHEME'),
-            'path' => env('REDIS_DAILY_RANKINGS_PATH'),
+            'host' => env('REDIS_DAILY_RANKINGS_HOST'),
+            'port' => 0,
             'database' => 0,
         ]
     ],
