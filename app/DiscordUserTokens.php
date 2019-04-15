@@ -13,13 +13,6 @@ class DiscordUserTokens extends Model {
     protected $table = 'discord_user_tokens';
     
     /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'discord_user_token_id';
-    
-    /**
      * Indicates if the model should be timestamped.
      *
      * @var bool

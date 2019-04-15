@@ -75,7 +75,7 @@ class Dataset {
         $external_site_id = 0;
         
         if(isset($request_data['site'])) {
-            $external_site_id = ExternalSites::getByName($request_data['site'])->external_site_id;
+            $external_site_id = ExternalSites::getByName($request_data['site'])->id;
         }
         
         $this->setExternalSiteId($external_site_id);

@@ -13,13 +13,6 @@ class TwitterUserTokens extends Model {
     protected $table = 'twitter_user_tokens';
     
     /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'twitter_user_token_id';
-    
-    /**
      * Indicates if the model should be timestamped.
      *
      * @var bool

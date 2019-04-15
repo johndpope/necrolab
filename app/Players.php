@@ -124,18 +124,18 @@ class Players extends Model {
             'p.profile_url AS player_profile_url',
             'mu.external_id AS mixer_id',
             'mu.username AS mixer_username',
-            'du.discord_id',
+            'du.external_id AS discord_id',
             'du.username AS discord_username',
             'du.discriminator AS discord_discriminator',
-            'ru.reddit_id',
+            'ru.external_id AS reddit_id',
             'ru.username AS reddit_username',
-            'tu.twitch_id',
+            'tu.external_id AS twitch_id',
             'tu.user_display_name AS twitch_username',
-            'twu.twitter_id',
+            'twu.external_id AS twitter_id',
             'twu.nickname AS twitter_nickname',
             'twu.name AS twitter_name',
-            'yu.youtube_id',
-            'yu.youtube_id AS youtube_username'
+            'yu.external_id AS youtube_id',
+            'yu.external_id AS youtube_username'
         ]);
     }
     
@@ -143,11 +143,11 @@ class Players extends Model {
         $query->leftJoin("user_{$leaderboard_source->name}_player AS up", 'up.player_id', '=', 'p.id');
         $query->leftJoin('users AS u', 'u.id', '=', 'up.user_id');
         $query->leftJoin('mixer_users AS mu', 'mu.id', '=', 'u.mixer_user_id');
-        $query->leftJoin('discord_users AS du', 'du.discord_user_id', '=', 'u.discord_user_id');
-        $query->leftJoin('reddit_users AS ru', 'ru.reddit_user_id', '=', 'u.reddit_user_id');
-        $query->leftJoin('twitch_users AS tu', 'tu.twitch_user_id', '=', 'u.twitch_user_id');
-        $query->leftJoin('twitter_users AS twu', 'twu.twitter_user_id', '=', 'u.twitter_user_id');
-        $query->leftJoin('youtube_users AS yu', 'yu.youtube_user_id', '=', 'u.youtube_user_id');
+        $query->leftJoin('discord_users AS du', 'du.id', '=', 'u.discord_user_id');
+        $query->leftJoin('reddit_users AS ru', 'ru.id', '=', 'u.reddit_user_id');
+        $query->leftJoin('twitch_users AS tu', 'tu.id', '=', 'u.twitch_user_id');
+        $query->leftJoin('twitter_users AS twu', 'twu.id', '=', 'u.twitter_user_id');
+        $query->leftJoin('youtube_users AS yu', 'yu.id', '=', 'u.youtube_user_id');
     }
     
     public static function getAllIdsByPlayerid(LeaderboardSources $leaderboard_source): array {

@@ -13,13 +13,6 @@ class RedditUsers extends Model {
     protected $table = 'reddit_users';
     
     /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'reddit_user_id';
-    
-    /**
      * Indicates if the model should be timestamped.
      *
      * @var bool

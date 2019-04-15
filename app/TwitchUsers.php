@@ -13,13 +13,6 @@ class TwitchUsers extends Model {
     protected $table = 'twitch_users';
     
     /**
-     * The primary key associated with the model.
-     *
-     * @var string
-     */
-    protected $primaryKey = 'twitch_user_id';
-    
-    /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
