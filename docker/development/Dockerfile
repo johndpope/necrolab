@@ -10,6 +10,7 @@ RUN apk update && apk upgrade
 
 # Install temporary build dependencies
 RUN apk add --no-cache --virtual .build-dependencies \
+    ca-certificates \
     $PHPIZE_DEPS \
     build-base \
     curl-dev \
@@ -19,9 +20,10 @@ RUN apk add --no-cache --virtual .build-dependencies \
     zlib-dev
 
 # Install dependencies
-RUN apk add \
+# The ncurses package is needed because of this issue: https://github.com/opencollective/opencollective/issues/1443
+RUN apk add --no-cache \
     shadow \
-    ncurses \ # This package is needed because of this issue: https://github.com/opencollective/opencollective/issues/1443
+    ncurses \
     freetype-dev \
     libjpeg-turbo-dev \
     libpng-dev \
@@ -36,6 +38,9 @@ RUN apk add \
     bash \
     zip \
     unzip
+
+# Install Mono
+RUN apk add --no-cache mono --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing
 
 # Install extensions
 RUN docker-php-ext-install opcache pdo_pgsql pdo_mysql soap xmlrpc exif pcntl
@@ -56,6 +61,9 @@ RUN git clone https://github.com/phpredis/phpredis.git /tmp/phpredis \
 
 # Install composer
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
+
+# Sync CA certificates
+RUN cert-sync /etc/ssl/certs/ca-certificates.crt
 
 # Remove the build dependencies
 RUN apk del -f .build-dependencies

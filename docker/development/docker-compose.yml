@@ -6,7 +6,7 @@ services:
     image: redis:5.0.4-alpine
     container_name: necrolab-power-rankings-redis
     restart: unless-stopped
-    command: redis-server --save '' /etc/power_rankings.conf
+    command: [sh, -c, "rm -f /data/dump.rdb && redis-server /etc/power_rankings.conf"] # This disables persistence
     ports:
       - "6380:6380"
     environment:
@@ -14,7 +14,7 @@ services:
       SERVICE_TAGS: development
     volumes:
       - ./redis/power_rankings.conf:/etc/power_rankings.conf
-      - redis-power-rankings-tmp:/tmp
+      - redis-power-rankings-tmp:/tmp/redis/power_rankings
     networks:
       - necrolab-network
 
@@ -23,7 +23,7 @@ services:
     image: redis:5.0.4-alpine
     container_name: necrolab-daily-rankings-redis
     restart: unless-stopped
-    command: redis-server --save '' /etc/daily_rankings.conf
+    command: [sh, -c, "rm -f /data/dump.rdb && redis-server /etc/daily_rankings.conf"] # This disables persistence
     ports:
       - "6381:6381"
     environment:
@@ -31,7 +31,7 @@ services:
       SERVICE_TAGS: development
     volumes:
       - ./redis/daily_rankings.conf:/etc/daily_rankings.conf
-      - redis-daily-rankings-tmp:/tmp
+      - redis-daily-rankings-tmp:/tmp/redis/daily_rankings
     networks:
       - necrolab-network
 
@@ -72,6 +72,8 @@ services:
       - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
       - necrolab-app-tmp:/tmp
       - necrolab-db-tmp:/run
+      - redis-power-rankings-tmp:/tmp/redis/power_rankings
+      - redis-daily-rankings-tmp:/tmp/redis/daily_rankings
     networks:
       - necrolab-network
     depends_on:
