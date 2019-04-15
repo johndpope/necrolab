@@ -3,6 +3,8 @@
 namespace App\Jobs\Leaderboards;
 
 use DateTime;
+use DatePeriod;
+use DateInterval;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -831,30 +833,32 @@ class CreateSourceSchema implements ShouldQueue {
         $this->createPlayersLinkTable();
         
         $start_date = new DateTime($this->leaderboard_source->start_date);
+        $start_date->modify('first day of this month');
         
         $end_date = new DateTime($this->leaderboard_source->end_date);
-        $end_date->modify('last day of this month');
+        $end_date->modify('first day of next month');
         
-        //TODO: Need to update all three job dispatches
-        /*LeaderboardEntries::dispatchRangePartitionCreationJob(
-            CreateLeaderboardEntriesPartitionJob::class,
-            $this->leaderboard_source, 
+        $date_period = new DatePeriod(
             $start_date,
+            new DateInterval('P1M'),
             $end_date
         );
         
-        PowerRankingEntries::dispatchRangePartitionCreationJob(
-            CreatePowerRankingEntriesPartitionJob::class,
-            $this->leaderboard_source, 
-            $start_date,
-            $end_date
-        );
-        
-        DailyRankingEntries::dispatchRangePartitionCreationJob(
-            CreateDailyRankingEntriesPartitionJob::class,
-            $this->leaderboard_source, 
-            $start_date,
-            $end_date
-        );*/
+        foreach($date_period as $date) {
+            CreateLeaderboardEntriesPartitionJob::dispatch(
+                $this->leaderboard_source,
+                $date
+            )->onConnection('sync');
+            
+            CreatePowerRankingEntriesPartitionJob::dispatch(
+                $this->leaderboard_source,
+                $date
+            )->onConnection('sync');
+            
+            CreateDailyRankingEntriesPartitionJob::dispatch(
+                $this->leaderboard_source,
+                $date
+            )->onConnection('sync');
+        }
     }
 }
