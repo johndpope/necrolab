@@ -1,0 +1,124 @@
+version: '3.7'
+services:
+
+  #Power Rankings Redis Service
+  necrolab-power-rankings-redis:
+    image: redis:5.0.4-alpine
+    container_name: necrolab-power-rankings-redis
+    restart: unless-stopped
+    command: [sh, -c, "rm -f /data/dump.rdb && redis-server /etc/power_rankings.conf"] # This disables persistence
+    ports:
+      - "6380:6380"
+    environment:
+      SERVICE_NAME: necrolab-power-rankings-redis
+      SERVICE_TAGS: development
+    volumes:
+      - ../../configurations/redis/power_rankings.conf:/etc/power_rankings.conf
+      - redis-power-rankings-tmp:/tmp/redis/power_rankings
+    networks:
+      - necrolab-network
+
+  #Daily Rankings Redis Service
+  necrolab-daily-rankings-redis:
+    image: redis:5.0.4-alpine
+    container_name: necrolab-daily-rankings-redis
+    restart: unless-stopped
+    command: [sh, -c, "rm -f /data/dump.rdb && redis-server /etc/daily_rankings.conf"] # This disables persistence
+    ports:
+      - "6381:6381"
+    environment:
+      SERVICE_NAME: necrolab-daily-rankings-redis
+      SERVICE_TAGS: development
+    volumes:
+      - ../../configurations/redis/daily_rankings.conf:/etc/daily_rankings.conf
+      - redis-daily-rankings-tmp:/tmp/redis/daily_rankings
+    networks:
+      - necrolab-network
+
+  #Postgres Service
+  necrolab-db:
+    image: postgres:11.2-alpine
+    container_name: necrolab-db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: "necrolab"
+      POSTGRES_USER: "necrolab_admin"
+      POSTGRES_PASSWORD: "local_dev"
+      SERVICE_NAME: necrolab-db
+      SERVICE_TAGS: development
+    volumes:
+      - necrolab-db-data:/var/lib/postgresql/data
+      - necrolab-db-tmp:/run
+    networks:
+      - necrolab-network
+
+  #PHP Web Service
+  necrolab-app:
+    image: necrolab-app-development:latest
+    container_name: necrolab-app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: necrolab-app
+      SERVICE_TAGS: development
+    working_dir: /var/www
+    volumes:
+      - ../../../:/var/www
+      - ../../configurations/php/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
+      - ../../configurations/php/docker-php-ext-phpredis.ini:/usr/local/etc/php/conf.d/docker-php-ext-phpredis.ini
+      - ../../configurations/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - necrolab-app-tmp:/tmp
+      - necrolab-db-tmp:/run
+      - redis-power-rankings-tmp:/tmp/redis/power_rankings
+      - redis-daily-rankings-tmp:/tmp/redis/daily_rankings
+    networks:
+      - necrolab-network
+    depends_on:
+      - necrolab-power-rankings-redis
+      - necrolab-daily-rankings-redis
+      - necrolab-webserver
+      - necrolab-db
+
+  #Nginx Service
+  necrolab-webserver:
+    image: nginx:alpine
+    container_name: necrolab-webserver
+    restart: unless-stopped
+    tty: true
+    ports:
+      - 80:80
+      - 443:443
+    environment:
+      - NGINX_SERVER_NAME=local.necrolab.com
+      - NGINX_SSL_CRT_FILE_NAME=local.necrolab.com.crt
+      - NGINX_SSL_KEY_FILE_NAME=local.necrolab.com.key
+    entrypoint: /var/run/entrypoint.sh
+    volumes:
+      - ../../configurations/nginx/entrypoint.sh:/var/run/entrypoint.sh:rw
+      - ../../../:/var/www
+      - ../../configurations/nginx/conf.d/:/etc/nginx/conf.d/
+      - ./nginx/ssl_keys/:/etc/nginx/ssl/
+      - necrolab-app-tmp:/tmp
+    networks:
+      - necrolab-network
+
+#Docker Networks
+networks:
+  necrolab-network:
+    driver: bridge
+
+#Volumes
+volumes:
+  necrolab-db-data:
+    driver: local
+  redis-power-rankings-tmp:
+    driver: local
+  redis-daily-rankings-tmp:
+    driver: local
+  necrolab-app-tmp:
+    driver: local
+  necrolab-db-tmp:
+    driver: local
