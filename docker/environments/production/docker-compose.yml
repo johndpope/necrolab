@@ -44,11 +44,11 @@ services:
     ports:
       - "5432:5432"
     environment:
-      POSTGRES_DB: "necrolab"
-      POSTGRES_USER: "necrolab_admin"
-      POSTGRES_PASSWORD: "local_dev"
-      SERVICE_NAME: necrolab-db
-      SERVICE_TAGS: production
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - SERVICE_NAME=necrolab-db
+      - SERVICE_TAGS=production
     volumes:
       - necrolab-db-data:/var/lib/postgresql/data
       - necrolab-db-tmp:/run
