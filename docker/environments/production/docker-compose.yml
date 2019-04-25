@@ -149,7 +149,7 @@ services:
       SERVICE_TAGS: production
     volumes:
       - ../../../:/var/www
-      - ../../configurations/supervisor/leaderboards.conf:/etc/supervisor.d/leaderboards.conf
+      - ../../configurations/supervisor/leaderboards.ini:/etc/supervisor.d/leaderboards.ini
       - necrolab-db-tmp:/run
     networks:
       - necrolab-network
@@ -167,7 +167,7 @@ services:
       SERVICE_TAGS: production
     volumes:
       - ../../../:/var/www
-      - ../../configurations/supervisor/rankings_power.conf:/etc/supervisor.d/rankings_power.conf
+      - ../../configurations/supervisor/rankings_power.ini:/etc/supervisor.d/rankings_power.ini
       - ../../configurations/php/docker-php-ext-phpredis.ini:/usr/local/etc/php/conf.d/docker-php-ext-phpredis.ini
       - necrolab-db-tmp:/run
       - redis-power-rankings-tmp:/tmp/redis/power_rankings
@@ -188,7 +188,7 @@ services:
       SERVICE_TAGS: production
     volumes:
       - ../../../:/var/www
-      - ../../configurations/supervisor/rankings_daily.conf:/etc/supervisor.d/rankings_daily.conf
+      - ../../configurations/supervisor/rankings_daily.ini:/etc/supervisor.d/rankings_daily.ini
       - ../../configurations/php/docker-php-ext-phpredis.ini:/usr/local/etc/php/conf.d/docker-php-ext-phpredis.ini
       - necrolab-db-tmp:/run
       - redis-daily-rankings-tmp:/tmp/redis/daily_rankings
@@ -209,7 +209,7 @@ services:
       SERVICE_TAGS: production
     volumes:
       - ../../../:/var/www
-      - ../../configurations/supervisor/replays.conf:/etc/supervisor.d/replays.conf
+      - ../../configurations/supervisor/replays.ini:/etc/supervisor.d/replays.ini
       - necrolab-db-tmp:/run
     networks:
       - necrolab-network
@@ -227,7 +227,7 @@ services:
       SERVICE_TAGS: production
     volumes:
       - ../../../:/var/www
-      - ../../configurations/supervisor/players.conf:/etc/supervisor.d/players.conf
+      - ../../configurations/supervisor/players.ini:/etc/supervisor.d/players.ini
       - necrolab-db-tmp:/run
     networks:
       - necrolab-network
@@ -245,7 +245,7 @@ services:
       SERVICE_TAGS: production
     volumes:
       - ../../../:/var/www
-      - ../../configurations/supervisor/dates.conf:/etc/supervisor.d/dates.conf
+      - ../../configurations/supervisor/dates.ini:/etc/supervisor.d/dates.ini
       - necrolab-db-tmp:/run
     networks:
       - necrolab-network
