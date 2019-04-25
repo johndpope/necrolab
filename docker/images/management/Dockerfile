@@ -1,0 +1,11 @@
+FROM necrolab-base-cli:1.0
+
+# Install management dependencies
+RUN apk add --no-cache \
+    shadow \
+    ncurses \
+    vim \
+    nodejs \
+    nodejs-npm \
+    bash \
+    && apk add --no-cache mono --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing

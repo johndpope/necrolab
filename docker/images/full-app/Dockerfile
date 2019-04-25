@@ -17,7 +17,8 @@ RUN apk add --no-cache --virtual .build-dependencies \
     libtool \
     libxml2-dev \
     postgresql-dev \
-    zlib-dev
+    zlib-dev \
+    git
 
 # Install dependencies
 # The ncurses package is needed because of this issue: https://github.com/opencollective/opencollective/issues/1443
@@ -31,7 +32,6 @@ RUN apk add --no-cache \
     postgresql-libs \
     jpegoptim optipng pngquant gifsicle \
     vim \
-    git \
     curl \
     nodejs \
     nodejs-npm \

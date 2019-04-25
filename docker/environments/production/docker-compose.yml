@@ -1,7 +1,7 @@
 version: '3.7'
 services:
 
-  #Power Rankings Redis Service
+  # Power Rankings Redis Service
   necrolab-power-rankings-redis:
     image: redis:5.0.4-alpine
     container_name: necrolab-power-rankings-redis
@@ -11,14 +11,14 @@ services:
       - "6380:6380"
     environment:
       SERVICE_NAME: necrolab-power-rankings-redis
-      SERVICE_TAGS: development
+      SERVICE_TAGS: production
     volumes:
-      - ./redis/power_rankings.conf:/etc/power_rankings.conf
+      - ../../configurations/redis/power_rankings.conf:/etc/power_rankings.conf
       - redis-power-rankings-tmp:/tmp/redis/power_rankings
     networks:
       - necrolab-network
 
-  #Daily Rankings Redis Service
+  # Daily Rankings Redis Service
   necrolab-daily-rankings-redis:
     image: redis:5.0.4-alpine
     container_name: necrolab-daily-rankings-redis
@@ -28,14 +28,14 @@ services:
       - "6381:6381"
     environment:
       SERVICE_NAME: necrolab-daily-rankings-redis
-      SERVICE_TAGS: development
+      SERVICE_TAGS: production
     volumes:
-      - ./redis/daily_rankings.conf:/etc/daily_rankings.conf
+      - ../../configurations/redis/daily_rankings.conf:/etc/daily_rankings.conf
       - redis-daily-rankings-tmp:/tmp/redis/daily_rankings
     networks:
       - necrolab-network
 
-  #Postgres Service
+  # Postgres Service
   necrolab-db:
     image: postgres:11.2-alpine
     container_name: necrolab-db
@@ -48,41 +48,14 @@ services:
       POSTGRES_USER: "necrolab_admin"
       POSTGRES_PASSWORD: "local_dev"
       SERVICE_NAME: necrolab-db
-      SERVICE_TAGS: development
+      SERVICE_TAGS: production
     volumes:
       - necrolab-db-data:/var/lib/postgresql/data
       - necrolab-db-tmp:/run
     networks:
       - necrolab-network
-
-  #PHP Web Service
-  necrolab-app:
-    image: necrolab-app-development:latest
-    container_name: necrolab-app
-    restart: unless-stopped
-    tty: true
-    environment:
-      SERVICE_NAME: necrolab-app
-      SERVICE_TAGS: development
-    working_dir: /var/www
-    volumes:
-      - ../../:/var/www
-      - ./php/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
-      - ./php/docker-php-ext-phpredis.ini:/usr/local/etc/php/conf.d/docker-php-ext-phpredis.ini
-      - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
-      - necrolab-app-tmp:/tmp
-      - necrolab-db-tmp:/run
-      - redis-power-rankings-tmp:/tmp/redis/power_rankings
-      - redis-daily-rankings-tmp:/tmp/redis/daily_rankings
-    networks:
-      - necrolab-network
-    depends_on:
-      - necrolab-power-rankings-redis
-      - necrolab-daily-rankings-redis
-      - necrolab-webserver
-      - necrolab-db
-
-  #Nginx Service
+      
+  # Nginx Service
   necrolab-webserver:
     image: nginx:alpine
     container_name: necrolab-webserver
@@ -91,13 +64,193 @@ services:
     ports:
       - 80:80
       - 443:443
+    environment:
+      - NGINX_SERVER_NAME=beta.necrolab.com
+      - NGINX_SSL_CRT_FILE_NAME=beta.necrolab.com.crt
+      - NGINX_SSL_KEY_FILE_NAME=beta.necrolab.com.key
+    entrypoint: /var/run/entrypoint.sh
     volumes:
-      - ../../:/var/www
-      - ./nginx/conf.d/:/etc/nginx/conf.d/
+      - ../../configurations/nginx/entrypoint.sh:/var/run/entrypoint.sh:rw
+      - ../../../:/var/www
+      - ../../configurations/nginx/conf.d/:/etc/nginx/conf.d/
       - ./nginx/ssl_keys/:/etc/nginx/ssl/
       - necrolab-app-tmp:/tmp
     networks:
       - necrolab-network
+  
+  # PHP Web Service
+  necrolab-app:
+    image: necrolab-app-production:1.0
+    container_name: necrolab-app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: necrolab-app
+      SERVICE_TAGS: production
+    working_dir: /var/www
+    volumes:
+      - ../../../:/var/www
+      - ../../configurations/php/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
+      #- ../../configurations/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+      - necrolab-app-tmp:/tmp
+      - necrolab-db-tmp:/run
+    networks:
+      - necrolab-network
+    depends_on:
+      - necrolab-webserver
+      - necrolab-db
+
+  # Management Service
+  necrolab-management:
+    image: necrolab-management:1.0
+    container_name: necrolab-management
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: necrolab-management
+      SERVICE_TAGS: production
+    volumes:
+      - ../../../:/var/www
+      - necrolab-db-tmp:/run
+      - redis-power-rankings-tmp:/tmp/redis/power_rankings
+      - redis-daily-rankings-tmp:/tmp/redis/daily_rankings
+    networks:
+      - necrolab-network
+    depends_on:
+      - necrolab-db
+      - necrolab-power-rankings-redis
+      - necrolab-daily-rankings-redis
+      
+  # Cron Service
+  necrolab-cron:
+    image: necrolab-app-cron:1.0
+    container_name: necrolab-cron
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: necrolab-app-cron
+      SERVICE_TAGS: production
+    volumes:
+      - ../../../:/var/www
+      - necrolab-db-tmp:/run
+    networks:
+      - necrolab-network
+    depends_on:
+      - necrolab-db
+      
+  # Leaderboards Queue Worker
+  necrolab-leaderboards-queue-worker:
+    image: necrolab-queue-worker:1.0
+    container_name: necrolab-leaderboards-queue-worker
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: necrolab-leaderboards-queue-worker
+      SERVICE_TAGS: production
+    volumes:
+      - ../../../:/var/www
+      - ../../configurations/supervisor/leaderboards.conf:/etc/supervisor.d/leaderboards.conf
+      - necrolab-db-tmp:/run
+    networks:
+      - necrolab-network
+    depends_on:
+      - necrolab-db
+
+  # Power Rankings Queue Worker
+  necrolab-power-rankings-queue-worker:
+    image: necrolab-queue-worker:1.0
+    container_name: necrolab-power-rankings-queue-worker
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: necrolab-power-rankings-queue-worker
+      SERVICE_TAGS: production
+    volumes:
+      - ../../../:/var/www
+      - ../../configurations/supervisor/rankings_power.conf:/etc/supervisor.d/rankings_power.conf
+      - ../../configurations/php/docker-php-ext-phpredis.ini:/usr/local/etc/php/conf.d/docker-php-ext-phpredis.ini
+      - necrolab-db-tmp:/run
+      - redis-power-rankings-tmp:/tmp/redis/power_rankings
+    networks:
+      - necrolab-network
+    depends_on:
+      - necrolab-power-rankings-redis
+      - necrolab-db
+    
+  # Daily Rankings Queue Worker
+  necrolab-daily-rankings-queue-worker:
+    image: necrolab-queue-worker:1.0
+    container_name: necrolab-daily-rankings-queue-worker
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: necrolab-daily-rankings-queue-worker
+      SERVICE_TAGS: production
+    volumes:
+      - ../../../:/var/www
+      - ../../configurations/supervisor/rankings_daily.conf:/etc/supervisor.d/rankings_daily.conf
+      - ../../configurations/php/docker-php-ext-phpredis.ini:/usr/local/etc/php/conf.d/docker-php-ext-phpredis.ini
+      - necrolab-db-tmp:/run
+      - redis-daily-rankings-tmp:/tmp/redis/daily_rankings
+    networks:
+      - necrolab-network
+    depends_on:
+      - necrolab-daily-rankings-redis
+      - necrolab-db
+
+  # Replays Queue Worker
+  necrolab-replays-queue-worker:
+    image: necrolab-queue-worker:1.0
+    container_name: necrolab-replays-queue-worker
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: necrolab-replays-queue-worker
+      SERVICE_TAGS: production
+    volumes:
+      - ../../../:/var/www
+      - ../../configurations/supervisor/replays.conf:/etc/supervisor.d/replays.conf
+      - necrolab-db-tmp:/run
+    networks:
+      - necrolab-network
+    depends_on:
+      - necrolab-db
+
+  # Players Queue Worker
+  necrolab-players-queue-worker:
+    image: necrolab-queue-worker:1.0
+    container_name: necrolab-players-queue-worker
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: necrolab-players-queue-worker
+      SERVICE_TAGS: production
+    volumes:
+      - ../../../:/var/www
+      - ../../configurations/supervisor/players.conf:/etc/supervisor.d/players.conf
+      - necrolab-db-tmp:/run
+    networks:
+      - necrolab-network
+    depends_on:
+      - necrolab-db
+
+  # Dates Queue Worker
+  necrolab-dates-queue-worker:
+    image: necrolab-queue-worker:1.0
+    container_name: necrolab-dates-queue-worker
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: necrolab-dates-queue-worker
+      SERVICE_TAGS: production
+    volumes:
+      - ../../../:/var/www
+      - ../../configurations/supervisor/dates.conf:/etc/supervisor.d/dates.conf
+      - necrolab-db-tmp:/run
+    networks:
+      - necrolab-network
+    depends_on:
+      - necrolab-db
 
 #Docker Networks
 networks:
