@@ -71,7 +71,7 @@ services:
     entrypoint: /var/run/entrypoint.sh
     volumes:
       - ../../configurations/nginx/entrypoint.sh:/var/run/entrypoint.sh:rw
-      - ../../../:/var/www
+      - ../../../:/var/www/html
       - ../../configurations/nginx/conf.d/:/etc/nginx/conf.d/
       - ./nginx/ssl_keys/:/etc/nginx/ssl/
       - necrolab-app-tmp:/tmp
