@@ -46,7 +46,8 @@ RUN apk update && apk upgrade \
     && cd ../ \
     && rm -rf /tmp/phpredis \
     && docker-php-ext-enable redis \
-    && apk del -f .build-dependencies
+    && apk del -f .build-dependencies \
+    && chown -R www-data:www-data /var/www
 
 # Start php-fpm server
 CMD ["php-fpm"]
