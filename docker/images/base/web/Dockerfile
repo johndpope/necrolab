@@ -46,11 +46,9 @@ RUN apk update && apk upgrade \
     && cd ../ \
     && rm -rf /tmp/phpredis \
     && docker-php-ext-enable redis \
-    && apk del -f .build-dependencies \
-    && chown -R www-data:www-data /var/www \
-    && chmod 777 -R /var/www
+    && apk del -f .build-dependencies
 
-#COPY --chown=www-data:www-data . /var/www
+COPY --chown=www-data:www-data . /var/www
 
 USER www-data
 

@@ -89,7 +89,7 @@ services:
       SERVICE_TAGS: production
     working_dir: /var/www
     volumes:
-      - ../../../:/var/www:rw
+      - ../../../:/var/www
       - ../../configurations/php/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
       #- ../../configurations/php/local.ini:/usr/local/etc/php/conf.d/local.ini
       - necrolab-app-tmp:/tmp
@@ -110,7 +110,7 @@ services:
       SERVICE_NAME: necrolab-management
       SERVICE_TAGS: production
     volumes:
-      - ../../../:/var/www:rw
+      - ../../../:/var/www
       - necrolab-db-tmp:/run
       - redis-power-rankings-tmp:/tmp/redis/power_rankings
       - redis-daily-rankings-tmp:/tmp/redis/daily_rankings
@@ -131,7 +131,7 @@ services:
       SERVICE_NAME: necrolab-app-cron
       SERVICE_TAGS: production
     volumes:
-      - ../../../:/var/www:rw
+      - ../../../:/var/www
       - necrolab-db-tmp:/run
     networks:
       - necrolab-network
@@ -148,7 +148,7 @@ services:
       SERVICE_NAME: necrolab-leaderboards-queue-worker
       SERVICE_TAGS: production
     volumes:
-      - ../../../:/var/www:rw
+      - ../../../:/var/www
       - ../../configurations/supervisor/supervisord.conf:/etc/supervisord.conf
       - ../../configurations/supervisor/leaderboards.ini:/etc/supervisor.d/leaderboards.ini
       - necrolab-db-tmp:/run
@@ -167,7 +167,7 @@ services:
       SERVICE_NAME: necrolab-power-rankings-queue-worker
       SERVICE_TAGS: production
     volumes:
-      - ../../../:/var/www:rw
+      - ../../../:/var/www
       - ../../configurations/supervisor/supervisord.conf:/etc/supervisord.conf
       - ../../configurations/supervisor/rankings_power.ini:/etc/supervisor.d/rankings_power.ini
       - ../../configurations/php/docker-php-ext-phpredis.ini:/usr/local/etc/php/conf.d/docker-php-ext-phpredis.ini
@@ -189,7 +189,7 @@ services:
       SERVICE_NAME: necrolab-daily-rankings-queue-worker
       SERVICE_TAGS: production
     volumes:
-      - ../../../:/var/www:rw
+      - ../../../:/var/www
       - ../../configurations/supervisor/supervisord.conf:/etc/supervisord.conf
       - ../../configurations/supervisor/rankings_daily.ini:/etc/supervisor.d/rankings_daily.ini
       - ../../configurations/php/docker-php-ext-phpredis.ini:/usr/local/etc/php/conf.d/docker-php-ext-phpredis.ini
@@ -211,7 +211,7 @@ services:
       SERVICE_NAME: necrolab-replays-queue-worker
       SERVICE_TAGS: production
     volumes:
-      - ../../../:/var/www:rw
+      - ../../../:/var/www
       - ../../configurations/supervisor/supervisord.conf:/etc/supervisord.conf
       - ../../configurations/supervisor/replays.ini:/etc/supervisor.d/replays.ini
       - necrolab-db-tmp:/run
@@ -230,7 +230,7 @@ services:
       SERVICE_NAME: necrolab-players-queue-worker
       SERVICE_TAGS: production
     volumes:
-      - ../../../:/var/www:rw
+      - ../../../:/var/www
       - ../../configurations/supervisor/supervisord.conf:/etc/supervisord.conf
       - ../../configurations/supervisor/players.ini:/etc/supervisor.d/players.ini
       - necrolab-db-tmp:/run
@@ -249,7 +249,7 @@ services:
       SERVICE_NAME: necrolab-dates-queue-worker
       SERVICE_TAGS: production
     volumes:
-      - ../../../:/var/www:rw
+      - ../../../:/var/www
       - ../../configurations/supervisor/supervisord.conf:/etc/supervisord.conf
       - ../../configurations/supervisor/dates.ini:/etc/supervisor.d/dates.ini
       - necrolab-db-tmp:/run
