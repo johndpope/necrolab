@@ -47,7 +47,12 @@ RUN apk update && apk upgrade \
     && rm -rf /tmp/phpredis \
     && docker-php-ext-enable redis \
     && apk del -f .build-dependencies \
-    && chown -R www-data:www-data /var/www
+    && chown -R www-data:www-data /var/www \
+    && chmod 777 -R /var/www
+
+#COPY --chown=www-data:www-data . /var/www
+
+USER www-data
 
 # Start php-fpm server
 CMD ["php-fpm"]

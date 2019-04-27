@@ -8,7 +8,7 @@ docker rmi necrolab-queue-worker:1.0
 docker rmi necrolab-management:1.0
 echo "========== Building the base images =========="
 docker build docker/ -f ./docker/images/base/cli/Dockerfile -t necrolab-base-cli:1.0 --no-cache
-docker build docker/ -f ./docker/images/base/web/Dockerfile -t necrolab-base-web:1.0 --no-cache
+docker build . -f ./docker/images/base/web/Dockerfile -t necrolab-base-web:1.0 --no-cache
 echo "========== Building the app image =========="
 docker build docker/ -f ./docker/images/php-web-app/Dockerfile -t necrolab-app-production:1.0 --no-cache
 echo "========== Building the cron image =========="
