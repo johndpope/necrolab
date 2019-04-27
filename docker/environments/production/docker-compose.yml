@@ -84,7 +84,6 @@ services:
     container_name: necrolab-app
     restart: unless-stopped
     tty: true
-    user: root
     environment:
       SERVICE_NAME: necrolab-app
       SERVICE_TAGS: production
@@ -107,7 +106,6 @@ services:
     container_name: necrolab-management
     restart: unless-stopped
     tty: true
-    user: root
     environment:
       SERVICE_NAME: necrolab-management
       SERVICE_TAGS: production
@@ -129,7 +127,6 @@ services:
     container_name: necrolab-cron
     restart: unless-stopped
     tty: true
-    user: root
     environment:
       SERVICE_NAME: necrolab-app-cron
       SERVICE_TAGS: production
@@ -147,7 +144,6 @@ services:
     container_name: necrolab-leaderboards-queue-worker
     restart: unless-stopped
     tty: true
-    user: root
     environment:
       SERVICE_NAME: necrolab-leaderboards-queue-worker
       SERVICE_TAGS: production
@@ -167,7 +163,6 @@ services:
     container_name: necrolab-power-rankings-queue-worker
     restart: unless-stopped
     tty: true
-    user: root
     environment:
       SERVICE_NAME: necrolab-power-rankings-queue-worker
       SERVICE_TAGS: production
@@ -190,7 +185,6 @@ services:
     container_name: necrolab-daily-rankings-queue-worker
     restart: unless-stopped
     tty: true
-    user: root
     environment:
       SERVICE_NAME: necrolab-daily-rankings-queue-worker
       SERVICE_TAGS: production
@@ -213,7 +207,6 @@ services:
     container_name: necrolab-replays-queue-worker
     restart: unless-stopped
     tty: true
-    user: root
     environment:
       SERVICE_NAME: necrolab-replays-queue-worker
       SERVICE_TAGS: production
@@ -233,7 +226,6 @@ services:
     container_name: necrolab-players-queue-worker
     restart: unless-stopped
     tty: true
-    user: root
     environment:
       SERVICE_NAME: necrolab-players-queue-worker
       SERVICE_TAGS: production
@@ -253,7 +245,6 @@ services:
     container_name: necrolab-dates-queue-worker
     restart: unless-stopped
     tty: true
-    user: root
     environment:
       SERVICE_NAME: necrolab-dates-queue-worker
       SERVICE_TAGS: production
