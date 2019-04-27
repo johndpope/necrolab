@@ -10,4 +10,6 @@ RUN adduser -g "App User" -D $APP_USER \
     
 ENTRYPOINT "crond"
 
+USER necrolab_cron
+
 CMD ["-f", "-d", "8"]

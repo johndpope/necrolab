@@ -87,9 +87,9 @@ services:
     environment:
       SERVICE_NAME: necrolab-app
       SERVICE_TAGS: production
-    working_dir: /var/www
+    working_dir: /var/www/html
     volumes:
-      - ../../../:/var/www
+      - ../../../:/var/www/html
       - ../../configurations/php/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
       #- ../../configurations/php/local.ini:/usr/local/etc/php/conf.d/local.ini
       - necrolab-app-tmp:/tmp
