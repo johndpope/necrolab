@@ -8,5 +8,5 @@ RUN apk add --no-cache \
     nodejs \
     nodejs-npm \
     bash \
-    && apk add --no-cache mono --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing
+    && apk add --no-cache mono --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
     && curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
