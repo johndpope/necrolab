@@ -23,6 +23,7 @@ RUN apk update && apk upgrade \
         shadow \
     && apk add --no-cache \
         ca-certificates \
+        openssl \
         freetype-dev \
         libjpeg-turbo-dev \
         libpng-dev \

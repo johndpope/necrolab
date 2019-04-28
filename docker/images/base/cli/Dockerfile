@@ -23,6 +23,7 @@ RUN apk update && apk upgrade \
         shadow \
     && apk add --no-cache \
         ca-certificates \
+        openssl \
         freetype-dev \
         libjpeg-turbo-dev \
         libpng-dev \
@@ -32,6 +33,7 @@ RUN apk update && apk upgrade \
         curl \
         zip \
         unzip \
+    && apk add --no-cache mono --repository http://dl-cdn.alpinelinux.org/alpine/edge/testing \
     && docker-php-ext-install opcache pdo_pgsql pdo_mysql soap xmlrpc exif pcntl \
     && docker-php-ext-configure zip --with-libzip \
     && docker-php-ext-install zip \
@@ -49,7 +51,8 @@ RUN apk update && apk upgrade \
     && docker-php-ext-enable redis \
     && groupadd -g 1000 www \
     && useradd -u 1000 -ms /bin/bash -g www www \
-    && apk del -f .build-dependencies
+    && apk del -f .build-dependencies \
+    && cert-sync /etc/ssl/certs/ca-certificates.crt
 
 # Copy existing application directory contents
 COPY . /var/www
