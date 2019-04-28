@@ -112,6 +112,7 @@ services:
       SERVICE_TAGS: production
     volumes:
       - ../../../:/var/www
+      - ../../configurations/php/local.ini:/usr/local/etc/php/conf.d/local.ini
       - necrolab-db-tmp:/run
       - redis-power-rankings-tmp:/tmp/redis/power_rankings
       - redis-daily-rankings-tmp:/tmp/redis/daily_rankings
@@ -150,6 +151,7 @@ services:
       SERVICE_TAGS: production
     volumes:
       - ../../../:/var/www
+      - ../../configurations/php/local.ini:/usr/local/etc/php/conf.d/local.ini
       - ../../configurations/supervisor/supervisord.conf:/etc/supervisord.conf
       - ../../configurations/supervisor/leaderboards.ini:/etc/supervisor.d/leaderboards.ini
       - necrolab-db-tmp:/run
@@ -169,6 +171,7 @@ services:
       SERVICE_TAGS: production
     volumes:
       - ../../../:/var/www
+      - ../../configurations/php/local.ini:/usr/local/etc/php/conf.d/local.ini
       - ../../configurations/supervisor/supervisord.conf:/etc/supervisord.conf
       - ../../configurations/supervisor/rankings_power.ini:/etc/supervisor.d/rankings_power.ini
       - ../../configurations/php/docker-php-ext-phpredis.ini:/usr/local/etc/php/conf.d/docker-php-ext-phpredis.ini
@@ -191,6 +194,7 @@ services:
       SERVICE_TAGS: production
     volumes:
       - ../../../:/var/www
+      - ../../configurations/php/local.ini:/usr/local/etc/php/conf.d/local.ini
       - ../../configurations/supervisor/supervisord.conf:/etc/supervisord.conf
       - ../../configurations/supervisor/rankings_daily.ini:/etc/supervisor.d/rankings_daily.ini
       - ../../configurations/php/docker-php-ext-phpredis.ini:/usr/local/etc/php/conf.d/docker-php-ext-phpredis.ini
@@ -213,6 +217,7 @@ services:
       SERVICE_TAGS: production
     volumes:
       - ../../../:/var/www
+      - ../../configurations/php/local.ini:/usr/local/etc/php/conf.d/local.ini
       - ../../configurations/supervisor/supervisord.conf:/etc/supervisord.conf
       - ../../configurations/supervisor/replays.ini:/etc/supervisor.d/replays.ini
       - necrolab-db-tmp:/run
@@ -232,6 +237,7 @@ services:
       SERVICE_TAGS: production
     volumes:
       - ../../../:/var/www
+      - ../../configurations/php/local.ini:/usr/local/etc/php/conf.d/local.ini
       - ../../configurations/supervisor/supervisord.conf:/etc/supervisord.conf
       - ../../configurations/supervisor/players.ini:/etc/supervisor.d/players.ini
       - necrolab-db-tmp:/run
@@ -251,6 +257,7 @@ services:
       SERVICE_TAGS: production
     volumes:
       - ../../../:/var/www
+      - ../../configurations/php/local.ini:/usr/local/etc/php/conf.d/local.ini
       - ../../configurations/supervisor/supervisord.conf:/etc/supervisord.conf
       - ../../configurations/supervisor/dates.ini:/etc/supervisor.d/dates.ini
       - necrolab-db-tmp:/run
