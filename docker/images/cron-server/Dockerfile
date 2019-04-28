@@ -6,6 +6,4 @@ COPY ./docker/configurations/crontab/crontab /var/spool/cron/crontabs/www
 
 RUN chmod 0600 /var/spool/cron/crontabs/www
 
-USER www
-
 ENTRYPOINT crond -l 2 -f
