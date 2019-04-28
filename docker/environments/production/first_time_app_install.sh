@@ -27,6 +27,10 @@ then
     sed -i "s/APP_DEBUG\=.*/APP_DEBUG=false/g" ./.env
     
     sed -i "s/APP_URL\=.*/APP_URL=https\:\/\/beta\.necrolab\.com/g" ./.env
+    
+    STEAM_REDIRECT_URI=https://local.necrolab.com/login/steam/success
+    
+    sed -i "s/STEAM_REDIRECT_URI\=.*/STEAM_REDIRECT_URI=https\:\/\/beta\.necrolab\.com\/login\/steam\/success/g" ./.env
    
     printf "========== Running composer install. ==========\n"
     composer install

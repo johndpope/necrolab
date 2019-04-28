@@ -40,6 +40,7 @@ services:
     image: postgres:11.2-alpine
     container_name: necrolab-db
     restart: unless-stopped
+    command: postgres -c config_file=/etc/postgresql.conf
     tty: true
     ports:
       - "5432:5432"
@@ -50,6 +51,7 @@ services:
       - SERVICE_NAME=necrolab-db
       - SERVICE_TAGS=production
     volumes:
+      - ../../configurations/postgres/postgresql.conf:/etc/postgresql.conf
       - necrolab-db-data:/var/lib/postgresql/data
       - necrolab-db-tmp:/run
     networks:
@@ -70,8 +72,8 @@ services:
       - NGINX_SSL_KEY_FILE_NAME=beta.necrolab.com.key
     entrypoint: /var/run/entrypoint.sh
     volumes:
-      - ../../configurations/nginx/entrypoint.sh:/var/run/entrypoint.sh:rw
-      - ../../../:/var/www/html
+      - ../../configurations/nginx/entrypoint.sh:/var/run/entrypoint.sh
+      - ../../../:/var/www
       - ../../configurations/nginx/conf.d/:/etc/nginx/conf.d/
       - ./nginx/ssl_keys/:/etc/nginx/ssl/
       - necrolab-app-tmp:/tmp
@@ -87,11 +89,10 @@ services:
     environment:
       SERVICE_NAME: necrolab-app
       SERVICE_TAGS: production
-    working_dir: /var/www/html
+    working_dir: /var/www
     volumes:
-      - ../../../:/var/www/html
+      - ../../../:/var/www
       - ../../configurations/php/zz-docker.conf:/usr/local/etc/php-fpm.d/zz-docker.conf
-      #- ../../configurations/php/local.ini:/usr/local/etc/php/conf.d/local.ini
       - necrolab-app-tmp:/tmp
       - necrolab-db-tmp:/run
     networks:

@@ -6,6 +6,6 @@ USER root
 RUN mv "$PHP_INI_DIR/php.ini-production" "$PHP_INI_DIR/php.ini"
 
 # Override with custom opcache settings
-COPY configurations/php/opcache.ini $PHP_INI_DIR/conf.d/
+COPY docker/configurations/php/opcache.ini $PHP_INI_DIR/conf.d/
 
-USER www-data
+USER www

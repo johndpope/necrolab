@@ -1,14 +1,14 @@
 FROM php:7.3-fpm-alpine
 
 # Set working directory
-WORKDIR /var/www/html
+WORKDIR /var/www
 
 # These steps are compressed into one RUN statement to minimize the layers created for this image which reduces its size.
 # 1. Install temporary build dependencies
 # 2. Install dependencies
 # 3. Install PHP extensions
 # 4. Install phpredis and enable it
-# 5. Sync CA certificates
+# 5. Add the www user and its group
 # 6. Remove the build dependencies
 RUN apk update && apk upgrade \
     && apk add --no-cache --virtual .build-dependencies \
@@ -20,6 +20,7 @@ RUN apk update && apk upgrade \
         postgresql-dev \
         zlib-dev \
         git \
+        shadow \
     && apk add --no-cache \
         ca-certificates \
         freetype-dev \
@@ -46,7 +47,17 @@ RUN apk update && apk upgrade \
     && cd ../ \
     && rm -rf /tmp/phpredis \
     && docker-php-ext-enable redis \
+    && groupadd -g 1000 www \
+    && useradd -u 1000 -ms /bin/bash -g www www \
     && apk del -f .build-dependencies
+
+# Copy existing application directory contents
+COPY . /var/www
+
+# Copy existing application directory permissions
+COPY --chown=www:www . /var/www
+
+USER www
 
 # Start php-fpm server
 CMD ["php-fpm"]

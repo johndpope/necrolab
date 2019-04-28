@@ -1,15 +1,13 @@
 FROM necrolab-base-cli:1.0
 
-ENV APP_USER necrolab_cron
+USER root
 
-COPY ./crontab /var/spool/cron/crontabs/$APP_USER
+COPY ./docker/configurations/crontab/crontab /var/spool/cron/crontabs/www
 
-# Install temporary build dependencies
-RUN adduser -g "App User" -D $APP_USER \
-    && chmod 0600 /var/spool/cron/crontabs/$APP_USER
+RUN chmod 0600 /var/spool/cron/crontabs/www
+
+USER www
     
 ENTRYPOINT "crond"
-
-USER necrolab_cron
 
 CMD ["-f", "-d", "8"]
