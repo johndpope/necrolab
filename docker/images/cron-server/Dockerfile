@@ -8,4 +8,4 @@ RUN chmod 0600 /var/spool/cron/crontabs/www
 
 USER www
 
-CMD ['crond', '-l 2', '-f']
+ENTRYPOINT crond -l 2 -f
