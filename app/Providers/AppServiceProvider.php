@@ -23,12 +23,6 @@ class AppServiceProvider extends ServiceProvider
         \App\Releases::observe(\App\Observers\ReleasesObserver::class);
         \App\ExternalSites::observe(\App\Observers\ExternalSitesObserver::class);
         \App\Players::observe(\App\Observers\PlayersObserver::class);
-        
-        Queue::looping(function () {
-            if(DB::inTransaction()) {
-                DB::rollBack();
-            }
-        });
     }
 
     /**
