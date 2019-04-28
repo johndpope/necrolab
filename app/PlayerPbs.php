@@ -233,8 +233,6 @@ class PlayerPbs extends Model {
             'sr.uploaded_to_s3',
             'srv.name AS version',
             'rr.name AS run_result',
-            'ldc.name AS details_column',
-            'dt.name AS details_column_data_type',
             'lt.show_seed',
             'lt.show_replay',
             'lt.show_zone_level'
@@ -244,8 +242,6 @@ class PlayerPbs extends Model {
     public static function addJoins(LeaderboardSources $leaderboard_source, Builder $query): void {
         $query->join(LeaderboardEntryDetails::getSchemaTableName($leaderboard_source) . " AS led", 'led.id', '=', 'ppb.leaderboard_entry_details_id');
         $query->join('leaderboard_types AS lt', 'lt.id', '=', 'l.leaderboard_type_id');
-        $query->join('leaderboard_details_columns AS ldc', 'ldc.id', '=', 'lt.leaderboard_details_column_id');
-        $query->join('data_types AS dt', 'dt.id', '=', 'ldc.data_type_id');
     }
     
     public static function addLeftJoins(LeaderboardSources $leaderboard_source, Builder $query): void {    
