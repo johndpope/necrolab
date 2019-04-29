@@ -48,5 +48,7 @@ class Add implements ShouldQueue {
         Dates::firstOrCreate([
             'name' => $this->date->format('Y-m-d')
         ]);
+        
+        Dates::refreshCache();
     }
 }
