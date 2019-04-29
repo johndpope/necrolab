@@ -65,7 +65,7 @@ class Kernel extends ConsoleKernel {
         $schedule->job(
             new \App\Jobs\Steam\Replays\Import(), 
             QueueNames::REPLAYS
-        )->everyTenMinutes();
+        )->everyFifteenMinutes();
         
         // Import Steam player data
         $schedule->job(
