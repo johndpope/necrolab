@@ -40,11 +40,11 @@ class Kernel extends ConsoleKernel {
         })->everyThirtyMinutes();
         
         // Import Steam leaderboards XML data
-        $schedule->call(function() {
+        /*$schedule->call(function() {
             $today_date = Dates::where('name', (new DateTime())->format('Y-m-d'))->first();
         
             \App\Jobs\Steam\Leaderboards\Xml\Import::dispatch($today_date)->onQueue(QueueNames::LEADERBOARDS);
-        })->everyThirtyMinutes();
+        })->everyThirtyMinutes();*/
         
         // Create next month's leaderboard_entries, power_ranking_entries, and daily_ranking_entries partition tables
         $schedule->call(
