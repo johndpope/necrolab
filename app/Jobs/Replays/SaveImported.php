@@ -12,6 +12,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
 use App\Jobs\Replays\UploadToS3 as UploadToS3Job;
 use App\Components\DataManagers\Replays as DataManager;
+use App\Components\QueueNames;
 use App\Replays;
 use App\RunResults;
 use App\ReplayVersions;
