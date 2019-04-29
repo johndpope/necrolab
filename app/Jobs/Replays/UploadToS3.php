@@ -21,6 +21,13 @@ class UploadToS3 implements ShouldQueue {
      * @var int
      */
     public $tries = 1;
+    
+    /**
+     * The number of seconds the job can run before timing out.
+     *
+     * @var int
+     */
+    public $timeout = 3600;
 
     /**
      * The replays data manager used to interact with imported replay files.

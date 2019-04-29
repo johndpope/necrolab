@@ -34,6 +34,13 @@ class Import implements ShouldQueue {
      */
     public $tries = 1;
     
+    /**
+     * The number of seconds the job can run before timing out.
+     *
+     * @var int
+     */
+    public $timeout = 3600;
+    
     protected $date;
     
     protected $data_manager;

@@ -2,6 +2,7 @@
 
 namespace App\Jobs\Leaderboards;
 
+use Throwable;
 use DateTime;
 use stdClass;
 use Illuminate\Bus\Queueable;
@@ -41,6 +42,13 @@ class SaveToDatabase implements ShouldQueue {
      * @var int
      */
     public $tries = 1;
+    
+    /**
+     * The number of seconds the job can run before timing out.
+     *
+     * @var int
+     */
+    public $timeout = 3600;
     
     /**
      * The date that leaderboard data is being imported for.
@@ -91,13 +99,13 @@ class SaveToDatabase implements ShouldQueue {
         
         $this->daily_date_format = DailyDateFormats::where('leaderboard_source_id', $this->leaderboard_source->id)->first();
     }
-
+    
     /**
-     * Execute the job.
+     * Saved leaderboard entries to the database.
      *
      * @return void
      */
-    public function handle() {
+    protected function import() {
         $current_date = new DateTime($this->date->name);
     
         $this->data_manager->deleteTemp();
@@ -359,6 +367,22 @@ class SaveToDatabase implements ShouldQueue {
             
             // Remove local temporary files
             $this->data_manager->deleteTemp();
+        }
+    }
+
+    /**
+     * Execute the job.
+     *
+     * @return void
+     */
+    public function handle() {
+        try {
+            $this->import();
+        }
+        catch(Throwable $throwable) {
+            DB::rollback();
+            
+            throw $throwable;
         }
     }
 }

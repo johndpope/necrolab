@@ -29,6 +29,13 @@ class Cache implements ShouldQueue {
     public $tries = 1;
     
     /**
+     * The number of seconds the job can run before timing out.
+     *
+     * @var int
+     */
+    public $timeout = 3600;
+    
+    /**
      * The leaderboard source used to determine the schema to generate rankings on.
      *
      * @var \App\LeaderboardSources
