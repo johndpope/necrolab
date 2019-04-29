@@ -2,6 +2,7 @@
 
 namespace App;
 
+use Exception;
 use DateTime;
 use DateInterval;
 use stdClass;
