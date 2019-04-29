@@ -48,8 +48,12 @@ trait SchemaGetByName {
     }
     
     public static function getAllIdsByName(LeaderboardSources $leaderboard_source): array {
-        $table_name = "{$leaderboard_source->name}." . (new static())->getTable();
-        $primary_key = (new static())->getKeyName();
+        $instance = new static();
+            
+        $instance->setSchema($leaderboard_source->name);
+    
+        $table_name = $instance->getTable();
+        $primary_key = $instance->getKeyName();
     
         $query = DB::table($table_name)->select([
             'name',
