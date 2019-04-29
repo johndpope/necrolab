@@ -1,6 +1,6 @@
 #!/bin/bash
 
-if [ ! -f ./.env ]
+if [ -f ./.env ]
 then
     printf "========== Running composer install. ==========\n"
     composer install
