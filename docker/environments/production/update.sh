@@ -30,9 +30,6 @@ then
     printf "========== Caching routes. ==========\n"
     php artisan route:cache
     
-    printf "========== Optimizing the classmap. ==========\n"
-    php artisan optimize --force
-    
     printf "========== Optimizing Composer. ==========\n"    
     composer dump-autoload -o
     
