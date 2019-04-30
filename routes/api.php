@@ -17,9 +17,7 @@ use Illuminate\Http\Request;
     return $request->user();
 });*/
 
-Route::fallback(function(){
-    return response()->json([], 404);
-});
+Route::fallback('Api\HomeController@notFound');
 
 
 /* --------- Supplemental data endpoints --------- */
