@@ -71,8 +71,6 @@ class Import implements ShouldQueue {
         
         $this->data_manager = new DataManager();
         
-        $this->data_manager->deleteTemp();
-        
         
         /* ---------- Configure Steam API ---------- */ 
         
