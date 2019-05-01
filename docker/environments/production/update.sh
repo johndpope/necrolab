@@ -11,9 +11,6 @@ then
     printf "========== Running migrations. ==========\n"
     php artisan migrate
     
-    printf "========== Restarting queue workers. ==========\n"
-    php artisan queue:restart
-    
     printf "========== Clearing cache and opcache. ==========\n"
     php artisan cache:opcache:clear
     php artisan cache:clear
@@ -32,6 +29,9 @@ then
     
     printf "========== Optimizing Composer. ==========\n"    
     composer dump-autoload -o
+    
+    printf "========== Restarting queue workers. ==========\n"
+    php artisan queue:restart
     
     printf "========== Running npm. ==========\n"
     npm run production
