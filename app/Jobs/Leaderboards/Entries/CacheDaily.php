@@ -9,6 +9,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use App\Jobs\Traits\WorksWithinDatabaseTransaction;
 use App\Components\PostgresCursor;
 use App\Components\Redis\Transaction\Pipeline as PipelineTransaction;
 use App\Components\Encoder;
@@ -21,7 +22,7 @@ use App\ExternalSites;
 use App\EntryIndexes;
 
 class CacheDaily implements ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, WorksWithinDatabaseTransaction;
     
     /**
      * The number of times the job may be attempted.
@@ -67,7 +68,7 @@ class CacheDaily implements ShouldQueue {
      *
      * @return void
      */
-    public function handle() {
+    public function handleDatabaseTransaction(): void {
         /* ---------- Retrieve all leaderboard entries ----------*/
     
         DB::beginTransaction();

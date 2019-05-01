@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Redis;
+use App\Jobs\Traits\WorksWithinDatabaseTransaction;
 use App\Components\PostgresCursor;
 use App\Components\Redis\Transaction\Pipeline as PipelineTransaction;
 use App\Components\Encoder;
@@ -24,7 +25,7 @@ use App\Characters;
 use App\EntryIndexes;
 
 class Cache implements ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, WorksWithinDatabaseTransaction;
     
     /**
      * The number of times the job may be attempted.
@@ -70,7 +71,7 @@ class Cache implements ShouldQueue {
      *
      * @return void
      */
-    public function handle() {
+    protected function handleDatabaseTransaction(): void {
         /* ---------- Retrieve all power ranking entries ----------*/
     
         DB::beginTransaction();

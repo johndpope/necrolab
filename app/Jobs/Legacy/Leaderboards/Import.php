@@ -8,6 +8,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
+use App\Jobs\Traits\WorksWithinDatabaseTransaction;
 use App\Components\PostgresCursor;
 use App\Leaderboards;
 use App\LeaderboardRankingTypes;
@@ -25,7 +26,7 @@ use App\Soundtracks;
 use App\RankingTypes;
 
 class Import implements ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, WorksWithinDatabaseTransaction;
     
     /**
      * The number of times the job may be attempted.
@@ -238,7 +239,7 @@ class Import implements ShouldQueue {
      *
      * @return void
      */
-    public function handle() {
+    protected function handleDatabaseTransaction(): void {
         $this->leaderboard_source = LeaderboardSources::getByName('steam');
         $this->dates = Dates::getAllByName();
     

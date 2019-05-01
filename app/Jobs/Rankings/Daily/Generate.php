@@ -10,6 +10,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\Facades\DB;
+use App\Jobs\Traits\WorksWithinDatabaseTransaction;
 use App\Components\QueueNames;
 use App\Components\RecordQueue;
 use App\Components\CallbackHandler;
@@ -31,7 +32,7 @@ use App\Jobs\Rankings\Daily\Entries\Cache as CacheJob;
 use App\Jobs\Rankings\Daily\Entries\UpdateStats as UpdateStatsJob;
 
 class Generate implements ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, WorksWithinDatabaseTransaction;
     
     /**
      * The number of times the job may be attempted.
@@ -194,7 +195,7 @@ class Generate implements ShouldQueue {
      *
      * @return void
      */
-    public function handle() {        
+    protected function handleDatabaseTransaction(): void {
         $this->leaderboard_type = LeaderboardTypes::where('name', 'daily')->firstOrFail();
 
         $this->redis = Redis::connection('daily_rankings');

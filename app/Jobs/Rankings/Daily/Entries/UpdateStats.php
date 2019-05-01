@@ -10,6 +10,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
+use App\Jobs\Traits\WorksWithinDatabaseTransaction;
 use App\Components\PostgresCursor;
 use App\Components\Encoder;
 use App\LeaderboardSources;
@@ -19,7 +20,7 @@ use App\DailyRankingEntries;
 use App\LeaderboardTypes;
 
 class UpdateStats implements ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, WorksWithinDatabaseTransaction;
     
     /**
      * The number of times the job may be attempted.
@@ -65,7 +66,7 @@ class UpdateStats implements ShouldQueue {
      *
      * @return void
      */
-    public function handle() {
+    protected function handleDatabaseTransaction(): void {
         DB::beginTransaction();
         
         $cursor = new PostgresCursor(

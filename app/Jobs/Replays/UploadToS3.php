@@ -8,12 +8,13 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
+use App\Jobs\Traits\WorksWithinDatabaseTransaction;
 use App\Components\PostgresCursor;
 use App\Components\DataManagers\Replays as DataManager;
 use App\Replays;
 
 class UploadToS3 implements ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, WorksWithinDatabaseTransaction;
     
     /**
      * The number of times the job may be attempted.
@@ -50,7 +51,7 @@ class UploadToS3 implements ShouldQueue {
      *
      * @return void
      */
-    public function handle() {
+    protected function handleDatabaseTransaction(): void {
         $leaderboard_source = $this->data_manager->getLeaderboardSource();
     
         /* ---------- Database Setup ---------- */ 

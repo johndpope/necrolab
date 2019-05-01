@@ -11,6 +11,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
+use App\Jobs\Traits\WorksWithinDatabaseTransaction;
 use App\Components\QueueNames;
 use App\Components\DataManagers\Leaderboards as DataManager;
 use App\Dates;
@@ -34,7 +35,7 @@ use App\Jobs\Leaderboards\Entries\CacheDaily as CacheDailyLeadeboardEntriesJob;
 use App\Jobs\Leaderboards\Entries\UpdateStats AS UpdateStatsJob;
 
 class SaveToDatabase implements ShouldQueue {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, WorksWithinDatabaseTransaction;
     
     /**
      * The number of times the job may be attempted.
@@ -101,11 +102,11 @@ class SaveToDatabase implements ShouldQueue {
     }
     
     /**
-     * Saved leaderboard entries to the database.
+     * Saves leaderboard entries to the database.
      *
      * @return void
      */
-    protected function import() {
+    protected function handleDatabaseTransaction(): void {
         $current_date = new DateTime($this->date->name);
     
         $this->data_manager->deleteTemp();
@@ -367,22 +368,6 @@ class SaveToDatabase implements ShouldQueue {
             
             // Remove local temporary files
             $this->data_manager->deleteTemp();
-        }
-    }
-
-    /**
-     * Execute the job.
-     *
-     * @return void
-     */
-    public function handle() {
-        try {
-            $this->import();
-        }
-        catch(Throwable $throwable) {
-            DB::rollback();
-            
-            throw $throwable;
         }
     }
 }
