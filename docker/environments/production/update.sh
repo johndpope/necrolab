@@ -24,8 +24,8 @@ then
     printf "========== Generating attributes json. ==========\n"
     php artisan attributes:generate_json
     
-    printf "========== Caching the config. ==========\n"
-    php artisan config:cache
+    #printf "========== Caching the config. ==========\n"
+    #php artisan config:cache
     
     printf "========== Caching routes. ==========\n"
     php artisan route:cache
