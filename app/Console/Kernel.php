@@ -27,10 +27,9 @@ class Kernel extends ConsoleKernel {
      */
     protected function schedule(Schedule $schedule) {        
         // Add tomorrow's date
-        $schedule->job(
-            new \App\Jobs\Dates\Add(new DateTime('tomorrow')), 
-            QueueNames::DATES
-        )->daily();
+        $schedule->call(function() {
+            \App\Jobs\Dates\Add::dispatch(new DateTime('tomorrow'))->onQueue(QueueNames::DATES);
+        })->daily();
 
         // Import Steam leaderboards CSV data
         $schedule->call(function() {
@@ -62,16 +61,14 @@ class Kernel extends ConsoleKernel {
         )->monthly();
         
         // Import Steam replay data
-        $schedule->job(
-            new \App\Jobs\Steam\Replays\Import(), 
-            QueueNames::REPLAYS
-        )->everyFifteenMinutes();
+        $schedule->call(function() {
+            \App\Jobs\Steam\Replays\Import::dispatch()->onQueue(QueueNames::REPLAYS);
+        })->everyFifteenMinutes();
         
         // Import Steam player data
-        $schedule->job(
-            new \App\Jobs\Steam\Players\Import(), 
-            QueueNames::PLAYERS
-        )->hourly();
+        $schedule->call(function() {
+            \App\Jobs\Steam\Players\Import::dispatch()->onQueue(QueueNames::PLAYERS);
+        })->hourly();
     }
 
     /**
