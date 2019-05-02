@@ -75,14 +75,6 @@
                         </a>
                     </b-nav-item-dropdown>
                 </b-navbar-nav>
-
-                <b-navbar-nav class="ml-auto">
-                    <!-- @auth
-                        <b-nav-item href="#">Welcome [user]!</b-nav-item> -->
-                    <!-- @else -->
-                        <b-button href="#/login" class="my-2 my-sm-0">Log In</b-button>
-                    <!-- @endauth -->
-                </b-navbar-nav>
             </b-collapse>
         </b-navbar>
         <div class="container-fluid">
@@ -100,6 +92,16 @@ import bNavbarBrand from 'bootstrap-vue/es/components/navbar/navbar-brand';
 import bNarbarNav from 'bootstrap-vue/es/components/navbar/navbar-nav';
 import bCollapse from 'bootstrap-vue/es/components/collapse/collapse';
 import LeaderboardSourceIconDisplay from '../leaderboards/sources/LeaderboardSourceIconDisplay.vue';
+
+/* Restore Later
+<b-navbar-nav class="ml-auto">
+<!-- @auth
+    <b-nav-item href="#">Welcome [user]!</b-nav-item> -->
+<!-- @else -->
+    <b-button href="#/login" class="my-2 my-sm-0">Log In</b-button>
+<!-- @endauth -->
+</b-navbar-nav>
+*/
 
 const WithNavLayout = {
     name: 'with-nav-layout',

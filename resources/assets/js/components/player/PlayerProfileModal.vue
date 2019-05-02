@@ -54,9 +54,7 @@
             </b-modal>
         </template>
         <template v-else>
-            <router-link :to="`/players/${leaderboard_source.name}/${player.player.id}`">
-                {{ player.player.username }}
-            </router-link>
+            {{ player.player.username }}
         </template>
     </div>
 </template>
@@ -72,6 +70,12 @@ import RedditProfileLink from '../sites/RedditProfileLink.vue';
 import TwitchProfileLink from '../sites/TwitchProfileLink.vue';
 import TwitterProfileLink from '../sites/TwitterProfileLink.vue';
 import YoutubeProfileLink from '../sites/YoutubeProfileLink.vue';
+
+/* Restore later
+    <router-link :to="`/players/${leaderboard_source.name}/${player.player.id}`">
+        {{ player.player.username }}
+    </router-link>
+ */
 
 const PlayerProfileModal = {
     name: 'player-profile-modal',
