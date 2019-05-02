@@ -65,10 +65,10 @@ class Import implements ShouldQueue {
         $steam_leaderboard_data_manager->saveTempNames($leaderboard_names);
 
         $steam_leaderboard_data_manager->runClientDownloader(
-            config('steam.client_executable_path'),
-            config('steam.appid'),
-            config('steam.client_username'),
-            config('steam.client_password'),
+            config('services.steam.client_executable_path'),
+            config('services.steam.appid'),
+            config('services.steam.client_username'),
+            config('services.steam.client_password'),
             $steam_leaderboard_data_manager->getTempNamesPath()
         );
         
