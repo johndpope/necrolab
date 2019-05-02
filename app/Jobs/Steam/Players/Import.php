@@ -76,7 +76,7 @@ class Import implements ShouldQueue {
         /* ---------- Configure Steam API ---------- */ 
         
         $this->steam_api = new SteamApi(new SteamApiConfiguration([
-            SteamApiConfiguration::STEAM_KEY => env('STEAM_API_KEY')
+            SteamApiConfiguration::STEAM_KEY => config('steam.client_secret')
         ]));
         
         $this->steam_api->addRunner(new GuzzleRunner(new Client(), new GuzzleUrlBuilder()));

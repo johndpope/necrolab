@@ -154,7 +154,7 @@ class PlayerPbs extends Model {
         switch($leaderboard->leaderboard_type->name) {
             case 'score':
             case 'daily':
-                if($score <= env('MAX_VALID_SCORE')) {
+                if($score <= config('steam.max_valid_score')) {
                     $is_valid = true;
                 }
                 break;

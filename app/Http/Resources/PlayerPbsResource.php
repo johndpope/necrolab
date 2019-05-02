@@ -72,7 +72,7 @@ class PlayerPbsResource extends JsonResource {
             $replay_url = '';
             
             if(!empty($this->uploaded_to_s3)) {
-                $replay_url = env('AWS_URL') . "/replays/{$this->replay_external_id}.zip";
+                $replay_url = config('disks.s3.url') . "/replays/{$this->replay_external_id}.zip";
             }
             
             $replay['file_url'] = $replay_url;

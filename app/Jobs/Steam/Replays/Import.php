@@ -63,7 +63,7 @@ class Import implements ShouldQueue {
     protected function handleDatabaseTransaction(): void {
         $this->date = new DateTime();
         
-        $application_id = env('STEAM_APPID');
+        $application_id = config('steam.appid');
         
         $guzzle_client = new GuzzleClient();
         
@@ -75,7 +75,7 @@ class Import implements ShouldQueue {
         /* ---------- Configure Steam API ---------- */ 
         
         $this->steam_api = new SteamApi(new SteamApiConfiguration([
-            SteamApiConfiguration::STEAM_KEY => env('STEAM_API_KEY')
+            SteamApiConfiguration::STEAM_KEY => config('steam.client_secret')
         ]));
         
         $this->steam_api->addRunner(new GuzzleRunner(clone $guzzle_client, new GuzzleUrlBuilder()));

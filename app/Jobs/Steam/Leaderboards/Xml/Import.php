@@ -70,7 +70,7 @@ class Import implements ShouldQueue {
         
         $callback_hander->setArguments([
             'GET',
-            env('STEAM_LEADERBOARD_XML_URL')
+            config('steam.leaderboard_xml_url')
         ]);
         
         $leaderboards_xml_result = $callback_hander->execute();

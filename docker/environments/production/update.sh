@@ -2,39 +2,45 @@
 
 if [ -f ./.env ]
 then
-    printf "========== Running composer install. ==========\n"
+    echo "========== Setting the site into maintenance mode. =========="
+    php artisan down --message="NecroLab is currently down for maintenance." --retry=60
+
+    echo "========== Running composer install. =========="
     composer install
     
-    printf "========== Running npm install. ==========\n"
+    echo "========== Running npm install. =========="
     npm install
     
-    printf "========== Running migrations. ==========\n"
-    php artisan migrate
-    
-    printf "========== Clearing cache and opcache. ==========\n"
+    echo "========== Clearing cache and opcache. =========="
     php artisan cache:opcache:clear
     php artisan cache:clear
     php artisan config:clear
     php artisan route:clear
     php artisan view:clear
     
-    printf "========== Generating attributes json. ==========\n"
+    echo "========== Running migrations. =========="
+    php artisan migrate
+    
+    echo "========== Generating attributes json. =========="
     php artisan attributes:generate_json
     
-    #printf "========== Caching the config. ==========\n"
-    #php artisan config:cache
+    echo "========== Caching the config. =========="
+    php artisan config:cache
     
-    printf "========== Caching routes. ==========\n"
+    echo "========== Caching routes. =========="
     php artisan route:cache
     
-    printf "========== Optimizing Composer. ==========\n"    
+    echo "========== Optimizing Composer. =========="    
     composer dump-autoload -o
     
-    printf "========== Restarting queue workers. ==========\n"
+    echo "========== Restarting queue workers. =========="
     php artisan queue:restart
     
-    printf "========== Running npm. ==========\n"
+    echo "========== Running npm. =========="
     npm run production
     
-    printf printf "========== All done! Navigate to https://beta.necrolab.com to test. ==========\n"
+    echo "========== Bringing the site out of maintenance mode. =========="
+    php artisan up
+    
+    echo "========== All done! Navigate to https://beta.necrolab.com to test. =========="
 fi
