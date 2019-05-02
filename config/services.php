@@ -18,7 +18,7 @@ return [
         'appid' => env('STEAM_APPID'),
         'client_id' => null,
         'client_username' => env('STEAM_CLIENT_USERNAME'),
-        'client_password' => env('STEAM_CLIENT_PASSWORD')
+        'client_password' => env('STEAM_CLIENT_PASSWORD'),
         'client_secret' => env('STEAM_API_KEY'),
         'leaderboard_xml_url' => env('STEAM_LEADERBOARD_XML_URL'),
         'client_executable_path' => env('STEAM_CLIENT_EXECUTABLE_PATH'),
