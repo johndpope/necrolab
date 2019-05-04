@@ -13,8 +13,8 @@
 </template>
 
 <script>
-import SteamIcon from './SteamIcon.vue';
-import GooglePlayIcon from './GooglePlayIcon.vue';
+import SteamIcon from '../sites/SteamIcon.vue';
+import GooglePlayIcon from '../sites/GooglePlayIcon.vue';
 
 const LeaderboardSourceIconDisplay = {
     name: 'site-icon-display',

@@ -33,6 +33,9 @@ import DailyLeaderboardEntriesPage from './components/pages/leaderboards/DailyLe
 
 import LeaderboardSourcePlayersPage from './components/pages/players/LeaderboardSourcePlayersPage.vue';
 import LeaderboardSourcePlayerProfilePage from './components/pages/players/LeaderboardSourcePlayerProfilePage.vue';
+import PlayerProfileInfo from './components/pages/players/PlayerProfileInfo.vue';
+import PlayerProfileConnections from './components/pages/players/PlayerProfileConnections.vue';
+import PlayerProfileSupport from './components/pages/players/PlayerProfileSupport.vue';
 import PlayerProfilePbs from './components/pages/players/PlayerProfilePbs.vue';
 import PlayerProfileLeaderboards from './components/pages/players/PlayerProfileLeaderboards.vue';
 import PlayerProfilePowerRankings from './components/pages/players/PlayerProfilePowerRankings.vue';
@@ -117,6 +120,18 @@ const routes = [
                 component: LeaderboardSourcePlayerProfilePage,
                 children: [
                     {
+                        path: '/',
+                        component: PlayerProfileInfo
+                    },
+                    {
+                        path: 'connections',
+                        component: PlayerProfileConnections
+                    },
+                    {
+                        path: 'support',
+                        component: PlayerProfileSupport
+                    },
+                    {
                         path: 'pbs/:leaderboard_type',
                         component: PlayerProfilePbs
                     },
@@ -145,14 +160,6 @@ const routes = [
         ]
     }
 ];
-
-
-/*const routes = [
-    
-    
-];
-*/
-
 
 
 /* --------- Initalize the router ---------- */

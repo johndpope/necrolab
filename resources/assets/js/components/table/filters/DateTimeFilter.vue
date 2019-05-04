@@ -14,7 +14,7 @@
 import Datepicker from 'vuejs-datepicker';
 import format from 'date-fns/format';
 
-const ntDateTimeFilter = {
+const DateTimeFilter = {
     name: 'nt-datetime',
     components: {
         'datepicker': Datepicker
@@ -48,5 +48,5 @@ const ntDateTimeFilter = {
     }
 };
 
-export default ntDateTimeFilter;
+export default DateTimeFilter;
 </script>

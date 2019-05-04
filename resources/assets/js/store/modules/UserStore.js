@@ -1,26 +1,19 @@
-const PlayersStore = {
+const UserStore = {
     namespaced: true,
     state: {
-        records: {}
+        record: {}
     },
     mutations: {
-        setRecord(state, { leaderboard_source, record }) {
-            if(state.records[leaderboard_source] == null) {
-                state.records[leaderboard_source] = {};
-            }
-            
-            state.records[leaderboard_source][record.player.id] = record;
+        setRecord(state, record) {
+            state.record = record;
         }
     },
     getters: {
-        get: (state) => (leaderboard_source, player_id) => {
-            let record = {};
-
-            if(state.records[leaderboard_source] != null && state.records[leaderboard_source][player_id] != null) {
-                record = state.records[leaderboard_source][player_id];
-            }
-            
-            return record;
+        get: (state) => {
+            state.record = record;
+        },
+        isAuthenticated: (state) => {
+            return record != null && record[id] != null;
         }
     },
     actions: {
@@ -56,4 +49,4 @@ const PlayersStore = {
     }
 };
 
-export default PlayersStore;
+export default UserStore;

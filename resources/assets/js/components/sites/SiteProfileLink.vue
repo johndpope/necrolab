@@ -22,7 +22,7 @@
 import SiteLink from './SiteLink.vue';
 
 const SiteProfileLink = {
-    name: 'discord-profile-link',
+    name: 'site-profile-link',
     components: {
         'site-link': SiteLink
     },

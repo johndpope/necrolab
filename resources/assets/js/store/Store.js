@@ -25,6 +25,7 @@ import LeaderboardSourcesStore from './modules/LeaderboardSourcesStore.js';
 import LeaderboardTypesStore from './modules/LeaderboardTypesStore.js';
 import LeaderboardDetailsColumnsStore from './modules/LeaderboardDetailsColumnsStore.js';
 import PlayersStore from './modules/PlayersStore.js';
+import UserStore from './modules/UserStore.js';
 
 const Store = new Vuex.Store({
     modules: {
@@ -44,7 +45,8 @@ const Store = new Vuex.Store({
         leaderboard_sources: LeaderboardSourcesStore,
         leaderboard_types: LeaderboardTypesStore,
         details_columns: LeaderboardDetailsColumnsStore,
-        players: PlayersStore
+        players: PlayersStore,
+        user: UserStore
     }
 });
 

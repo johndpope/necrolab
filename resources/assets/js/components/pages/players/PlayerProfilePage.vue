@@ -1,7 +1,6 @@
 <template>
     <with-nav-body
         :loaded="loaded"
-        title="Player Profile"
     >
         <div class="container-fluid">
             <div class="row">
@@ -11,22 +10,25 @@
                     </h4>
                     <b-nav vertical pills>
                         <b-nav-item 
-                            :active="active_link == 'general_info'"
-                            @click="setActiveLink('general_info')"
+                            :active="active_link == 'info'"
+                            :href="profile_url"
+                            @click="setActiveLink('info')"
                         >
                             Info
                         </b-nav-item>
                         <b-nav-item 
                             :active="active_link == 'general_connections'"
+                            :href="profile_url + '/connections'"
                             @click="setActiveLink('general_connections')"
                         >
                             Connections
                         </b-nav-item>
                         <b-nav-item 
-                            :active="active_link == 'general_patreon'"
-                            @click="setActiveLink('general_patreon')"
+                            :active="active_link == 'general_support'"
+                            :href="profile_url + '/support'"
+                            @click="setActiveLink('general_support')"
                         >
-                            Patreon
+                            Support
                         </b-nav-item>
                     </b-nav>
                     <h4 class="border mt-3 pt-3 pb-3 pl-3 bg-primary text-white">
@@ -88,6 +90,19 @@
                     </b-nav>
                 </div>
                 <div class="col-12 col-lg-9">
+                    <div class="d-flex pb-3">
+                        <div>
+                            <h1>
+                                <leaderboard-source-icon-display :name="leaderboard_source.name">
+                                </leaderboard-source-icon-display>
+                            </h1>
+                        </div>
+                        <div class="pl-3">
+                            <h1>
+                                {{ player.player.username }}
+                            </h1>
+                        </div>
+                    </div>
                     <router-view></router-view>
                 </div>
             </div>
@@ -105,6 +120,7 @@ import bNavItemDropdown from 'bootstrap-vue/es/components/nav/nav-item-dropdown'
 import bNavbarToggle from 'bootstrap-vue/es/components/navbar/navbar-toggle';
 import bNavbarBrand from 'bootstrap-vue/es/components/navbar/navbar-brand';
 import bCollapse from 'bootstrap-vue/es/components/collapse/collapse';
+import LeaderboardSourceIconDisplay from '../../leaderboards/LeaderboardSourceIconDisplay.vue';
 
 export default {
     extends: BasePage,
@@ -117,7 +133,8 @@ export default {
         'b-nav-item-dropdown': bNavItemDropdown,
         'b-navbar-toggle': bNavbarToggle,
         'b-navbar-brand': bNavbarBrand,
-        'b-collapse': bCollapse
+        'b-collapse': bCollapse,
+        'leaderboard-source-icon-display': LeaderboardSourceIconDisplay
     },
     props: {
         visible_section: {
@@ -128,7 +145,9 @@ export default {
     data() {
         return {
             player_id: '',
+            player: {},
             profile_url: '',
+            leaderboard_source: {},
             leaderboard_types: [],
             active_link: ''
         };
@@ -140,11 +159,19 @@ export default {
             this.player_id = route_params.player_id;
             
             this.generateProfileUrl();
-
-            this.loaded = true;
-        },
-        loadPlayer() {
             
+            const promise = this.$store.dispatch('players/load', {
+                leaderboard_source: this.leaderboard_source.name,
+                player_id: this.player_id
+            });
+
+            promise.then(() => {
+                this.player = this.$store.getters['players/get'](this.leaderboard_source.name, this.player_id);
+                
+                if(this.player['player'] != null) {
+                    this.loaded = true;
+                }
+            });
         },
         generateProfileUrl() {
             this.profile_url = '#/players/' + this.leaderboard_source.name + '/' + this.player_id;

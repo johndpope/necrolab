@@ -91,7 +91,7 @@ import bNavbarToggle from 'bootstrap-vue/es/components/navbar/navbar-toggle';
 import bNavbarBrand from 'bootstrap-vue/es/components/navbar/navbar-brand';
 import bNarbarNav from 'bootstrap-vue/es/components/navbar/navbar-nav';
 import bCollapse from 'bootstrap-vue/es/components/collapse/collapse';
-import LeaderboardSourceIconDisplay from '../leaderboards/sources/LeaderboardSourceIconDisplay.vue';
+import LeaderboardSourceIconDisplay from '../leaderboards/LeaderboardSourceIconDisplay.vue';
 
 /* Restore Later
 <b-navbar-nav class="ml-auto">

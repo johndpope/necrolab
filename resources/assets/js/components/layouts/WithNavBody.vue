@@ -1,6 +1,6 @@
 <template>
     <div>
-        <div v-if="loaded" class="container-fluid">
+        <div v-if="loaded" class="container-fluid pl-0 pr-0">
             <div v-if="show_breadcrumbs" class="row">
                 <div class="col-12">
                     <b-breadcrumb :items="breadcrumbItems"></b-breadcrumb>
