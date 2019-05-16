@@ -83,7 +83,6 @@ const PlayerProfileModal = {
                 username = this.player.necrolab.username;
             }
             else {
-                console.log(this.player);
                 username = this.player.player.username;
             }
             

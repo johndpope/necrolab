@@ -6,8 +6,7 @@
         :sub_title="leaderboard_source.display_name"
     >
         <necrotable 
-            :api_endpoint_url="api_endpoint_url" 
-            :default_request_parameters="apiRequestParameters"
+            :dataset="dataset"
             :header_columns="header_columns" 
             :has_search="true" 
             :filters="filters"
@@ -31,6 +30,7 @@ import WithNavBody from '../../layouts/WithNavBody.vue';
 import NecroTable from '../../table/NecroTable.vue';
 import SiteDropdownFilter from '../../table/filters/SiteDropdownFilter.vue';
 import PlayerProfileModal from '../../player/PlayerProfileModal.vue';
+import Dataset from '../../../datasets/Dataset.js';
 
 export default {
     extends: BasePage,
@@ -42,6 +42,7 @@ export default {
     },
     data() {
         return {
+            dataset: {},
             leaderboard_source: {},
             api_endpoint_url: '/api/1/players',
             filters: [
@@ -74,6 +75,9 @@ export default {
     methods: {
         loadState(route_params) {
             this.leaderboard_source = this.$store.getters['leaderboard_sources/getSelected'];
+            
+            this.dataset = new Dataset('players', '/api/1/players');
+            this.dataset.setRequestParameter('leaderboard_source', this.leaderboard_source.name);
 
             this.loaded = true;
         }
