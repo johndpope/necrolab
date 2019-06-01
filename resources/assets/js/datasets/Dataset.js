@@ -75,7 +75,7 @@ export default class Dataset {
         return this.page;
     }
     
-    c(records_per_page) {
+    setRecordsPerPage(records_per_page) {
         this.records_per_page = parseInt(records_per_page, 10);
     }
     
@@ -85,6 +85,10 @@ export default class Dataset {
     
     setTotalRecords(total_records) {
         Vue.set(this, 'total_records', parseInt(total_records, 10));
+    }
+    
+    getTotalRecords() {
+        return this.total_records;
     }
     
     setRequestParameter(name, value) {
@@ -178,6 +182,8 @@ export default class Dataset {
                         }
                     }
                     else {
+                        self.setTotalRecords(self.fetched_data.length);
+                        
                         self.setData(self.fetched_data);
                     }
                     
@@ -185,8 +191,6 @@ export default class Dataset {
                 })
                 .catch(error => {
                     self.setError();
-                    
-                    console.log(error);
                     
                     alert('There was a problem trying to retrieve data. Please wait a moment and try again.');
                     
