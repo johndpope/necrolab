@@ -1,15 +1,19 @@
 <template>
-    <with-nav-body 
+    <with-nav-body
         :loaded="loaded"
         :breadcrumbs="breadcrumbs"
         title="Leaderboard Snapshots"
         :sub_title="subTitle"
     >
+        <leaderboard-snapshot-stats-chart
+            :dataset="dataset"
+            :details_columns="details_columns"
+        >
+        </leaderboard-snapshot-stats-chart>
+        <br />
         <necrotable
-            :api_endpoint_url="apiEndpointUrl" 
-            :default_request_parameters="apiRequestParameters"
-            :header_columns="headerColumns" 
-            :has_server_pagination="false"
+            :dataset="dataset"
+            :header_columns="headerColumns"
         >
             <template slot="table-row" slot-scope="{ row_index, row }">
                 <td>
@@ -26,7 +30,7 @@
                         :details_value="row.details[details_column.name] != null ? row.details[details_column.name] : ''"
                     >
                     </details-column>
-                </td>  
+                </td>
             </template>
         </necrotable>
     </with-nav-body>
@@ -35,6 +39,8 @@
 <script>
 import LeaderboardBasePage from './LeaderboardBasePage.vue';
 import WithNavBody from '../../layouts/WithNavBody.vue';
+import Dataset from '../../../datasets/Dataset.js';
+import LeaderboardSnapshotStatsChart from '../../charts/LeaderboardSnapshotStatsChart.vue';
 import NecroTable from '../../table/NecroTable.vue';
 import DetailsColumn from '../../formatting/DetailsColumn.vue';
 
@@ -43,22 +49,11 @@ const LeaderboardSnapshotsPage = {
     name: 'leaderboard-snapshots-page',
     components: {
         'with-nav-body': WithNavBody,
+        'leaderboard-snapshot-stats-chart': LeaderboardSnapshotStatsChart,
         'necrotable': NecroTable,
         'details-column': DetailsColumn
     },
-    data() {
-        return {};
-    },
     computed: {
-        apiEndpointUrl() {
-            return '/api/1/leaderboard/snapshots';
-        },
-        apiRequestParameters() {
-            return {
-                leaderboard_source: this.leaderboard_source.name,
-                leaderboard_id: this.leaderboard.id
-            };
-        },
         breadcrumbs() {
             return [
                 {
@@ -77,17 +72,23 @@ const LeaderboardSnapshotsPage = {
                 'Date',
                 'Players'
             ];
-            
+
             this.details_columns.forEach((details_column) => {
                 leaderboard_columns.push(details_column.display_name);
             });
-            
+
             return leaderboard_columns;
         }
     },
     methods: {
         loadState(route_params) {
             this.loadRecords(route_params).then(() => {
+                this.dataset = new Dataset('leaderboard_snapshots', '/api/1/leaderboard/snapshots');
+
+                this.dataset.disablePagination();
+                this.dataset.setRequestParameter('leaderboard_source', this.leaderboard_source.name);
+                this.dataset.setRequestParameter('leaderboard_id', this.leaderboard.id);
+
                 this.loaded = true;
             });
         },
@@ -98,4 +99,4 @@ const LeaderboardSnapshotsPage = {
 };
 
 export default LeaderboardSnapshotsPage;
-</script> 
+</script>

@@ -6,6 +6,7 @@ const LeaderboardBasePage = {
     name: 'leaderboard-base-page',
     data() {
         return {
+            dataset: {},
             leaderboard: {},
             leaderboard_source: {},
             leaderboard_type: {},

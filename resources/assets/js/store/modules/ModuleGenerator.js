@@ -13,12 +13,16 @@ const ModuleGenerator = {
             mutations: {
                 setAll(state, records) {
                     state.records = records;
-                    
+
                     records.forEach((record) => {
                         state.records_by_name[record.name] = record;
+
+                        if(record['is_default'] != null && record.is_default === 1) {
+                            state.default_record = record;
+                        }
                     });
                 },
-                setSelected(state, record) { 
+                setSelected(state, record) {
                     if(record != null) {
                         if(record['name'] != null) {
                             if (state.records_by_name[record.name] == null) {
@@ -50,7 +54,7 @@ const ModuleGenerator = {
                 },
                 getAllByNames: (state) => (names) => {
                     let records = [];
-                    
+
                     names.forEach((name) => {
                         if(state.records_by_name[name] != null) {
                             records.push(state.records_by_name[name]);
@@ -59,9 +63,12 @@ const ModuleGenerator = {
 
                     return records;
                 },
+                getAllByName: (state) => {
+                    return state.records_by_name;
+                },
                 getByName: (state) => (name) => {
                     let record = {};
-                    
+
                     if(state.records_by_name[name] != null) {
                         record = state.records_by_name[name];
                     }
@@ -69,7 +76,7 @@ const ModuleGenerator = {
                     return record;
                 },
                 getFiltered: (state, getters, root_state, root_getters) => {
-                    /* 
+                    /*
                     * 1. Loop through filter_stores
                     * 2. Get the selected value of each filter store
                     * 3. Check if filter store record contains the name of the current attribute
@@ -77,7 +84,7 @@ const ModuleGenerator = {
                     * 5. If filtered_names has been set then only set filtered record names if the count is less than the current count.
                     */
                     let filtered_names = [];
-                    
+
                     state.filter_stores.forEach((filter_store_name) => {
                         let filter_option = root_getters[`${filter_store_name}/getSelected`];
 
@@ -91,7 +98,7 @@ const ModuleGenerator = {
                             }
                         }
                     });
-                    
+
                     return getters.getAllByNames(filtered_names);
                 },
                 getByField: (state) => (field, value) => {
@@ -99,7 +106,10 @@ const ModuleGenerator = {
                 },
                 getSelected: state => {
                     return state.selected;
-                }
+                },
+                getDefault: state => {
+                    return state.default_record;
+                },
             }
         };
     }

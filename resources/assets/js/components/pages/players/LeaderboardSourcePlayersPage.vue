@@ -65,11 +65,6 @@ export default {
                     href: '#/players/' + this.leaderboard_source.url_name
                 }
             ];
-        },
-        apiRequestParameters() {
-            return {
-                leaderboard_source: this.leaderboard_source.name
-            };
         }
     },
     methods: {

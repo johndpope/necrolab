@@ -6,11 +6,10 @@
         :sub_title="subTitle"
     >
         <necrotable 
-            :api_endpoint_url="api_endpoint_url"
+            :dataset="dataset"
             :header_columns="headerColumns" 
             :has_search="true" 
             :has_action_column="leaderboard.show_zone_level === 1"
-            :default_request_parameters="apiRequestParameters"
             :filters="filters"
         >
             <template slot="table-row" slot-scope="{ row_index, row }">
@@ -52,6 +51,7 @@
 <script>
 import LeaderboardBasePage from './LeaderboardBasePage.vue';
 import WithNavBody from '../../layouts/WithNavBody.vue';
+import Dataset from '../../../datasets/Dataset.js';
 import NecroTable from '../../table/NecroTable.vue';
 import SiteDropdownFilter from '../../table/filters/SiteDropdownFilter.vue';
 import PlayerProfileModal from '../../player/PlayerProfileModal.vue';
@@ -77,20 +77,12 @@ const LeaderboardEntriesPage = {
     data() {
         return {
             date: '',
-            api_endpoint_url: '/api/1/leaderboard/entries',
             filters: [
                 SiteDropdownFilter
             ]
         }
     },
     computed: {
-        apiRequestParameters() {
-            return {
-                leaderboard_source: this.leaderboard_source.name,
-                leaderboard_id: this.leaderboard.id,
-                date: this.date
-            };
-        },
         breadcrumbs() {
             const snapshots_url = '#/leaderboards/' + this.name + '/' + this.$route.params.url_name + '/snapshots';
             
@@ -134,6 +126,12 @@ const LeaderboardEntriesPage = {
         loadState(route_params) {
             this.loadRecords(route_params).then(() => {
                 this.date = route_params.date;
+                
+                this.dataset = new Dataset('leaderboard_entries', '/api/1/leaderboard/entries');
+                
+                this.dataset.setRequestParameter('leaderboard_source', this.leaderboard_source.name);
+                this.dataset.setRequestParameter('leaderboard_id', this.leaderboard.id);
+                this.dataset.setRequestParameter('date', this.date);
 
                 this.loaded = true;
             });

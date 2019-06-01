@@ -16,8 +16,6 @@
 <script>
 import BasePage from './BasePage.vue';
 import WithNavBody from '../layouts/WithNavBody.vue';
-//import Highcharts from 'highcharts/highstock';
-//import Dygraph from 'dygraphs';
 
 export default {
     extends: BasePage,

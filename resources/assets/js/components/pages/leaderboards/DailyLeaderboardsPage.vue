@@ -4,12 +4,15 @@
         :breadcrumbs="breadcrumbs"
         title="Daily Leaderboards"
     >
+        <stats-chart 
+            :dataset="dataset"
+            :details_columns="details_columns"
+        >
+        </stats-chart>
         <necrotable 
-            :api_endpoint_url="api_endpoint_url"
-            :default_request_parameters="apiRequestParameters"
+            :dataset="dataset"
             :header_columns="headerColumns" 
             :filters="filters"
-            :has_server_pagination="false"
         >
             <template slot="table-row" slot-scope="{ row_index, row }">
                 <td>
@@ -35,6 +38,8 @@
 <script>
 import BasePage from '../BasePage.vue';
 import WithNavBody from '../../layouts/WithNavBody.vue';
+import Dataset from '../../../datasets/Dataset.js';
+import LeaderboardSnapshotStatsChart from '../../charts/LeaderboardSnapshotStatsChart.vue';
 import NecroTable from '../../table/NecroTable.vue';
 import CharacterDropdownFilter from '../../table/filters/CharacterDropdownFilter.vue';
 import ReleaseDropdownFilter from '../../table/filters/ReleaseDropdownFilter.vue';
@@ -48,11 +53,13 @@ const LeaderboardSnapshotsPage = {
     name: 'daily-leaderboards-page',
     components: {
         'with-nav-body': WithNavBody,
+        'stats-chart': LeaderboardSnapshotStatsChart,
         'necrotable': NecroTable,
         'details-column': DetailsColumn
     },
     data() {
         return {
+            dataset: {},
             leaderboard_source: {},
             leaderboard_type: {},
             details_columns: [],
@@ -65,7 +72,6 @@ const LeaderboardSnapshotsPage = {
                     href: '#/leaderboards/daily'
                 }   
             ],
-            api_endpoint_url: '/api/1/leaderboards/daily',
             filters: [
                 CharacterDropdownFilter,
                 ReleaseDropdownFilter,
@@ -131,6 +137,11 @@ const LeaderboardSnapshotsPage = {
             this.leaderboard_source = this.$store.getters['leaderboard_sources/getSelected'];
             this.leaderboard_type = this.$store.getters['leaderboard_types/getByName']('daily');
             this.details_columns = this.$store.getters['details_columns/getAllByNames'](this.leaderboard_type.details_columns);
+            
+            this.dataset = new Dataset('leaderboard_snapshots', '/api/1/leaderboards/daily');
+                
+            this.dataset.disablePagination();
+            this.dataset.setRequestParameter('leaderboard_source', this.leaderboard_source.name);
             
             this.loaded = true;
         }

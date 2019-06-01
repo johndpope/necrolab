@@ -6,9 +6,7 @@
         :title="leaderboard_type.display_name + ' Leaderboards'"
     >
         <necrotable 
-            api_endpoint_url="/api/1/leaderboards/characters"
-            :default_request_parameters="apiRequestParameters"
-            :has_pagination="false" 
+            :dataset="dataset"
             :filters="filters"
         >
             <template slot="table-row" slot-scope="{ row_index, row }">
@@ -33,6 +31,7 @@
 <script>
 import BasePage from '../BasePage.vue';
 import WithNavBody from '../../layouts/WithNavBody.vue';
+import Dataset from '../../../datasets/Dataset.js';
 import NecroTable from '../../table/NecroTable.vue';
 import ReleaseDropdownFilter from '../../table/filters/ReleaseDropdownFilter.vue';
 import ModeDropdownFilter from '../../table/filters/ModeDropdownFilter.vue';
@@ -68,6 +67,7 @@ const LeaderboardsPage = {
         return {
             leaderboard_type: {},
             leaderboard_source: {},
+            dataset: {},
             filters: [
                 ReleaseDropdownFilter,
                 ModeDropdownFilter,
@@ -88,12 +88,6 @@ const LeaderboardsPage = {
                     href: '/leaderboards/' + this.leaderboard_type.name
                 }
             ];
-        },
-        apiRequestParameters() {
-            return {
-                leaderboard_source: this.leaderboard_source.name,
-                leaderboard_type: this.leaderboard_type.name
-            }
         }
     },
     methods: {
@@ -125,6 +119,12 @@ const LeaderboardsPage = {
 
             this.leaderboard_source = this.$store.getters['leaderboard_sources/getSelected'];
             this.leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
+            
+            this.dataset = new Dataset('leaderboards', '/api/1/leaderboards/characters');
+            
+            this.dataset.setRequestParameter('leaderboard_source', this.leaderboard_source.name);
+            this.dataset.setRequestParameter('leaderboard_type', this.leaderboard_type.name);
+            this.dataset.disablePagination();
 
             this.loaded = true;
         }
