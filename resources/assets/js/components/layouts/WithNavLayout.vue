@@ -2,7 +2,7 @@
     <div v-if="properties_loaded">
         <b-navbar toggleable="md" type="dark" variant="primary">
             <b-navbar-brand href="#/">
-                <img src="/images/banners/banner_no_background.png" class="img-fluid" />
+                <img src="/images/banners/banner_no_background_small.png" class="img-fluid" />
             </b-navbar-brand>
             <b-navbar-toggle target="nav_collapse"></b-navbar-toggle>
             <b-collapse is-nav id="nav_collapse">
@@ -12,7 +12,7 @@
                         <template
                             v-for="(leaderboard_source, leaderboard_source_index) in leaderboardSources"
                         >
-                            <div 
+                            <div
                                 class="h5 pl-3 pb-0"
                                 :class="{ 'pt-3': leaderboard_source_index > 0 }"
                             >
@@ -22,12 +22,12 @@
                                 >
                                 </leaderboard-source-icon-display>
                             </div>
-                            
+
                             <a class="dropdown-item" :href="'#/rankings/power/' + leaderboard_source.name">Power</a>
                             <a class="dropdown-item" :href="'#/rankings/character/' + leaderboard_source.name">Characters</a>
-                            
-                            <a 
-                                v-for="leaderboard_type in leaderboardTypes" 
+
+                            <a
+                                v-for="leaderboard_type in leaderboardTypes"
                                 class="dropdown-item"
                                 :href="'#/rankings/' + leaderboard_type.name + '/' + leaderboard_source.name"
                             >
@@ -39,7 +39,7 @@
                         <template
                             v-for="(leaderboard_source, leaderboard_source_index) in leaderboardSources"
                         >
-                            <div 
+                            <div
                                 class="h5 pl-3 pb-0"
                                 :class="{ 'pt-3': leaderboard_source_index > 0 }"
                             >
@@ -48,9 +48,9 @@
                                     :display_name="leaderboard_source.display_name"
                                 >
                                 </leaderboard-source-icon-display>
-                            </div>                            
-                            <a 
-                                v-for="leaderboard_type in leaderboardTypes" 
+                            </div>
+                            <a
+                                v-for="leaderboard_type in leaderboardTypes"
                                 class="dropdown-item"
                                 :href="'#/leaderboards/' + leaderboard_type.name + '/' + leaderboard_source.name"
                             >
@@ -61,8 +61,8 @@
                     <b-nav-item-dropdown text="Players" right>
                         <a class="dropdown-item" href="#/players">Necrolab</a>
                         <div class="dropdown-divider"></div>
-                        <a 
-                            v-for="leaderboard_source in leaderboardSources" 
+                        <a
+                            v-for="leaderboard_source in leaderboardSources"
                             :key="leaderboard_source.name"
                             class="dropdown-item"
                             :href="'#/players/' + leaderboard_source.name"
@@ -138,7 +138,7 @@ const WithNavLayout = {
             return this.$store.getters['leaderboard_types/getAll'];
         }
     },
-    created() {        
+    created() {
         this.properties_loaded = true;
     }
 };
