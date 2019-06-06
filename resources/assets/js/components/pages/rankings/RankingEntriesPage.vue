@@ -1,16 +1,15 @@
 <template>
-    <with-nav-body 
+    <with-nav-body
         :loaded="loaded"
         :breadcrumbs="breadcrumbs"
         :title="title"
         :sub_title="sub_title"
     >
-        <necrotable 
-            :api_endpoint_url="api_endpoint_url"
-            :default_request_parameters="api_request_parameters"
-            :header_columns="header_columns" 
-            :has_search="true" 
-            :has_action_column="true" 
+        <necrotable
+            :dataset="dataset"
+            :header_columns="header_columns"
+            :has_search="true"
+            :has_action_column="true"
             :filters="filters"
         >
             <template slot="table-row" slot-scope="{ row_index, row }">
@@ -51,6 +50,10 @@ const RankingEntriesPage = {
         category_display_name: {
             type: String,
             default: ''
+        },
+        dataset: {
+            type: Object,
+            default: () => {}
         },
         api_endpoint_url: {
             type: String,
@@ -116,7 +119,7 @@ const RankingEntriesPage = {
         }
     },
     computed: {
-        breadcrumbs() {            
+        breadcrumbs() {
             let breadcrumbs = [];
 
             if(this.properties_loaded) {
@@ -134,41 +137,41 @@ const RankingEntriesPage = {
                     }
                 ]
             }
-            
+
             return breadcrumbs;
         }
     },
     methods: {
         getDisplayName() {
             let filter_records_length = this.filter_records.length;
-            
+
             let display_name_segments = [];
-            
+
             for(let index = 0; index < filter_records_length; index++) {
                 let filter_record = this.filter_records[index];
-                
+
                 display_name_segments.push(this.filter_record_values[filter_record.name].display_name);
             }
-            
+
             return display_name_segments.join(' ') + ', ' + this.$route.params.date;
         }
     },
     created() {
-        this.filter_records.forEach((filter_record) => {            
+        this.filter_records.forEach((filter_record) => {
             let getter_name = `${filter_record.store_name}/getByName`;
             let route_parameter_value = this.$route.params[filter_record.name];
-            
+
             this.filter_record_values[filter_record.name] = this.$store.getters[getter_name](route_parameter_value);
-            
-            this.api_request_parameters[filter_record.name] = route_parameter_value;
+
+            this.dataset.setRequestParameter(filter_record.name, route_parameter_value);
         });
-        
-        this.api_request_parameters['date'] = this.$route.params.date;
-        
+
+        this.dataset.setRequestParameter('date', this.$route.params.date);
+
         this.title = this.category_display_name + ' Ranking Entries';
-        
+
         this.sub_title = this.getDisplayName();
-        
+
         this.loaded = true;
     }
 };

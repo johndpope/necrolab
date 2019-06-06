@@ -4,7 +4,7 @@
         :loaded="loaded"
         category_name="daily"
         category_display_name="Daily"
-        :api_endpoint_url="api_endpoint_url"
+        :dataset="dataset"
         :filter_records="filter_records"
         :header_columns="headerColumns"
     >
@@ -13,7 +13,7 @@
                 {{ row.rank }}
             </td>
             <td>
-                <player-profile-modal 
+                <player-profile-modal
                     :player="row.player"
                     :leaderboard_source="$store.getters['leaderboard_sources/getSelected']"
                 ></player-profile-modal>
@@ -41,6 +41,7 @@
 <script>
 import BasePage from '../BasePage.vue';
 import RankingEntriesPage from './RankingEntriesPage.vue';
+import Dataset from '../../../datasets/Dataset.js';
 import PlayerProfileModal from '../../player/PlayerProfileModal.vue';
 import RoundedDecimal from '../../formatting/RoundedDecimal.vue';
 import DetailsColumn from '../../formatting/DetailsColumn.vue';
@@ -58,7 +59,7 @@ export default {
     },
     data() {
         return {
-            api_endpoint_url: '/api/1/rankings/daily/entries',
+            dataset: {},
             filter_records: [
                 {
                     name: 'leaderboard_source',
@@ -99,34 +100,36 @@ export default {
                 'Player',
                 'Points'
             ];
-            
+
             this.details_columns.forEach((details_column) => {
                 header_columns.push(details_column.display_name);
             });
-            
+
             return header_columns;
         }
     },
     methods: {
-        loadState(route_params) {            
+        loadState(route_params) {
             this.$store.commit('leaderboard_types/setSelected', 'daily');
-            
+
             const leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
-            
+
             this.details_columns = this.$store.getters['details_columns/getAllByNames'](leaderboard_type.details_columns);
-            
+
+            this.dataset = new Dataset('daily_ranking_entries', '/api/1/rankings/daily/entries');
+
             this.loaded = true;
         },
-        getDetailsValue(row, details_name) {            
+        getDetailsValue(row, details_name) {
             let details_value = '';
-            
+
             if(
                 row['details'] != null &&
                 row['details'][details_name] != null
             ) {
                 details_value = row['details'][details_name];
             }
-            
+
             return details_value;
         },
     }

@@ -6,7 +6,7 @@
         :category_name="leaderboard_type.name"
         :category_display_name="leaderboard_type.display_name"
         :header_columns="headerColumns"
-        :api_endpoint_url="apiEndpointUrl"
+        :dataset="dataset"
         :filter_records="filter_records"
     >
         <template slot="table-row" slot-scope="{ row_index, row }">
@@ -14,7 +14,7 @@
                 {{ row['categories'][leaderboard_type.name].rank }}
             </td>
             <td>
-                <player-profile-modal 
+                <player-profile-modal
                     :player="row.player"
                     :leaderboard_source="$store.getters['leaderboard_sources/getSelected']"
                 ></player-profile-modal>
@@ -33,7 +33,7 @@
                 </details-column>
             </td>
         </template>
-        <template slot="row-details" slot-scope="{ row }">           
+        <template slot="row-details" slot-scope="{ row }">
             <ranking-category-summary-details-table
                 :characters="characters"
                 :record="row.characters"
@@ -49,6 +49,7 @@
 <script>
 import BasePage from '../BasePage.vue';
 import RankingEntriesPage from './RankingEntriesPage.vue';
+import Dataset from '../../../datasets/Dataset.js';
 import PlayerProfileModal from '../../player/PlayerProfileModal.vue';
 import RoundedDecimal from '../../formatting/RoundedDecimal.vue';
 import DetailsColumn from '../../formatting/DetailsColumn.vue';
@@ -67,6 +68,7 @@ export default {
     data() {
         return {
             leaderboard_type: {},
+            dataset: {},
             filter_records: [
                 {
                     name: 'leaderboard_source',
@@ -112,9 +114,6 @@ export default {
         }
     },
     computed: {
-        apiEndpointUrl() {
-            return '/api/1/rankings/category/entries';
-        },
         apiRequestParameters() {
             return {
                 leaderboard_type: this.leaderboard_type.name
@@ -126,11 +125,11 @@ export default {
                 'Player',
                 'Points'
             ];
-            
+
             this.details_columns.forEach((details_column) => {
                 header_columns.push(details_column.display_name);
             });
-            
+
             return header_columns;
         },
         characters() {
@@ -147,8 +146,10 @@ export default {
             ]);
 
             this.leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
-            
+
             this.details_columns = this.$store.getters['details_columns/getAllByNames'](this.leaderboard_type.details_columns);
+
+            this.dataset = new Dataset('category_ranking_entries', '/api/1/rankings/category/entries');
 
             this.loaded = true;
         }

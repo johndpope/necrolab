@@ -4,7 +4,7 @@
         :loaded="loaded"
         category_name="character"
         category_display_name="Character"
-        :api_endpoint_url="api_endpoint_url"
+        :dataset="dataset"
         :filter_records="filter_records"
         :header_columns="header_columns"
     >
@@ -13,7 +13,7 @@
                 {{ row.characters[character_name].rank }}
             </td>
             <td>
-                <player-profile-modal 
+                <player-profile-modal
                     :player="row.player"
                     :leaderboard_source="$store.getters['leaderboard_sources/getSelected']"
                 ></player-profile-modal>
@@ -23,7 +23,7 @@
             </td>
         </template>
         <template slot="row-details" slot-scope="{ row }">
-            <ranking-summary-details-table 
+            <ranking-summary-details-table
                 :leaderboard_types="$store.getters['leaderboard_types/getFiltered']"
                 :record="row.characters[character_name]"
                 :rows="details_table_rows"
@@ -36,6 +36,7 @@
 <script>
 import BasePage from '../BasePage.vue';
 import RankingEntriesPage from './RankingEntriesPage.vue';
+import Dataset from '../../../datasets/Dataset.js';
 import PlayerProfileModal from '../../player/PlayerProfileModal.vue';
 import RoundedDecimal from '../../formatting/RoundedDecimal.vue';
 import RankingSummaryDetailsTable from '../../table/RankingSummaryDetailsTable.vue';
@@ -52,7 +53,7 @@ export default {
     data() {
         return {
             character_name: '',
-            api_endpoint_url: '/api/1/rankings/character/entries',
+            dataset: {},
             filter_records: [
                 {
                     name: 'leaderboard_source',
@@ -106,9 +107,11 @@ export default {
             this.$store.commit('leaderboard_types/setFilterStores', [
                 'modes'
             ]);
-            
+
             this.character_name = route_params.character;
-            
+
+            this.dataset = new Dataset('character_ranking_entries', '/api/1/rankings/character/entries');
+
             this.loaded = true;
         }
     }
