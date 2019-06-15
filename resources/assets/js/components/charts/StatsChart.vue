@@ -30,8 +30,8 @@ const StatsChart = {
         return {
             loading: true,
             chart_options: {
-                rangeSelector: {
-                    selected: 1
+                chart: {
+                    pinchType: 'X'
                 },
                 tooltip: {
                     shared: true,
@@ -43,7 +43,34 @@ const StatsChart = {
                     align: 'left',
                     verticalAlign: 'top',
                 },
-                series: []
+                series: [],
+                responsive: {
+                    rules: [
+                        {
+                            condition: {
+                                maxWidth: 500
+                            },
+                            chartOptions: {
+                                rangeSelector: {
+                                    enabled: false
+                                },
+                                navigator: {
+                                    enabled: false
+                                },
+                                scrollbar: {
+                                    enabled: false
+                                },
+                                legend: {
+                                    enabled: true,
+                                    layout: 'horizontal',
+                                    align: 'center',
+                                    verticalAlign: 'bottom',
+                                    maxHeight: 100
+                                },
+                            }
+                        }
+                    ]
+                }
             },
             update_arguments: [
                 true,
@@ -114,8 +141,43 @@ const StatsChart = {
         getYAxis() {
             return [];
         },
+        getSingleYAxis(title) {
+            const color = this.getColor();
+
+            return {
+                labels: {
+                    enabled: false,
+                    style: {
+                        color: color
+                    },
+                },
+                title: {
+                    enabled: false,
+                    text: title,
+                    style: {
+                        color: color
+                    }
+                }
+            };
+        },
         getSeries() {
             return [];
+        },
+        getSingleSeries(title, yaxis_index, custom_properties) {
+            let series = {
+                name: title,
+                type: 'spline',
+                data: [],
+                yAxis: yaxis_index,
+                dashStyle: this.getDashStyle(),
+                color: this.getColor()
+            };
+
+            if(custom_properties != null) {
+                Object.assign(series, custom_properties);
+            }
+
+            return series;
         },
         getSeriesData() {
             const series_data = {};
@@ -128,6 +190,13 @@ const StatsChart = {
 
             return Object.values(series_data);
         },
+        addToSeriesData(series_data, name, row) {
+            if(series_data[name] == null) {
+                series_data[name] = [];
+            }
+
+            series_data[name].push(row);
+        },
         processSeriesDataRow(series_data, row) {}
     },
     watch: {
@@ -138,7 +207,6 @@ const StatsChart = {
                 const series_data = this.getSeriesData();
 
                 series_data.forEach((series_rows, index) => {
-                    //console.log(this.chart_options);
                     this.chart_options.series[index].data = series_rows;
                 });
             }

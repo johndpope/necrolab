@@ -14,7 +14,7 @@ class DailyRankingEntriesResource extends JsonResource {
      */
     public function toArray($request) {
         $record = [];
-        
+
         // If this record is in a Steam User context then only show its date. Otherwise show player data.
         if(!empty($this->date)) {
             $record['date'] = $this->date;
@@ -22,9 +22,22 @@ class DailyRankingEntriesResource extends JsonResource {
         else {
             $record['player'] = new PlayersResource($this->resource);
         }
-        
+
         $rank = (int)$this->rank;
-        
+
+        $details = [];
+
+        if(!empty($this->details)) {
+            foreach($this->details as $details_name => $details_value) {
+                if(is_float($details_value + 0)) {
+                    $details[$details_name] = (float)$details_value;
+                }
+                else {
+                    $details[$details_name] = (int)$details_value;
+                }
+            }
+        }
+
         $record['rank'] = $rank;
         $record['points'] = RankPoints::calculateFromRank($rank);
         $record['first_place_ranks'] = (int)$this->first_place_ranks;
@@ -37,8 +50,8 @@ class DailyRankingEntriesResource extends JsonResource {
         $record['wins'] = (int)$this->wins;
         $record['sum_of_ranks'] = (int)$this->sum_of_ranks;
         $record['average_rank'] = $this->sum_of_ranks / $this->dailies;
-        $record['details'] = $this->details;
-        
+        $record['details'] = $details;
+
         return $record;
     }
 }
