@@ -5,7 +5,7 @@ namespace App\Console\Commands\Rankings\Power\Entries;
 use App\Console\Commands\CreatePartitions as Command;
 use App\Jobs\Rankings\Power\Entries\VacuumPartition as VacuumPartitionJob;
 
-class CreatePartitions extends Command {
+class VacuumPartitions extends Command {
     /**
      * The name and signature of the console command.
      *
