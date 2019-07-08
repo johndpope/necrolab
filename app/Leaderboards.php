@@ -9,10 +9,12 @@ use stdClass;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\Builder;
+use App\Traits\GeneratesNewInstance;
 use App\Traits\IsSchemaTable;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
 use App\Traits\AddsSqlCriteria;
+use App\Traits\CanBeVacuumed;
 use App\Components\PostgresCursor;
 use App\Dates;
 use App\Characters;
@@ -30,7 +32,7 @@ use App\PlayerPbs;
 use App\Players;
 
 class Leaderboards extends Model {
-    use IsSchemaTable, HasTempTable, HasManualSequence, AddsSqlCriteria;
+    use GeneratesNewInstance, IsSchemaTable, HasTempTable, HasManualSequence, AddsSqlCriteria, CanBeVacuumed;
 
     /**
      * The table associated with the model.
@@ -38,120 +40,120 @@ class Leaderboards extends Model {
      * @var string
      */
     protected $table = 'leaderboards';
-    
+
     /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
     public $timestamps = false;
-    
+
     public static function getSeededFlags(): array {
         return [
-            0, 
+            0,
             1
         ];
     }
-    
+
     public static function setPropertiesFromName(LeaderboardSources $leaderboard_source, object $leaderboard, ?DailyDateFormats $daily_date_format): void {
         if(!isset($leaderboard->name)) {
             throw new Exception('name property in specified leaderboard object is required but not found.');
         }
-        
+
         $leaderboard->leaderboard_type = LeaderboardTypes::getMatchFromString($leaderboard_source, $leaderboard->name);
-        
+
         $leaderboard->character = Characters::getMatchFromString($leaderboard_source, $leaderboard->name);
 
         $leaderboard->release = Releases::getMatchFromString($leaderboard_source, $leaderboard->name);
-        
+
         $leaderboard->mode = Modes::getMatchFromString($leaderboard_source, $leaderboard->name);
-        
+
         $leaderboard->seeded_type = SeededTypes::getMatchFromString($leaderboard_source, $leaderboard->name);
-        
+
         $leaderboard->multiplayer_type = MultiplayerTypes::getMatchFromString($leaderboard_source, $leaderboard->name);
-        
+
         $leaderboard->soundtrack = Soundtracks::getMatchFromString($leaderboard_source, $leaderboard->name);
-        
+
         $leaderboard->daily_date = NULL;
-        
+
         if(!empty($daily_date_format)) {
             $unformatted_daily_date = preg_replace("/{$daily_date_format->clean_regex}/", "", $leaderboard->name);
-            
-            if(!empty($unformatted_daily_date)) {            
+
+            if(!empty($unformatted_daily_date)) {
                 $leaderboard->leaderboard_type = LeaderboardTypes::getByName('daily');
-                
+
                 $daily_date = DateTime::createFromFormat($daily_date_format->format, $unformatted_daily_date);
 
                 $last_errors = DateTime::getLastErrors();
-                
+
                 if(!(empty($last_errors['warning_count']) && empty($last_errors['error_count']))) {
                     $daily_date = NULL;
                 }
-                
+
                 if(!empty($daily_date)) {
                     $date_formatted = $daily_date->format('Y-m-d');
-                
+
                     $leaderboard->daily_date = Dates::getByName($date_formatted);
-                    
+
                     // Dailies should always be seeded
                     $leaderboard->seeded_type = SeededTypes::getByName('seeded');
-                    
+
                     if(empty($leaderboard->daily_date)) {
                         throw new Exception("Date '{$date_formatted}' does not exist in the dates table.");
                     }
                 }
             }
         }
-        
+
         $leaderboard->ranking_types = [];
 
         //TODO: Replace with dynamic system
         if(
-            $leaderboard->leaderboard_type->name != 'daily' && 
+            $leaderboard->leaderboard_type->name != 'daily' &&
             $leaderboard->soundtrack->name == 'default' &&
             $leaderboard->multiplayer_type->name == 'single'
         ) {
             $leaderboard->ranking_types[] = RankingTypes::getByName('power');
             $leaderboard->ranking_types[] = RankingTypes::getByName('super');
         }
-        
+
         if(
-            $leaderboard->leaderboard_type->name == 'daily' && 
+            $leaderboard->leaderboard_type->name == 'daily' &&
             $leaderboard->character->name == 'cadence' &&
             !empty($daily_date) &&
-            $leaderboard->soundtrack->name == 'default' && 
-            $leaderboard->multiplayer_type->name == 'single' && 
+            $leaderboard->soundtrack->name == 'default' &&
+            $leaderboard->multiplayer_type->name == 'single' &&
             $leaderboard->seeded_type->name == 'seeded'
         ) {
             $leaderboard->ranking_types[] = RankingTypes::getByName('daily');
         }
     }
-    
-    public static function isValid(LeaderboardSources $leaderboard_source, object $leaderboard, DateTime $date): bool {        
+
+    public static function isValid(LeaderboardSources $leaderboard_source, object $leaderboard, DateTime $date): bool {
         //$blacklist_record = Blacklist::getRecordById($leaderboard->external_id);
-        
+
         $date_within_release = false;
-        
+
         $start_date = new DateTime($leaderboard->release->start_date);
         $end_date = new DateTime($leaderboard->release->end_date);
-        
+
         if($date >= $start_date && $date <= $end_date) {
             $date_within_release = true;
         }
-        
+
         $is_valid = false;
-        
+
         if(
-            //empty($blacklist_record) && 
-            !empty($leaderboard->character->id) && 
-            $date_within_release 
+            //empty($blacklist_record) &&
+            !empty($leaderboard->character->id) &&
+            $date_within_release
         ) {
             $is_valid = true;
         }
-    
+
         return $is_valid;
     }
-    
+
     public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void {
         DB::statement("
             CREATE TEMPORARY TABLE " . static::getTempTableName($leaderboard_source) . " (
@@ -172,7 +174,7 @@ class Leaderboards extends Model {
             ON COMMIT DROP;
         ");
     }
-    
+
     public static function saveNewTemp(LeaderboardSources $leaderboard_source): void {
         DB::statement("
             INSERT INTO " . static::getSchemaTableName($leaderboard_source) . " (
@@ -207,30 +209,30 @@ class Leaderboards extends Model {
             FROM " . static::getTempTableName($leaderboard_source) . "
         ");
     }
-    
+
     public static function updateFromTemp(): void {}
-    
+
     public static function getIdsByExternalId(LeaderboardSources $leaderboard_source): array {
         $query = DB::table(static::getSchemaTableName($leaderboard_source))->select([
             'external_id',
             'id'
         ]);
-        
+
         $cursor = new PostgresCursor(
-            "{$leaderboard_source->name}_leaderboards_by_external_id", 
+            "{$leaderboard_source->name}_leaderboards_by_external_id",
             $query,
             5000
         );
-        
+
         $ids_by_external_id = [];
-        
+
         foreach($cursor->getRecord() as $leaderboard) {
             $ids_by_external_id[$leaderboard->external_id] = $leaderboard->id;
         }
-        
+
         return $ids_by_external_id;
     }
-    
+
     public static function getLegacyImportQuery(): Builder {
         return DB::table('leaderboards AS l')
             ->select([
@@ -259,7 +261,7 @@ class Leaderboards extends Model {
             ->join('releases AS r', 'r.release_id', '=', 'l.release_id')
             ->join('modes AS m', 'm.mode_id', '=', 'l.mode_id');
     }
-    
+
     public static function getApiReadQuery(LeaderboardSources $leaderboard_source): Builder {
         $leaderboard_ranking_types_query = DB::table(LeaderboardRankingTypes::getSchemaTableName($leaderboard_source) . ' AS lrt')
             ->select([
@@ -268,7 +270,7 @@ class Leaderboards extends Model {
             ])
             ->join('ranking_types AS rt', 'rt.id', '=', 'lrt.ranking_type_id')
             ->groupBy('lrt.leaderboard_id');
-    
+
         return DB::table(static::getSchemaTableName($leaderboard_source) . ' AS l')
             ->select([
                 'l.id',
@@ -300,11 +302,11 @@ class Leaderboards extends Model {
             ->orderBy('lt.name', 'asc')
             ->orderBy('l.name', 'asc');
     }
-    
+
     public static function getNonDailyApiReadQuery(
-        LeaderboardSources $leaderboard_source, 
+        LeaderboardSources $leaderboard_source,
         Characters $character,
-        Releases $release, 
+        Releases $release,
         Modes $mode
     ): Builder {
         return static::getApiReadQuery($leaderboard_source)
@@ -313,9 +315,9 @@ class Leaderboards extends Model {
             ->where('l.release_id', $release->id)
             ->where('l.mode_id', $mode->id);
     }
-    
+
     public static function getCategoryApiReadQuery(
-        LeaderboardSources $leaderboard_source, 
+        LeaderboardSources $leaderboard_source,
         LeaderboardTypes $leaderboard_type,
         Characters $character,
         Releases $release,
@@ -327,9 +329,9 @@ class Leaderboards extends Model {
             ->where('l.release_id', $release->id)
             ->where('l.mode_id', $mode->id);
     }
-    
+
     public static function getCharactersApiReadQuery(
-        LeaderboardSources $leaderboard_source, 
+        LeaderboardSources $leaderboard_source,
         LeaderboardTypes $leaderboard_type,
         Releases $release,
         Modes $mode,
@@ -338,9 +340,9 @@ class Leaderboards extends Model {
         Soundtracks $soundtrack
     ): Builder {
         $query = static::getApiReadQuery($leaderboard_source);
-    
+
         $query->orders = [];
-        
+
         $query
             ->where('l.leaderboard_type_id', $leaderboard_type->id)
             ->where('l.release_id', $release->id)
@@ -349,22 +351,22 @@ class Leaderboards extends Model {
             ->where('l.multiplayer_type_id', $multiplayer_type->id)
             ->where('l.soundtrack_id', $soundtrack->id)
             ->orderBy('c.sort_order', 'asc');
-    
+
         return $query;
     }
-    
+
     public static function getApiShowQuery(LeaderboardSources $leaderboard_source, string $leaderboard_id): Builder {
         return static::getApiReadQuery($leaderboard_source)
             ->where('l.external_id', $leaderboard_id);
     }
-    
+
     public static function getApiByAttributesQuery(
-        LeaderboardSources $leaderboard_source, 
+        LeaderboardSources $leaderboard_source,
         LeaderboardTypes $leaderboard_type,
         Characters $character,
         Releases $release,
         Modes $mode,
-        SeededTypes $seeded_type, 
+        SeededTypes $seeded_type,
         MultiplayerTypes $multiplayer_type,
         Soundtracks $soundtrack
     ): Builder {
@@ -377,15 +379,15 @@ class Leaderboards extends Model {
             ->where('l.multiplayer_type_id', $multiplayer_type->id)
             ->where('l.soundtrack_id', $soundtrack->id);
     }
-    
+
     public static function getDailyApiReadQuery(
-        LeaderboardSources $leaderboard_source, 
+        LeaderboardSources $leaderboard_source,
         Characters $character,
         Releases $release,
         Modes $mode,
         MultiplayerTypes $multiplayer_type,
         Soundtracks $soundtrack
-    ): Builder {    
+    ): Builder {
         return DB::table(static::getSchemaTableName($leaderboard_source) . ' AS l')
             ->select([
                 'd.name AS daily_date',
@@ -406,7 +408,7 @@ class Leaderboards extends Model {
             ->where('l.soundtrack_id', $soundtrack->id)
             ->orderBy('d.name', 'desc');
     }
-    
+
     public static function getPlayerApiReadQuery(LeaderboardSources $leaderboard_source, string $player_id): Builder {
         $leaderboard_ranking_types_query = DB::table(LeaderboardRankingTypes::getSchemaTableName($leaderboard_source) . ' AS lrt')
             ->select([
@@ -415,7 +417,7 @@ class Leaderboards extends Model {
             ])
             ->join('ranking_types AS rt', 'rt.id', '=', 'lrt.ranking_type_id')
             ->groupBy('lrt.leaderboard_id');
-    
+
         return DB::table(PlayerPbs::getSchemaTableName($leaderboard_source) . ' AS ppb')
             ->select([
                 'l.id',
@@ -450,7 +452,7 @@ class Leaderboards extends Model {
             ->orderBy('lt.name', 'asc')
             ->orderBy('l.name', 'asc');
     }
-    
+
     public static function getPlayerNonDailyApiReadQuery(
         LeaderboardSources $leaderboard_source,
         string $player_id,
@@ -464,7 +466,7 @@ class Leaderboards extends Model {
             ->where('l.release_id', $release->id)
             ->where('l.mode_id', $mode->id);
     }
-    
+
     public static function getPlayerCategoryApiReadQuery(
         LeaderboardSources $leaderboard_source,
         string $player_id,
@@ -479,9 +481,9 @@ class Leaderboards extends Model {
             ->where('l.release_id', $release->id)
             ->where('l.mode_id', $mode->id);
     }
-    
+
     public static function getPlayerDailyApiReadQuery(
-        LeaderboardSources $leaderboard_source, 
+        LeaderboardSources $leaderboard_source,
         string $player_id,
         Characters $character,
         Releases $release,

@@ -5,32 +5,32 @@ namespace App\Traits;
 use Exception;
 use App\LeaderboardSources;
 
-trait IsSchemaTable {    
+trait IsSchemaTable {
     protected static $schema_table_names = [];
-    
+
     /**
      * The schema associated with the model.
      *
      * @var string
      */
     protected $schema;
-    
+
     public static function loadSchemaTableName(LeaderboardSources $leaderboard_source): void {
         if(!isset(static::$schema_table_names[$leaderboard_source->name])) {
             $instance = new static();
-            
+
             $instance->setSchema($leaderboard_source->name);
-        
+
             static::$schema_table_names[$leaderboard_source->name] = $instance->getTable();
         }
     }
-    
+
     public static function getSchemaTableName(LeaderboardSources $leaderboard_source): string {
         static::loadSchemaTableName($leaderboard_source);
-        
+
         return static::$schema_table_names[$leaderboard_source->name];
     }
-    
+
     /**
      * Set the schema that this model belongs to.
      *
@@ -39,10 +39,10 @@ trait IsSchemaTable {
      */
     public function setSchema(string $schema) {
         $this->schema = $schema;
-        
+
         return $this;
     }
-    
+
     /**
      * Set the schema that this model belongs to in a static context.
      *
@@ -51,12 +51,12 @@ trait IsSchemaTable {
      */
     public static function setSchemaStatic(string $schema) {
         $instance = new static();
-        
+
         $instance->setSchema($schema);
-        
+
         return $instance;
     }
-    
+
     /**
      * Returns the schema set for this model.
      *
@@ -65,7 +65,7 @@ trait IsSchemaTable {
     public function getSchema(): string {
         return $this->schema;
     }
-    
+
     /**
      * Get the table associated with the model.
      *
@@ -76,9 +76,13 @@ trait IsSchemaTable {
         if(empty($this->schema)) {
             throw new Exception("A schema is required to be set for this model. Use setSchema() to set it.");
         }
-    
+
         $table = parent::getTable();
-        
-        return "{$this->schema}.{$table}";
+
+        if(strpos($table, '.') === false) {
+            $table = "{$this->schema}.{$table}";
+        }
+
+        return $table;
     }
 }

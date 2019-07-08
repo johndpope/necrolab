@@ -6,9 +6,11 @@ use DateTime;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\Builder;
+use App\Traits\GeneratesNewInstance;
 use App\Traits\IsSchemaTable;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
+use App\Traits\CanBeVacuumed;
 use App\DailyRankingEntries;
 use App\LeaderboardSources;
 use App\Dates;
@@ -20,35 +22,35 @@ use App\Soundtracks;
 use App\DailyRankingDayTypes;
 
 class DailyRankings extends Model {
-    use IsSchemaTable, HasTempTable, HasManualSequence;
-    
+    use GeneratesNewInstance, IsSchemaTable, HasTempTable, HasManualSequence, CanBeVacuumed;
+
     /**
      * The table associated with the model.
      *
      * @var string
      */
     protected $table = 'daily_rankings';
-    
+
     /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
     public $timestamps = false;
-    
+
     public static function getAllIdsByGroupedForDate(LeaderboardSources $leaderboard_source, Dates $date): array {
         $query = DB::table(static::getSchemaTableName($leaderboard_source))->where('date_id', $date->id);
-        
+
         $rankings_by_id = [];
-        
+
         foreach($query->cursor() as $ranking) {
             $rankings_by_id[$ranking->character_id][$ranking->release_id][$ranking->mode_id][$ranking->multiplayer_type_id][$ranking->soundtrack_id][$ranking->daily_ranking_day_type_id] = $ranking->id;
         }
-        
+
         return $rankings_by_id;
     }
-    
-    public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void {    
+
+    public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void {
         DB::statement("
             CREATE TEMPORARY TABLE " . static::getTempTableName($leaderboard_source) . " (                
                 created timestamp without time zone,
@@ -69,7 +71,7 @@ class DailyRankings extends Model {
             ON COMMIT DROP;
         ");
     }
-    
+
     public static function saveNewTemp(LeaderboardSources $leaderboard_source): void {
         DB::statement("
             INSERT INTO " . static::getSchemaTableName($leaderboard_source) . " (                
@@ -102,8 +104,8 @@ class DailyRankings extends Model {
                 updated = excluded.updated
         ");
     }
-    
-    public static function updateFromTemp(LeaderboardSources $leaderboard_source): void {    
+
+    public static function updateFromTemp(LeaderboardSources $leaderboard_source): void {
         DB::update("
             UPDATE  " . static::getSchemaTableName($leaderboard_source) . " dr
             SET 
@@ -115,7 +117,7 @@ class DailyRankings extends Model {
             WHERE dr.id = drt.id
         ");
     }
-    
+
     public static function getApiReadQuery(
         LeaderboardSources $leaderboard_source,
         Characters $character,

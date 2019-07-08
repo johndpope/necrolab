@@ -11,9 +11,11 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\Builder;
 use App\Components\PostgresCursor;
+use App\Traits\GeneratesNewInstance;
 use App\Traits\IsSchemaTable;
 use App\Traits\HasTempTable;
 use App\Traits\HasManualSequence;
+use App\Traits\CanBeVacuumed;
 use App\LeaderboardSources;
 use App\LeaderboardEntries;
 use App\Dates;
@@ -22,7 +24,7 @@ use App\PlayerPbs;
 use App\Players;
 
 class LeaderboardSnapshots extends Model {
-    use IsSchemaTable, HasTempTable, HasManualSequence;
+    use GeneratesNewInstance, IsSchemaTable, HasTempTable, HasManualSequence, CanBeVacuumed;
 
     /**
      * The table associated with the model.
@@ -30,15 +32,15 @@ class LeaderboardSnapshots extends Model {
      * @var string
      */
     protected $table = 'leaderboard_snapshots';
-    
+
     /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
     public $timestamps = false;
-    
-    public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void {    
+
+    public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void {
         DB::statement("
             CREATE TEMPORARY TABLE " . static::getTempTableName($leaderboard_source) . " (
                 created timestamp without time zone,
@@ -52,7 +54,7 @@ class LeaderboardSnapshots extends Model {
             ON COMMIT DROP;
         ");
     }
-    
+
     public static function saveNewTemp(LeaderboardSources $leaderboard_source): void {
         DB::statement("
             INSERT INTO " . static::getSchemaTableName($leaderboard_source) . " (
@@ -75,8 +77,8 @@ class LeaderboardSnapshots extends Model {
                 updated = excluded.updated
         ");
     }
-    
-    public static function updateFromTemp(LeaderboardSources $leaderboard_source): void {    
+
+    public static function updateFromTemp(LeaderboardSources $leaderboard_source): void {
         DB::update("
             UPDATE " . static::getSchemaTableName($leaderboard_source) . " ls
             SET 
@@ -86,25 +88,25 @@ class LeaderboardSnapshots extends Model {
             WHERE ls.id = lst.id
         ");
     }
-    
+
     public static function getAllByLeaderboardIdForDate(LeaderboardSources $leaderboard_source, Dates $date): array {
         $query = DB::table(static::getSchemaTableName($leaderboard_source))->where('date_id', $date->id);
-        
+
         $cursor = new PostgresCursor(
-            "{$leaderboard_source->name}_leaderboard_snapshots_by_id", 
+            "{$leaderboard_source->name}_leaderboard_snapshots_by_id",
             $query,
             1000
         );
-        
+
         $snapshots_by_leaderboard_id = [];
-        
+
         foreach($cursor->getRecord() as $snapshot) {
             $snapshots_by_leaderboard_id[$snapshot->leaderboard_id] = $snapshot->id;
         }
-        
+
         return $snapshots_by_leaderboard_id;
     }
-    
+
     public static function getLegacyImportQuery(): Builder {
         return DB::table('leaderboard_snapshots AS ls')
             ->select([
@@ -121,7 +123,7 @@ class LeaderboardSnapshots extends Model {
             ->join('releases AS r', 'r.release_id', '=', 'l.release_id')
             ->join('modes AS m', 'm.mode_id', '=', 'l.mode_id');
     }
-    
+
     public static function getApiReadQuery(LeaderboardSources $leaderboard_source, string $leaderboard_id): Builder {
         return DB::table(Leaderboards::getSchemaTableName($leaderboard_source) . ' AS l')
             ->select([
@@ -134,7 +136,7 @@ class LeaderboardSnapshots extends Model {
             ->where('l.external_id', $leaderboard_id)
             ->orderBy('d.name', 'desc');
     }
-    
+
     public static function getPlayerApiDates(string $player_id, LeaderboardSources $leaderboard_source, string $leaderboard_id): Collection {
         // Attempt to look up the earliest snapshot that this player has an entry for via their PBs.
         $earliest_snapshot = DB::table(PlayerPbs::getSchemaTableName($leaderboard_source) . ' AS ppb')
@@ -157,37 +159,37 @@ class LeaderboardSnapshots extends Model {
                 'r.end_date'
             )
             ->first();
-        
+
         $snapshot_dates = [];
-        
+
         /*
-            If a record is returned from the lookup generate the remaining dates 
+            If a record is returned from the lookup generate the remaining dates
             to either the end date of the release or today's date if the release is still active.
         */
         if(!empty($earliest_snapshot)) {
             $start_date = new DateTime($earliest_snapshot->first_snapshot_date);
             $end_date = new DateTime($earliest_snapshot->release_end_date);
-            
+
             // Make the end date inclusive
             $end_date->modify('+1 day');
-            
+
             $snapshot_date_range = new DatePeriod(
                 $start_date,
                 new DateInterval('P1D'),
                 $end_date
             );
-            
+
             foreach($snapshot_date_range as $snapshot_date) {
                 $record = new stdClass();
-                
+
                 $record->date = $snapshot_date->format('Y-m-d');
-            
+
                 $snapshot_dates[] = $record;
             }
-            
+
             rsort($snapshot_dates);
         }
-        
+
         return collect($snapshot_dates);
     }
 }

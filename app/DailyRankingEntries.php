@@ -7,9 +7,11 @@ use PDO;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Query\Builder;
+use App\Traits\GeneratesNewInstance;
 use App\Traits\IsSchemaTable;
 use App\Traits\HasPartitions;
 use App\Traits\HasTempTable;
+use App\Traits\CanBeVacuumed;
 use App\Players;
 use App\LeaderboardSources;
 use App\Dates;
@@ -22,7 +24,7 @@ use App\Soundtracks;
 use App\DailyRankingDayTypes;
 
 class DailyRankingEntries extends Model {
-    use IsSchemaTable, HasPartitions, HasTempTable;
+    use GeneratesNewInstance, IsSchemaTable, HasPartitions, HasTempTable, CanBeVacuumed;
 
     /**
      * The table associated with the model.
@@ -30,7 +32,7 @@ class DailyRankingEntries extends Model {
      * @var string
      */
     protected $table = 'daily_ranking_entries';
-    
+
     /**
      * This table has a composite primary key.
      *
@@ -40,14 +42,14 @@ class DailyRankingEntries extends Model {
         'daily_ranking_id',
         'player_id'
     ];
-    
+
     /**
      * Indicates if the model should be timestamped.
      *
      * @var bool
      */
     public $timestamps = false;
-    
+
     public static function getTempInsertQueueBindFlags(): array {
         return [
             PDO::PARAM_INT,
@@ -65,7 +67,7 @@ class DailyRankingEntries extends Model {
             PDO::PARAM_LOB
         ];
     }
-    
+
     public static function createTemporaryTable(LeaderboardSources $leaderboard_source): void {
         DB::statement("
             CREATE TEMPORARY TABLE " . static::getTempTableName($leaderboard_source) . " (
@@ -86,8 +88,8 @@ class DailyRankingEntries extends Model {
             ON COMMIT DROP;
         ");
     }
-    
-    public static function clear(LeaderboardSources $leaderboard_source, Dates $date): void {    
+
+    public static function clear(LeaderboardSources $leaderboard_source, Dates $date): void {
         DB::delete("
             DELETE FROM " . static::getTableName($leaderboard_source, new DateTime($date->name)) . " dre
             USING  " . DailyRankings::getSchemaTableName($leaderboard_source) . " dr
@@ -97,7 +99,7 @@ class DailyRankingEntries extends Model {
             ':date_id' => $date->id
         ]);
     }
-    
+
     public static function saveNewTemp(LeaderboardSources $leaderboard_source, Dates $date): void {
         DB::statement("
             INSERT INTO " . static::getTableName($leaderboard_source, new DateTime($date->name)) . " (
@@ -132,9 +134,9 @@ class DailyRankingEntries extends Model {
             FROM " . static::getTempTableName($leaderboard_source) . "
         ");
     }
-    
+
     public static function updateFromTemp(): void {}
-    
+
     public static function getCacheQuery(LeaderboardSources $leaderboard_source, Dates $date): Builder {
         $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->name));
 
@@ -153,12 +155,12 @@ class DailyRankingEntries extends Model {
             ->leftJoin("user_{$leaderboard_source->name}_player AS up", 'up.player_id', '=', 'dre.player_id')
             ->leftJoin('users AS u', 'u.id', '=', 'up.user_id')
             ->where('dr.date_id', $date->id);
-            
+
         ExternalSites::addSiteIdSelectFields($query);
-        
+
         return $query;
     }
-    
+
     public static function getStatsReadQuery(LeaderboardSources $leaderboard_source, Dates $date): Builder {
         $entries_table_name = static::getTableName($leaderboard_source, new DateTime($date->name));
 
@@ -172,10 +174,10 @@ class DailyRankingEntries extends Model {
             ])
             ->join("{$entries_table_name} AS dre", 'dre.daily_ranking_id', '=', 'dr.id')
             ->where('dr.date_id', $date->id);
-        
+
         return $query;
     }
-    
+
     public static function getApiReadQuery(
         LeaderboardSources $leaderboard_source,
         Characters $character,
@@ -212,32 +214,32 @@ class DailyRankingEntries extends Model {
             ->where('dr.soundtrack_id', $soundtrack->id)
             ->where('dr.daily_ranking_day_type_id', $daily_ranking_day_type->id)
             ->where('dr.date_id', $date->id);
-            
+
         Players::addSelects($query);
         Players::addLeftJoins($leaderboard_source, $query);
-        
+
         return $query;
     }
-    
+
     public static function getPlayerApiReadQuery(
         LeaderboardSources $leaderboard_source,
-        string $player_id, 
+        string $player_id,
         Characters $character,
         Releases $release,
         Modes $mode,
         MultiplayerTypes $multiplayer_type,
         Soundtracks $soundtrack,
         DailyRankingDayTypes $daily_ranking_day_type
-    ): Builder {        
+    ): Builder {
         $start_date = new DateTime($release['start_date']);
         $end_date = new DateTime($release['end_date']);
-    
+
         $query = NULL;
-        
+
         $table_names = static::getTableNames($leaderboard_source, $start_date, $end_date);
-        
+
         if(!empty($table_names)) {
-            foreach($table_names as $table_name) {                    
+            foreach($table_names as $table_name) {
                 $partition_query = DB::table(DailyRankings::getSchemaTableName($leaderboard_source) . ' AS dr')
                     ->select([
                         'd.name AS date',
@@ -267,7 +269,7 @@ class DailyRankingEntries extends Model {
                         $end_date->format('Y-m-d')
                     ])
                     ->where('p.external_id', $player_id);
-                
+
                 if(!isset($query)) {
                     $query = $partition_query;
                 }
@@ -276,7 +278,7 @@ class DailyRankingEntries extends Model {
                 }
             }
         }
-            
+
         return $query;
     }
 }
