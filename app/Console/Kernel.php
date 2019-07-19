@@ -83,7 +83,7 @@ class Kernel extends ConsoleKernel {
             $leaderboard_sources = LeaderboardSources::all();
 
             foreach($leaderboard_sources as $leaderboard_source) {
-                \App\Jobs\EntryIndexes\Vacuum::dispatch($leaderboard_source)->onConnection('sync');
+                //\App\Jobs\EntryIndexes\Vacuum::dispatch($leaderboard_source)->onConnection('sync');
                 \App\Jobs\Leaderboards\Vacuum::dispatch($leaderboard_source)->onConnection('sync');
                 \App\Jobs\Leaderboards\VacuumSnapshots::dispatch($leaderboard_source)->onConnection('sync');
                 \App\Jobs\Leaderboards\Entries\VacuumPartition::dispatch($leaderboard_source, $yesterday_date)->onConnection('sync');
