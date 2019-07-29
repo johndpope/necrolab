@@ -6,6 +6,9 @@ const BreadcrumbsStore = {
     mutations: {
         setAll(state, breadcrumbs) {
             state.breadcrumbs = breadcrumbs;
+        },
+        clear(state) {
+            state.breadcrumbs = [];
         }
     },
     getters: {

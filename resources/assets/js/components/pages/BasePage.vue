@@ -21,17 +21,19 @@ const BasePage = {
                 multiplayer_type: 'multiplayer_types',
                 soundtrack: 'soundtracks'
             };
-            
+
             Object.keys(route_segment_attributes).forEach((route_segment) => {
                 let route_segment_value = null;
-                
+
                 if(route_parameters[route_segment] != null) {
                     route_segment_value = route_parameters[route_segment];
                 }
 
                 this.$store.commit(`${route_segment_attributes[route_segment]}/setSelected`, route_segment_value);
             });
-            
+
+            this.$store.commit('breadcrumbs/clear');
+
             this.loadState(route_parameters);
         }
     },
@@ -44,7 +46,7 @@ const BasePage = {
     },
     beforeRouteUpdate(to, from, next) {
         this.initialize(to.params);
-        
+
         next();
     }
 };
