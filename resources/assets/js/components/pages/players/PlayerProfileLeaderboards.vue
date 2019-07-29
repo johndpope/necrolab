@@ -1,14 +1,13 @@
 <template>
-    <with-nav-body 
+    <with-nav-body
         :loaded="loaded"
         :key="leaderboard_type.name"
         :sub_title="leaderboard_type.display_name + ' Leaderboards'"
         :show_breadcrumbs="false"
     >
-        <necrotable 
-            :api_endpoint_url="apiEndpointUrl"
-            :header_columns="headerColumns" 
-            :default_request_parameters="apiRequestParameters"
+        <necrotable
+            :dataset="dataset"
+            :header_columns="headerColumns"
             :has_pagination="false"
             :has_action_column="leaderboard_type.show_zone_level === 1"
             :filters="filters"
@@ -52,6 +51,7 @@
 <script>
 import BasePage from '../BasePage.vue';
 import WithNavBody from '../../layouts/WithNavBody.vue';
+import Dataset from '../../../datasets/Dataset.js';
 import NecroTable from '../../table/NecroTable.vue';
 import Datepicker from '../../date/Datepicker.vue';
 import CharacterDropdownFilter from '../../table/filters/CharacterDropdownFilter.vue';
@@ -92,6 +92,7 @@ const PlayerProfileLeaderboards = {
     },
     data() {
         return {
+            dataset: {},
             player_id: '',
             leaderboard_source: {},
             leaderboard_type: {},
@@ -112,59 +113,52 @@ const PlayerProfileLeaderboards = {
         },
         apiEndpointUrl() {
             let api_endpoint_url = '';
-            
+
             if(this.leaderboard_type.name == 'daily') {
                 api_endpoint_url = '/api/1/player/leaderboards/daily/entries';
             }
             else {
                 api_endpoint_url = '/api/1/player/leaderboards/category/entries';
             }
-            
+
             return api_endpoint_url;
-        },
-        apiRequestParameters() {
-            return {
-                player_id: this.player_id,
-                leaderboard_source: this.leaderboard_source.name,
-                leaderboard_type: this.leaderboard_type.name
-            }
         },
         headerColumns() {
             const header_columns = [];
-            
+
             if(this.leaderboard_type.name != 'daily') {
                 header_columns.push('Character');
             }
             else {
                 header_columns.push('Date');
             }
-            
+
             header_columns.push('Rank');
-            
+
             this.details_columns.forEach((details_column) => {
                 header_columns.push(details_column.display_name);
             });
-            
+
             if(this.leaderboard_type.show_seed === 1) {
                 header_columns.push('Seed');
             }
-            
+
             if(this.leaderboard_type.show_replay === 1) {
                 header_columns.push('Replay');
             }
-            
+
             return header_columns;
         },
         filters() {
             const filters = [];
-            
+
             if(this.leaderboard_type.name == 'daily') {
                 filters.push(CharacterDropdownFilter);
             }
             else {
                 filters.push(Datepicker);
             }
-            
+
             filters.push(
                 ReleaseDropdownFilter,
                 ModeDropdownFilter,
@@ -172,7 +166,7 @@ const PlayerProfileLeaderboards = {
                 MultiplayerTypeDropdownFilter,
                 SoundtrackDropdownFilter
             );
-            
+
             return filters;
         }
     },
@@ -184,16 +178,16 @@ const PlayerProfileLeaderboards = {
                 'leaderboard_types',
                 'modes'
             ]);
-            
+
             this.$store.commit('releases/setFilterStores', [
                 'leaderboard_sources'
             ]);
-            
+
             this.$store.commit('modes/setFilterStores', [
                 'releases',
                 'leaderboard_types'
             ]);
-            
+
             this.$store.commit('multiplayer_types/setFilterStores', [
                 'leaderboard_sources'
             ]);
@@ -201,8 +195,15 @@ const PlayerProfileLeaderboards = {
             this.player_id = route_params.player_id,
             this.leaderboard_source = this.$store.getters['leaderboard_sources/getSelected'];
             this.leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
-            
+
             this.details_columns = this.$store.getters['details_columns/getAllByNames'](this.leaderboard_type.details_columns);
+
+            this.dataset = new Dataset('player_leaderboards', this.apiEndpointUrl);
+
+            this.dataset.disablePagination();
+            this.dataset.setRequestParameter('player_id', this.player_id);
+            this.dataset.setRequestParameter('leaderboard_source', this.leaderboard_source.name);
+            this.dataset.setRequestParameter('leaderboard_type', this.leaderboard_type.name);
 
             this.loaded = true;
         },
@@ -213,4 +214,4 @@ const PlayerProfileLeaderboards = {
 };
 
 export default PlayerProfileLeaderboards;
-</script> 
+</script>
