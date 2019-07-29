@@ -1,14 +1,20 @@
 <template>
-    <with-nav-body 
+    <with-nav-body
         :loaded="loaded"
         sub_title="Daily Rankings"
         :show_breadcrumbs="false"
     >
+        <player-daily-ranking-stats-chart
+            :dataset="dataset"
+            :leaderboard_type="leaderboard_type"
+            :details_columns_by_name="$store.getters['details_columns/getAllByName']"
+        >
+        </player-daily-ranking-stats-chart>
+        <br />
         <necrotable
             :key="$route.fullPath"
-            api_endpoint_url="/api/1/player/rankings/daily/entries"
-            :header_columns="headerColumns" 
-            :default_request_parameters="apiRequestParameters"
+            :dataset="dataset"
+            :header_columns="headerColumns"
             :has_action_column="true"
             :filters="filters"
         >
@@ -47,6 +53,8 @@
 <script>
 import BasePage from '../BasePage.vue';
 import WithNavBody from '../../layouts/WithNavBody.vue';
+import Dataset from '../../../datasets/Dataset.js';
+import PlayerDailyRankingStatsChart from '../../charts/PlayerDailyRankingStatsChart.vue';
 import NecroTable from '../../table/NecroTable.vue';
 import CharacterDropdownFilter from '../../table/filters/CharacterDropdownFilter.vue';
 import ReleaseDropdownFilter from '../../table/filters/ReleaseDropdownFilter.vue';
@@ -64,6 +72,7 @@ const PlayerProfileDailyRankings = {
     name: 'player-profile-daily-rankings',
     components: {
         'with-nav-body': WithNavBody,
+        'player-daily-ranking-stats-chart': PlayerDailyRankingStatsChart,
         'necrotable': NecroTable,
         'rounded-decimal': RoundedDecimal,
         'details-column': DetailsColumn,
@@ -72,6 +81,7 @@ const PlayerProfileDailyRankings = {
     },
     data() {
         return {
+            dataset: {},
             player_id: '',
             leaderboard_source: {},
             leaderboard_type: {},
@@ -109,73 +119,73 @@ const PlayerProfileDailyRankings = {
                 }
             ];
         },
-        apiRequestParameters() {
-            return {
-                player_id: this.player_id,
-                leaderboard_source: this.leaderboard_source.name
-            }
-        },
         headerColumns() {
             const header_columns = [
                 'Date',
                 'Rank',
                 'Points'
             ];
-            
+
             this.details_columns.forEach((details_column) => {
                 header_columns.push(details_column.display_name);
             });
-            
+
             return header_columns;
         }
     },
     methods: {
-        loadState(route_params) {            
+        loadState(route_params) {
             this.$store.commit('characters/setFilterStores', [
                 'leaderboard_sources',
                 'releases',
                 'leaderboard_types',
                 'modes'
             ]);
-            
+
             this.$store.commit('releases/setFilterStores', [
                 'leaderboard_sources'
             ]);
-            
+
             this.$store.commit('modes/setFilterStores', [
                 'leaderboard_types',
                 'releases'
             ]);
-            
+
             this.$store.commit('multiplayer_types/setFilterStores', [
                 'leaderboard_sources'
             ]);
 
             this.player_id = route_params.player_id,
             this.leaderboard_source = this.$store.getters['leaderboard_sources/getSelected'];
-            
+
             this.$store.commit('leaderboard_types/setSelected', 'daily');
-            
-            const leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
-            
-            this.details_columns = this.$store.getters['details_columns/getAllByNames'](leaderboard_type.details_columns);
+
+            this.leaderboard_type = this.$store.getters['leaderboard_types/getByName']('daily');
+
+            this.details_columns = this.$store.getters['details_columns/getAllByNames'](this.leaderboard_type.details_columns);
+
+            this.dataset = new Dataset('player_daily_rankings', '/api/1/player/rankings/daily/entries');
+
+            this.dataset.disableServerPagination();
+            this.dataset.setRequestParameter('player_id', this.player_id);
+            this.dataset.setRequestParameter('leaderboard_source', this.leaderboard_source.name);
 
             this.loaded = true;
         },
-        getDetailsValue(row, details_name) {            
+        getDetailsValue(row, details_name) {
             let details_value = '';
-            
+
             if(
                 row['details'] != null &&
                 row['details'][details_name] != null
             ) {
                 details_value = row['details'][details_name];
             }
-            
+
             return details_value;
         }
     }
 };
 
 export default PlayerProfileDailyRankings;
-</script> 
+</script>
