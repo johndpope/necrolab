@@ -30,7 +30,9 @@
             </b-modal>
         </template>
         <template v-else>
-            {{ player.player.username }}
+            <router-link :to="`/players/${leaderboard_source.name}/${player.player.id}`">
+                {{ player.player.username }}
+            </router-link>
         </template>
     </div>
 </template>
@@ -40,12 +42,6 @@ import bModal from 'bootstrap-vue/es/components/modal/modal';
 import LinkIcon from  '../sites/LinkIcon.vue';
 import ProfileIcon from './ProfileIcon.vue';
 import PlayerLinkedSites from '../player/PlayerLinkedSites.vue';
-
-/* Restore later
-    <router-link :to="`/players/${leaderboard_source.name}/${player.player.id}`">
-        {{ player.player.username }}
-    </router-link>
- */
 
 const PlayerProfileModal = {
     name: 'player-profile-modal',
@@ -74,9 +70,9 @@ const PlayerProfileModal = {
     computed: {
         username() {
             let username = '';
-            
+
             if(
-                this.player['necrolab'] != null && 
+                this.player['necrolab'] != null &&
                 this.player.necrolab['username'] != null &&
                 this.player.necrolab.username.length > 0
             ) {
@@ -85,7 +81,7 @@ const PlayerProfileModal = {
             else {
                 username = this.player.player.username;
             }
-            
+
             return username;
         }
     }

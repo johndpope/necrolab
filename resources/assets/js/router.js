@@ -34,8 +34,10 @@ import DailyLeaderboardEntriesPage from './components/pages/leaderboards/DailyLe
 import LeaderboardSourcePlayersPage from './components/pages/players/LeaderboardSourcePlayersPage.vue';
 import LeaderboardSourcePlayerProfilePage from './components/pages/players/LeaderboardSourcePlayerProfilePage.vue';
 import PlayerProfileInfo from './components/pages/players/PlayerProfileInfo.vue';
-import PlayerProfileConnections from './components/pages/players/PlayerProfileConnections.vue';
-import PlayerProfileSupport from './components/pages/players/PlayerProfileSupport.vue';
+//import PlayerProfileConnections from './components/pages/players/PlayerProfileConnections.vue';
+//import PlayerProfileSupport from './components/pages/players/PlayerProfileSupport.vue';
+import PlayerProfileStats from './components/pages/players/PlayerProfileStats.vue';
+import PlayerProfileStatsByRelease from './components/pages/players/PlayerProfileStatsByRelease.vue';
 import PlayerProfilePbs from './components/pages/players/PlayerProfilePbs.vue';
 import PlayerProfileLeaderboards from './components/pages/players/PlayerProfileLeaderboards.vue';
 import PlayerProfilePowerRankings from './components/pages/players/PlayerProfilePowerRankings.vue';
@@ -48,16 +50,16 @@ import PlayerProfileCategoryRankings from './components/pages/players/PlayerProf
 
 const routes = [
     {
-        path: '/login', 
-        component: LoginPage 
+        path: '/login',
+        component: LoginPage
     },
     {
         path: '/',
         component: WithNavLayout,
         children: [
             {
-                path: '/', 
-                component: HomePage 
+                path: '/',
+                component: HomePage
             },
             {
                 path: '/rankings/power/:leaderboard_source',
@@ -112,24 +114,32 @@ const routes = [
                 component: LeaderboardEntriesPage
             },
             {
-                path: '/players/:leaderboard_source', 
+                path: '/players/:leaderboard_source',
                 component: LeaderboardSourcePlayersPage
             },
             {
-                path: '/players/:leaderboard_source/:player_id', 
+                path: '/players/:leaderboard_source/:player_id',
                 component: LeaderboardSourcePlayerProfilePage,
                 children: [
                     {
                         path: '/',
                         component: PlayerProfileInfo
                     },
-                    {
+                    /*{
                         path: 'connections',
                         component: PlayerProfileConnections
                     },
                     {
                         path: 'support',
                         component: PlayerProfileSupport
+                    },*/
+                    {
+                        path: 'stats/overall',
+                        component: PlayerProfileStats
+                    },
+                    {
+                        path: 'stats/by_release',
+                        component: PlayerProfileStatsByRelease
                     },
                     {
                         path: 'pbs/:leaderboard_type',
