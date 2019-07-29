@@ -24,8 +24,6 @@ trait CanBeVacuumed {
 
         $parsed_options_sql = implode(', ', $parsed_options);
 
-        var_dump("VACUUM ({$parsed_options_sql}) {$this->getTable()}");
-
         DB::statement("
             VACUUM ({$parsed_options_sql}) {$this->getTable()};
         ");

@@ -89,7 +89,7 @@ class Kernel extends ConsoleKernel {
                 \App\Jobs\Leaderboards\Entries\VacuumPartition::dispatch($leaderboard_source, $yesterday_date)->onConnection('sync');
                 \App\Jobs\Pbs\Vacuum::dispatch($leaderboard_source)->onConnection('sync');
                 \App\Jobs\Players\Vacuum::dispatch($leaderboard_source)->onConnection('sync');
-                //\App\Jobs\Players\VacuumStats::dispatch($leaderboard_source)->onConnection('sync');
+                \App\Jobs\Players\VacuumStats::dispatch($leaderboard_source)->onConnection('sync');
                 \App\Jobs\Rankings\Daily\Vacuum::dispatch($leaderboard_source)->onConnection('sync');
                 \App\Jobs\Rankings\Daily\Entries\VacuumPartition::dispatch($leaderboard_source, $yesterday_date)->onConnection('sync');
                 \App\Jobs\Rankings\Power\Vacuum::dispatch($leaderboard_source)->onConnection('sync');
