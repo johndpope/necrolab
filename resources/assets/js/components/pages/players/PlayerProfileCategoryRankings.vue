@@ -1,14 +1,21 @@
 <template>
-    <with-nav-body 
+    <with-nav-body
         :loaded="loaded"
         :sub_title="leaderboard_type.display_name + ' Rankings'"
         :show_breadcrumbs="false"
     >
+        <player-category-ranking-stats-chart
+                :dataset="dataset"
+                :leaderboard_type="leaderboard_type"
+                :characters="$store.getters['characters/getFiltered']"
+                :details_columns_by_name="$store.getters['details_columns/getAllByName']"
+        >
+        </player-category-ranking-stats-chart>
+        <br />
         <necrotable
             :key="$route.fullPath"
-            api_endpoint_url="/api/1/player/rankings/category/entries"
-            :header_columns="headerColumns" 
-            :default_request_parameters="apiRequestParameters"
+            :dataset="dataset"
+            :header_columns="headerColumns"
             :has_action_column="true"
             :filters="filters"
         >
@@ -17,10 +24,10 @@
                     {{ row.date }}
                 </td>
                 <td>
-                    {{ row.rank }}
+                    {{ row.categories[leaderboard_type.name].rank }}
                 </td>
                 <td>
-                    <rounded-decimal :original_number="row.points"></rounded-decimal>
+                    <rounded-decimal :original_number="row.categories[leaderboard_type.name].points"></rounded-decimal>
                 </td>
                 <td
                     v-for="details_column in details_columns"
@@ -53,6 +60,8 @@
 <script>
 import BasePage from '../BasePage.vue';
 import WithNavBody from '../../layouts/WithNavBody.vue';
+import Dataset from '../../../datasets/Dataset.js';
+import PlayerCategoryRankingStatsChart from '../../charts/PlayerCategoryRankingStatsChart.vue';
 import NecroTable from '../../table/NecroTable.vue';
 import ReleaseDropdownFilter from '../../table/filters/ReleaseDropdownFilter.vue';
 import ModeDropdownFilter from '../../table/filters/ModeDropdownFilter.vue';
@@ -69,6 +78,7 @@ const PlayerProfileCategoryRankings = {
     name: 'player-profile-category-rankings',
     components: {
         'with-nav-body': WithNavBody,
+        'player-category-ranking-stats-chart': PlayerCategoryRankingStatsChart,
         'necrotable': NecroTable,
         'rounded-decimal': RoundedDecimal,
         'details-column': DetailsColumn,
@@ -77,6 +87,7 @@ const PlayerProfileCategoryRankings = {
     },
     data() {
         return {
+            dataset: {},
             player_id: '',
             leaderboard_source: {},
             leaderboard_type: {},
@@ -113,24 +124,17 @@ const PlayerProfileCategoryRankings = {
                 }
             ];
         },
-        apiRequestParameters() {
-            return {
-                player_id: this.player_id,
-                leaderboard_source: this.leaderboard_source.name,
-                leaderboard_type: this.leaderboard_type.name
-            }
-        },
         headerColumns() {
             const header_columns = [
                 'Date',
                 'Rank',
                 'Points'
             ];
-            
+
             this.details_columns.forEach((details_column) => {
                 header_columns.push(details_column.display_name);
             });
-            
+
             return header_columns;
         }
     },
@@ -139,22 +143,22 @@ const PlayerProfileCategoryRankings = {
             this.$store.commit('leaderboard_types/setFilterStores', [
                 'modes'
             ]);
-            
+
             this.$store.commit('characters/setFilterStores', [
                 'leaderboard_sources',
                 'releases',
                 'leaderboard_types',
                 'modes'
             ]);
-            
+
             this.$store.commit('releases/setFilterStores', [
                 'leaderboard_sources'
             ]);
-            
+
             this.$store.commit('modes/setFilterStores', [
                 'releases'
             ]);
-            
+
             this.$store.commit('multiplayer_types/setFilterStores', [
                 'leaderboard_sources'
             ]);
@@ -162,8 +166,15 @@ const PlayerProfileCategoryRankings = {
             this.player_id = route_params.player_id,
             this.leaderboard_source = this.$store.getters['leaderboard_sources/getSelected'];
             this.leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
-            
+
             this.details_columns = this.$store.getters['details_columns/getAllByNames'](this.leaderboard_type.details_columns);
+
+            this.dataset = new Dataset('player_category_rankings', '/api/1/player/rankings/category/entries');
+
+            this.dataset.disableServerPagination();
+            this.dataset.setRequestParameter('player_id', this.player_id);
+            this.dataset.setRequestParameter('leaderboard_source', this.leaderboard_source.name);
+            this.dataset.setRequestParameter('leaderboard_type', this.leaderboard_type.name);
 
             this.loaded = true;
         }
@@ -171,4 +182,4 @@ const PlayerProfileCategoryRankings = {
 };
 
 export default PlayerProfileCategoryRankings;
-</script> 
+</script>
