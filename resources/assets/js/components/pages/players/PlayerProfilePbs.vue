@@ -1,14 +1,19 @@
 <template>
-    <with-nav-body 
+    <with-nav-body
         :loaded="loaded"
         :key="leaderboard_type.name"
         :sub_title="leaderboard_type.display_name + ' PBs'"
         :show_breadcrumbs="false"
     >
-        <necrotable 
-            api_endpoint_url="/api/1/player/pbs"
-            :header_columns="headerColumns" 
-            :default_request_parameters="apiRequestParameters"
+        <player-pb-stats-chart
+            :dataset="dataset"
+            :details_columns="details_columns"
+        >
+        </player-pb-stats-chart>
+        <br />
+        <necrotable
+            :dataset="dataset"
+            :header_columns="headerColumns"
             :has_pagination="false"
             :has_action_column="leaderboard_type.show_zone_level === 1"
             :filters="filters"
@@ -48,6 +53,8 @@
 <script>
 import BasePage from '../BasePage.vue';
 import WithNavBody from '../../layouts/WithNavBody.vue';
+import Dataset from '../../../datasets/Dataset.js';
+import PlayerPbStatsChart from '../../charts/PlayerPbStatsChart.vue';
 import NecroTable from '../../table/NecroTable.vue';
 import CharacterDropdownFilter from '../../table/filters/CharacterDropdownFilter.vue';
 import ReleaseDropdownFilter from '../../table/filters/ReleaseDropdownFilter.vue';
@@ -66,6 +73,7 @@ const LeaderboardsPage = {
     name: 'player-profile-pbs',
     components: {
         'with-nav-body': WithNavBody,
+        'player-pb-stats-chart': PlayerPbStatsChart,
         'necrotable': NecroTable,
         'details-column': DetailsColumn,
         'seed': Seed,
@@ -88,6 +96,7 @@ const LeaderboardsPage = {
             player_id: '',
             leaderboard_source: {},
             leaderboard_type: {},
+            dataset: {},
             details_columns: [],
             filters: [
                 ReleaseDropdownFilter,
@@ -111,31 +120,24 @@ const LeaderboardsPage = {
                 }
             ];
         },
-        apiRequestParameters() {
-            return {
-                player_id: this.player_id,
-                leaderboard_source: this.leaderboard_source.name,
-                leaderboard_type: this.leaderboard_type.name
-            }
-        },
         headerColumns() {
             const header_columns = [
                 'Date',
                 'Rank'
             ];
-            
+
             this.details_columns.forEach((details_column) => {
                 header_columns.push(details_column.display_name);
             });
-            
+
             if(this.leaderboard_type.show_seed === 1) {
                 header_columns.push('Seed');
             }
-            
+
             if(this.leaderboard_type.show_replay === 1) {
                 header_columns.push('Replay');
             }
-            
+
             return header_columns;
         }
     },
@@ -147,16 +149,16 @@ const LeaderboardsPage = {
                 'leaderboard_types',
                 'modes'
             ]);
-            
+
             this.$store.commit('releases/setFilterStores', [
                 'leaderboard_sources'
             ]);
-            
+
             this.$store.commit('modes/setFilterStores', [
                 'releases',
                 'leaderboard_types'
             ]);
-            
+
             this.$store.commit('multiplayer_types/setFilterStores', [
                 'leaderboard_sources'
             ]);
@@ -164,8 +166,15 @@ const LeaderboardsPage = {
             this.player_id = route_params.player_id,
             this.leaderboard_source = this.$store.getters['leaderboard_sources/getSelected'];
             this.leaderboard_type = this.$store.getters['leaderboard_types/getSelected'];
-            
+
             this.details_columns = this.$store.getters['details_columns/getAllByNames'](this.leaderboard_type.details_columns);
+
+            this.dataset = new Dataset('player_pbs', '/api/1/player/pbs');
+
+            this.dataset.disableServerPagination();
+            this.dataset.setRequestParameter('player_id', this.player_id);
+            this.dataset.setRequestParameter('leaderboard_source', this.leaderboard_source.name);
+            this.dataset.setRequestParameter('leaderboard_type', this.leaderboard_type.name);
 
             this.loaded = true;
         }
@@ -173,4 +182,4 @@ const LeaderboardsPage = {
 };
 
 export default LeaderboardsPage;
-</script> 
+</script>
