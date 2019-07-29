@@ -1,12 +1,12 @@
 <template>
     <div class="container-fluid mr-0 ml-0 pl-0 pr-0">
         <div v-if="filters.length > 0" class="row pb-2">
-            <component 
-                v-for="(filter, filter_index) in filters" 
-                :is="filter" 
-                :key="filter.name" 
-                @loaded="addLoadedFilter" 
-                @selectedValueChanged="updateFromRequestParameter" 
+            <component
+                v-for="(filter, filter_index) in filters"
+                :is="filter"
+                :key="filter.name"
+                @loaded="addLoadedFilter"
+                @selectedValueChanged="updateFromRequestParameter"
             >
             </component>
         </div>
@@ -24,9 +24,9 @@
                 <table :id="id" class="table necrotable">
                     <thead>
                         <tr v-if="header_columns != null && number_of_columns > 0">
-                            <th 
-                                v-for="(header_column, header_column_index) in header_columns" 
-                                :key="header_column_index" 
+                            <th
+                                v-for="(header_column, header_column_index) in header_columns"
+                                :key="header_column_index"
                                 scope="col"
                             >
                                 <template v-if="header_column['props'] != null">
@@ -35,7 +35,7 @@
                                 <template v-else>
                                     {{ header_column }}
                                 </template>
-                                
+
                             </th>
                             <th v-if="hasActionsColumn()"></th>
                         </tr>
@@ -49,9 +49,9 @@
                                     </td>
                                 </slot>
                                 <td v-if="hasActionsColumn()">
-                                    <slot 
-                                        name="actions-column" 
-                                        :detailsRowVisible="detailsRowVisible" 
+                                    <slot
+                                        name="actions-column"
+                                        :detailsRowVisible="detailsRowVisible"
                                         :toggleDetailsRow="toggleDetailsRow"
                                         :row_index="row_index"
                                         :row="record"
@@ -165,7 +165,7 @@ const NecroTable = {
         updateFromRequestParameter(name, value) {
             if(this.dataset.getRequestParameter(name) != value) {
                 this.addLoadedFilter(name);
-                
+
                 this.dataset.setRequestParameter(name, value);
 
                 if(this.loaded_filters.length >= this.filters.length) {
@@ -181,7 +181,7 @@ const NecroTable = {
         },
         toggleDetailsRow(row_index) {
             let index = this.opened_details_rows.indexOf(row_index);
-            
+
             if(index > -1) {
                 this.opened_details_rows.splice(index, 1);
             }
@@ -194,17 +194,17 @@ const NecroTable = {
         }
     },
     watch: {
-        'dataset.data'() {
+        'dataset.hash'() {
             this.opened_details_rows = [];
         }
     },
     mounted() {
         this.number_of_columns = this.header_columns.length;
-        
+
         if(this.number_of_columns > 0 && this.hasActionsColumn()) {
             this.number_of_columns += 1;
         }
-        
+
         if(this.filters.length == 0) {
             this.dataset.fetch();
         }

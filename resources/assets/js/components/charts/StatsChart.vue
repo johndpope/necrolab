@@ -29,6 +29,7 @@ const StatsChart = {
     data() {
         return {
             loading: true,
+            credits: false,
             chart_options: {
                 chart: {
                     pinchType: 'X'
@@ -200,18 +201,18 @@ const StatsChart = {
         processSeriesDataRow(series_data, row) {}
     },
     watch: {
-        'dataset.total_records'() {
+        'dataset.hash'() {
             this.loading = true;
 
-            if(this.dataset.total_records > 0) {
+            if(this.dataset.total_records > 1) {
                 const series_data = this.getSeriesData();
 
                 series_data.forEach((series_rows, index) => {
                     this.chart_options.series[index].data = series_rows;
                 });
-            }
 
-            this.loading = false;
+                this.loading = false;
+            }
         }
     },
     created() {
