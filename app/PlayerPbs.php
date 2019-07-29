@@ -278,11 +278,11 @@ class PlayerPbs extends Model {
     }
 
     public static function getPlayerStatsQuery(LeaderboardSources $leaderboard_source, Dates $date): Builder {
-        return DB::table('placeholder')
+        $query = DB::table('placeholder')
             ->select([
                 'ppb.player_id',
                 'l.release_id',
-                DB::raw('COUNT(ppb.id) AS pbs'),
+                DB::raw('COUNT(DISTINCT ppb.id) AS pbs'),
                 DB::raw('COUNT(DISTINCT ppb.leaderboard_id) AS leaderboards'),
                 DB::raw("
                     SUM(
@@ -300,14 +300,18 @@ class PlayerPbs extends Model {
                 DB::raw("jsonb_agg(DISTINCT s.name) AS soundtracks")
             ])
             ->fromSub(
-                DB::table('dates AS d')
+                DB::table('dummy')
                     ->select('ppb.player_id')
+                    ->from('dates AS d')
                     ->join(LeaderboardSnapshots::getSchemaTableName($leaderboard_source) . ' AS ls', 'ls.date_id', '=', 'd.id')
                     ->join(static::getSchemaTableName($leaderboard_source) . ' AS ppb', 'ppb.first_leaderboard_snapshot_id', '=', 'ls.id')
-                    ->where('d.name', $date->name),
+                    ->where('d.name', $date->name)
+                    ->groupBy('ppb.player_id'),
                 'date_pb_players'
             )
             ->join(static::getSchemaTableName($leaderboard_source) . ' AS ppb', 'ppb.player_id', '=', 'date_pb_players.player_id')
+            ->join(LeaderboardSnapshots::getSchemaTableName($leaderboard_source) . ' AS ls', 'ls.id', '=', 'ppb.first_leaderboard_snapshot_id')
+            ->join('dates AS d', 'd.id', '=', 'ls.date_id')
             ->join(Leaderboards::getSchemaTableName($leaderboard_source) . ' AS l', 'l.id', '=', 'ppb.leaderboard_id')
             ->join('leaderboard_types AS lt', 'lt.id', '=', 'l.leaderboard_type_id')
             ->join('characters AS c', 'c.id', '=', 'l.character_id')
@@ -316,10 +320,19 @@ class PlayerPbs extends Model {
             ->join('seeded_types AS st', 'st.id', '=', 'l.seeded_type_id')
             ->join('multiplayer_types AS mt', 'mt.id', '=', 'l.multiplayer_type_id')
             ->join('soundtracks AS s', 's.id', '=', 'l.soundtrack_id')
+            ->where('d.name', '<=', $date->name)
             ->groupBy([
                 'ppb.player_id',
                 'l.release_id'
             ]);
+
+        $details_columns = LeaderboardDetailsColumns::all();
+
+        foreach($details_columns as $details_column) {
+            $query->addSelect(DB::raw("SUM((ppb.details->'{$details_column->name}')::numeric) AS details_{$details_column->name}"));
+        }
+
+        return $query;
     }
 
     public static function getAllIdsByUnique(LeaderboardSources $leaderboard_source): array {

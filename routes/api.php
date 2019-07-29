@@ -101,6 +101,11 @@ Route::get('/1/players', 'Api\PlayersController@index');
 // Player
 Route::get('/1/player', 'Api\PlayersController@show');
 
+// Player Stats
+Route::get('/1/player/stats', 'Api\PlayerStatsController@index');
+Route::get('/1/player/stats/latest', 'Api\PlayerStatsController@latest');
+Route::get('/1/player/stats/by_release', 'Api\PlayerStatsController@byRelease');
+
 // Player Leaderboards
 Route::get('/1/player/leaderboards', 'Api\LeaderboardsController@playerIndex');
 Route::get('/1/player/leaderboards/category', 'Api\LeaderboardsController@playerCategoryIndex');
