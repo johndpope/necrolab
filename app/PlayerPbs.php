@@ -277,7 +277,18 @@ class PlayerPbs extends Model {
             ->join('leaderboards AS l', 'l.leaderboard_id', '=', 'sup.leaderboard_id');
     }
 
+    public static function getPlayerIdsForDateQuery(LeaderboardSources $leaderboard_source, Dates $date): Builder {
+        return DB::table('dummy')
+            ->select('ppb.player_id')
+            ->from(LeaderboardSnapshots::getSchemaTableName($leaderboard_source) . ' AS ls')
+            ->join(static::getSchemaTableName($leaderboard_source) . ' AS ppb', 'ppb.first_leaderboard_snapshot_id', '=', 'ls.id')
+            ->where('ls.date_id', $date->id)
+            ->groupBy('ppb.player_id');
+    }
+
     public static function getPlayerStatsQuery(LeaderboardSources $leaderboard_source, Dates $date): Builder {
+        $player_ids_for_date_query = static::getPlayerIdsForDateQuery($leaderboard_source, $date);
+
         $query = DB::table('placeholder')
             ->select([
                 'ppb.player_id',
@@ -292,6 +303,22 @@ class PlayerPbs extends Model {
                         END
                     ) AS dailies
                 "),
+                DB::raw("
+                    SUM(
+                        CASE
+                            WHEN lt.name != 'daily' AND st.name = 'unseeded' THEN 1
+                            ELSE 0
+                        END
+                    ) AS unseeded_pbs
+                "),
+                DB::raw("
+                    SUM(
+                        CASE
+                            WHEN lt.name != 'daily' AND st.name = 'seeded' THEN 1
+                            ELSE 0
+                        END
+                    ) AS seeded_pbs
+                "),
                 DB::raw("jsonb_agg(DISTINCT lt.name) AS leaderboard_types"),
                 DB::raw("jsonb_agg(DISTINCT c.name) AS characters"),
                 DB::raw("jsonb_agg(DISTINCT m.name) AS modes"),
@@ -299,16 +326,7 @@ class PlayerPbs extends Model {
                 DB::raw("jsonb_agg(DISTINCT mt.name) AS multiplayer_types"),
                 DB::raw("jsonb_agg(DISTINCT s.name) AS soundtracks")
             ])
-            ->fromSub(
-                DB::table('dummy')
-                    ->select('ppb.player_id')
-                    ->from('dates AS d')
-                    ->join(LeaderboardSnapshots::getSchemaTableName($leaderboard_source) . ' AS ls', 'ls.date_id', '=', 'd.id')
-                    ->join(static::getSchemaTableName($leaderboard_source) . ' AS ppb', 'ppb.first_leaderboard_snapshot_id', '=', 'ls.id')
-                    ->where('d.name', $date->name)
-                    ->groupBy('ppb.player_id'),
-                'date_pb_players'
-            )
+            ->fromSub($player_ids_for_date_query, 'date_pb_players')
             ->join(static::getSchemaTableName($leaderboard_source) . ' AS ppb', 'ppb.player_id', '=', 'date_pb_players.player_id')
             ->join(LeaderboardSnapshots::getSchemaTableName($leaderboard_source) . ' AS ls', 'ls.id', '=', 'ppb.first_leaderboard_snapshot_id')
             ->join('dates AS d', 'd.id', '=', 'ls.date_id')
@@ -329,7 +347,14 @@ class PlayerPbs extends Model {
         $details_columns = LeaderboardDetailsColumns::all();
 
         foreach($details_columns as $details_column) {
-            $query->addSelect(DB::raw("SUM((ppb.details->'{$details_column->name}')::numeric) AS details_{$details_column->name}"));
+            $query->addSelect(DB::raw("
+                SUM(
+                    CASE
+                        WHEN lt.name != 'daily' THEN (ppb.details->'{$details_column->name}')::numeric
+                        ELSE 0
+                    END
+                ) AS details_{$details_column->name}
+            "));
         }
 
         return $query;

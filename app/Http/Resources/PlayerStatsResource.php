@@ -12,6 +12,16 @@ class PlayerStatsResource extends JsonResource {
      * @return array
      */
     public function toArray($request) {
+        $bests = [
+            'leaderboard_type' => $this->best_leaderboard_type,
+            'character' => $this->best_character,
+            'release' => $this->best_release,
+            'mode' => $this->best_mode,
+            'seeded_type' => $this->best_seeded_type,
+            'multiplayer_type' => $this->best_multiplayer_type,
+            'soundtrack' => $this->best_soundtrack,
+        ];
+
         $details_decoded = json_decode($this->details, true);
         $details = [];
 
@@ -32,6 +42,9 @@ class PlayerStatsResource extends JsonResource {
             'leaderboards' => (int)$this->leaderboards,
             'first_place_ranks' => (int)$this->first_place_ranks,
             'dailies' => (int)$this->dailies,
+            'seeded_pbs' => (int)$this->seeded_pbs,
+            'unseeded_pbs' => (int)$this->unseeded_pbs,
+            'bests' => $bests,
             'details' => $details
         ];
     }

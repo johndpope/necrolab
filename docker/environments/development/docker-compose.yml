@@ -35,6 +35,23 @@ services:
     networks:
       - necrolab-network
 
+  #Player Stats Redis Service
+  necrolab-player-stats-redis:
+    image: redis:5.0.4-alpine
+    container_name: necrolab-player-stats-redis
+    restart: unless-stopped
+    command: [sh, -c, "rm -f /data/dump.rdb && redis-server /etc/player_stats.conf"] # This disables persistence
+    ports:
+      - "6382:6382"
+    environment:
+      SERVICE_NAME: necrolab-player-stats-redis
+      SERVICE_TAGS: development
+    volumes:
+      - ../../configurations/redis/player_stats.conf:/etc/player_stats.conf
+      - redis-player-stats-tmp:/tmp/redis/player_stats
+    networks:
+      - necrolab-network
+
   #Postgres Service
   necrolab-db:
     image: postgres:11.2-alpine
@@ -74,11 +91,13 @@ services:
       - necrolab-db-tmp:/run
       - redis-power-rankings-tmp:/tmp/redis/power_rankings
       - redis-daily-rankings-tmp:/tmp/redis/daily_rankings
+      - redis-player-stats-tmp:/tmp/redis/player_stats
     networks:
       - necrolab-network
     depends_on:
       - necrolab-power-rankings-redis
       - necrolab-daily-rankings-redis
+      - necrolab-player-stats-redis
       - necrolab-webserver
       - necrolab-db
 
@@ -117,6 +136,8 @@ volumes:
   redis-power-rankings-tmp:
     driver: local
   redis-daily-rankings-tmp:
+    driver: local
+  redis-player-stats-tmp:
     driver: local
   necrolab-app-tmp:
     driver: local

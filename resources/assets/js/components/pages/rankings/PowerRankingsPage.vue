@@ -54,7 +54,7 @@ import SeededTypeDropdownFilter from '../../table/filters/SeededTypeDropdownFilt
 import MultiplayerTypeDropdownFilter from '../../table/filters/MultiplayerTypeDropdownFilter.vue';
 import SoundtrackDropdownFilter from '../../table/filters/SoundtrackDropdownFilter.vue';
 import ToggleDetails from '../../table/action_columns/ToggleDetails.vue';
-import RankingSummaryDetailsTable from '../../table/RankingSummaryDetailsTable.vue'
+import RankingSummaryDetailsTable from '../../table/RankingSummaryDetailsTable.vue';
 
 export default {
     extends: BasePage,

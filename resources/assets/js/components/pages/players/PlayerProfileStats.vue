@@ -14,6 +14,7 @@
             :dataset="dataset"
             :header_columns="headerColumns"
             :has_pagination="true"
+            :has_action_column="true"
         >
             <template slot="table-row" slot-scope="{ row_index, row }">
                 <td>
@@ -31,6 +32,12 @@
                 <td>
                     {{ row.dailies }}
                 </td>
+                <td>
+                    {{ row.seeded_pbs }}
+                </td>
+                <td>
+                    {{ row.unseeded_pbs }}
+                </td>
                 <td v-for="details_column in details_columns">
                     <details-column
                         :details_name="details_column.name"
@@ -38,6 +45,13 @@
                     >
                     </details-column>
                 </td>
+            </template>
+            <template slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
+                <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
+            </template>
+            <template slot="row-details" slot-scope="{ row }">
+                <player-stats-details-table :record="row">
+                </player-stats-details-table>
             </template>
         </necrotable>
     </with-nav-body>
@@ -50,6 +64,8 @@ import Dataset from '../../../datasets/Dataset.js';
 import PlayerStatsChart from '../../charts/PlayerStatsChart.vue';
 import NecroTable from '../../table/NecroTable.vue';
 import DetailsColumn from '../../formatting/DetailsColumn.vue';
+import ToggleDetails from '../../table/action_columns/ToggleDetails.vue';
+import PlayerStatsDetailsTable from '../../table/PlayerStatsDetailsTable.vue';
 
 const PlayerProfileStatsInfo = {
     extends: BasePage,
@@ -58,7 +74,9 @@ const PlayerProfileStatsInfo = {
         'with-nav-body': WithNavBody,
         'player-stats-chart': PlayerStatsChart,
         'necrotable': NecroTable,
-        'details-column': DetailsColumn
+        'details-column': DetailsColumn,
+        'toggle-details': ToggleDetails,
+        'player-stats-details-table': PlayerStatsDetailsTable
     },
     data() {
         return {
@@ -76,7 +94,9 @@ const PlayerProfileStatsInfo = {
                 'PBs',
                 'Leaderboards',
                 'WRs',
-                'Dailies'
+                'Dailies',
+                'Seeded PBs',
+                'Unseeded PBs',
             ];
 
             this.details_columns.forEach((details_column) => {

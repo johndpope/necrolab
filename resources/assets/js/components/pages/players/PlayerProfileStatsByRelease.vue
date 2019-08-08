@@ -14,6 +14,7 @@
             :dataset="dataset"
             :header_columns="headerColumns"
             :has_pagination="true"
+            :has_action_column="true"
             :filters="filters"
         >
             <template slot="table-row" slot-scope="{ row_index, row }">
@@ -33,22 +34,10 @@
                     {{ row.dailies }}
                 </td>
                 <td>
-                    {{ row.leaderboard_types.length }}
+                    {{ row.seeded_pbs }}
                 </td>
                 <td>
-                    {{ row.characters.length }}
-                </td>
-                <td>
-                    {{ row.modes.length }}
-                </td>
-                <td>
-                    {{ row.seeded_types.length }}
-                </td>
-                <td>
-                    {{ row.multiplayer_types.length }}
-                </td>
-                <td>
-                    {{ row.soundtracks.length }}
+                    {{ row.unseeded_pbs }}
                 </td>
                 <td v-for="details_column in details_columns">
                     <details-column
@@ -57,6 +46,13 @@
                     >
                     </details-column>
                 </td>
+            </template>
+            <template slot="actions-column" slot-scope="{ row_index, row, detailsRowVisible, toggleDetailsRow }">
+                <toggle-details :row_index="row_index" :detailsRowVisible="detailsRowVisible" @detailsRowToggled="toggleDetailsRow"></toggle-details>
+            </template>
+            <template slot="row-details" slot-scope="{ row }">
+                <player-stats-details-table :record="row">
+                </player-stats-details-table>
             </template>
         </necrotable>
     </with-nav-body>
@@ -71,6 +67,8 @@ import PlayerStatsChart from '../../charts/PlayerStatsChart.vue';
 import NecroTable from '../../table/NecroTable.vue';
 import ReleaseDropdownFilter from '../../table/filters/ReleaseDropdownFilter.vue';
 import DetailsColumn from '../../formatting/DetailsColumn.vue';
+import ToggleDetails from '../../table/action_columns/ToggleDetails.vue';
+import PlayerStatsDetailsTable from '../../table/PlayerStatsDetailsTable.vue';
 
 const PlayerProfileStatsByRelease = {
     extends: BasePage,
@@ -80,7 +78,9 @@ const PlayerProfileStatsByRelease = {
         'player-linked-sites': PlayerLinkedSites,
         'player-stats-chart': PlayerStatsChart,
         'necrotable': NecroTable,
-        'details-column': DetailsColumn
+        'details-column': DetailsColumn,
+        'toggle-details': ToggleDetails,
+        'player-stats-details-table': PlayerStatsDetailsTable
     },
     data() {
         return {
@@ -102,12 +102,8 @@ const PlayerProfileStatsByRelease = {
                 'Leaderboards',
                 'WRs',
                 'Dailies',
-                'Categories',
-                'Characters',
-                'Modes',
-                'Seeded/Unseeded',
-                'Single/Multiplayer',
-                'Soundtracks'
+                'Seeded PBs',
+                'Unseeded PBs'
             ];
 
             this.details_columns.forEach((details_column) => {

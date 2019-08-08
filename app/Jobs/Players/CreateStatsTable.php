@@ -65,6 +65,15 @@ class CreateStatsTable implements ShouldQueue {
             $table->smallInteger('leaderboards');
             $table->smallInteger('first_place_ranks');
             $table->smallInteger('dailies');
+            $table->smallInteger('seeded_pbs');
+            $table->smallInteger('unseeded_pbs');
+            $table->smallInteger('best_leaderboard_type_id')->nullable();
+            $table->smallInteger('best_release_id')->nullable();
+            $table->smallInteger('best_character_id')->nullable();
+            $table->smallInteger('best_mode_id')->nullable();
+            $table->smallInteger('best_seeded_type_id')->nullable();
+            $table->smallInteger('best_multiplayer_type_id')->nullable();
+            $table->smallInteger('best_soundtrack_id')->nullable();
             $table->jsonb('leaderboard_types')->nullable();
             $table->jsonb('characters')->nullable();
             $table->jsonb('modes')->nullable();
@@ -92,7 +101,21 @@ class CreateStatsTable implements ShouldQueue {
                 ADD CONSTRAINT {$constraint_prefix}_release_id_foreign
                     FOREIGN KEY (release_id) REFERENCES public.releases (id) ON DELETE CASCADE,
                 ADD CONSTRAINT {$constraint_prefix}_date_id_foreign
-                    FOREIGN KEY (date_id) REFERENCES public.dates (id) ON DELETE CASCADE;
+                    FOREIGN KEY (date_id) REFERENCES public.dates (id) ON DELETE CASCADE,
+                ADD CONSTRAINT {$constraint_prefix}_best_leaderboard_type_id_foreign
+                    FOREIGN KEY (best_leaderboard_type_id) REFERENCES public.leaderboard_types (id) ON DELETE CASCADE,
+                ADD CONSTRAINT {$constraint_prefix}_best_release_id_foreign
+                    FOREIGN KEY (best_release_id) REFERENCES public.releases (id) ON DELETE CASCADE,
+                ADD CONSTRAINT {$constraint_prefix}_best_character_id_foreign
+                    FOREIGN KEY (best_character_id) REFERENCES public.characters (id) ON DELETE CASCADE,
+                ADD CONSTRAINT {$constraint_prefix}_best_mode_id_foreign
+                    FOREIGN KEY (best_mode_id) REFERENCES public.modes (id) ON DELETE CASCADE,
+                ADD CONSTRAINT {$constraint_prefix}_best_seeded_type_id_foreign
+                    FOREIGN KEY (best_seeded_type_id) REFERENCES public.seeded_types (id) ON DELETE CASCADE,
+                ADD CONSTRAINT {$constraint_prefix}_best_multiplayer_type_id_foreign
+                    FOREIGN KEY (best_multiplayer_type_id) REFERENCES public.multiplayer_types (id) ON DELETE CASCADE,
+                ADD CONSTRAINT {$constraint_prefix}_best_soundtrack_id_foreign
+                    FOREIGN KEY (best_soundtrack_id) REFERENCES public.soundtracks (id) ON DELETE CASCADE;
         ");
     }
 }

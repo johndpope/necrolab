@@ -66,7 +66,7 @@ return [
             'schema' => 'public',
             'sslmode' => env('DB_SSL_MODE', 'prefer'),
         ],
-        
+
         'legacy' => [
             'driver' => 'pgsql',
             'host' => env('LEGACY_DB_HOST', '127.0.0.1'),
@@ -134,6 +134,11 @@ return [
         ],
         'daily_rankings' => [
             'host' => env('REDIS_DAILY_RANKINGS_HOST'),
+            'port' => 0,
+            'database' => 0,
+        ],
+        'player_stats' => [
+            'host' => env('REDIS_PLAYER_STATS_HOST'),
             'port' => 0,
             'database' => 0,
         ]

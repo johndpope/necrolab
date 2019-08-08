@@ -159,11 +159,11 @@ return [
         // App\Providers\BroadcastServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\RouteServiceProvider::class,
-
+        App\Providers\MacroServiceProvider::class,
         Spatie\Permission\PermissionServiceProvider::class,
-        
+
         // Socialite Service Providers
-        \SocialiteProviders\Manager\ServiceProvider::class
+        SocialiteProviders\Manager\ServiceProvider::class
     ],
 
     /*

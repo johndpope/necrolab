@@ -21,6 +21,8 @@ const PlayerStatsChart = {
             y_axis.push(this.getSingleYAxis('Leaderboards'));
             y_axis.push(this.getSingleYAxis('WRs'));
             y_axis.push(this.getSingleYAxis('Dailies'));
+            y_axis.push(this.getSingleYAxis('Seeded PBs'));
+            y_axis.push(this.getSingleYAxis('Unseeded PBs'));
 
             this.details_columns.forEach((details_column) => {
                 y_axis.push(this.getSingleYAxis(details_column.display_name));
@@ -39,9 +41,11 @@ const PlayerStatsChart = {
             series.push(self.getSingleSeries('Leaderboards', 1));
             series.push(self.getSingleSeries('WRs', 2));
             series.push(self.getSingleSeries('Dailies', 3));
+            series.push(self.getSingleSeries('Seeded PBs', 4));
+            series.push(self.getSingleSeries('Unseeded PBs', 5));
 
             self.details_columns.forEach((details_column, index) => {
-                series.push(self.getSingleSeries(details_column.display_name, index + 4, {
+                series.push(self.getSingleSeries(details_column.display_name, index + 6, {
                     tooltip: {
                         // NOTE: "function()" is needed here otherwise the context of "this" is in Vue and not Highcharts.
                         pointFormatter: function() {
@@ -81,6 +85,16 @@ const PlayerStatsChart = {
             this.addToSeriesData(series_data, 'dailies', [
                 utc_date,
                 row.dailies
+            ]);
+
+            this.addToSeriesData(series_data, 'seeded_pbs', [
+                utc_date,
+                row.seeded_pbs
+            ]);
+
+            this.addToSeriesData(series_data, 'unseeded_pbs', [
+                utc_date,
+                row.unseeded_pbs
             ]);
 
             this.details_columns.forEach((details_column) => {

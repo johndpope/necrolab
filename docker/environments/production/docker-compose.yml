@@ -35,6 +35,23 @@ services:
     networks:
       - necrolab-network
 
+  #Player Stats Redis Service
+  necrolab-player-stats-redis:
+    image: redis:5.0.4-alpine
+    container_name: necrolab-player-stats-redis
+    restart: unless-stopped
+    command: [sh, -c, "rm -f /data/dump.rdb && redis-server /etc/player_stats.conf"] # This disables persistence
+    ports:
+      - "6382:6382"
+    environment:
+      SERVICE_NAME: necrolab-player-stats-redis
+      SERVICE_TAGS: development
+    volumes:
+      - ../../configurations/redis/player_stats.conf:/etc/player_stats.conf
+      - redis-player-stats-tmp:/tmp/redis/player_stats
+    networks:
+      - necrolab-network
+
   # Postgres Service
   necrolab-db:
     image: postgres:11.2-alpine
@@ -56,7 +73,7 @@ services:
       - necrolab-db-tmp:/run
     networks:
       - necrolab-network
-      
+
   # Nginx Service
   necrolab-webserver:
     image: nginx:alpine
@@ -79,7 +96,7 @@ services:
       - necrolab-app-tmp:/tmp
     networks:
       - necrolab-network
-  
+
   # PHP Web Service
   necrolab-app:
     image: necrolab-app-production:1.0
@@ -116,13 +133,14 @@ services:
       - necrolab-db-tmp:/run
       - redis-power-rankings-tmp:/tmp/redis/power_rankings
       - redis-daily-rankings-tmp:/tmp/redis/daily_rankings
+      - redis-player-stats-tmp:/tmp/redis/player_stats
     networks:
       - necrolab-network
     depends_on:
       - necrolab-db
       - necrolab-power-rankings-redis
       - necrolab-daily-rankings-redis
-      
+
   # Cron Service
   necrolab-cron:
     image: necrolab-app-cron:1.0
@@ -139,7 +157,7 @@ services:
       - necrolab-network
     depends_on:
       - necrolab-db
-      
+
   # Leaderboards Queue Worker
   necrolab-leaderboards-queue-worker:
     image: necrolab-queue-worker:1.0
@@ -182,7 +200,7 @@ services:
     depends_on:
       - necrolab-power-rankings-redis
       - necrolab-db
-    
+
   # Daily Rankings Queue Worker
   necrolab-daily-rankings-queue-worker:
     image: necrolab-queue-worker:1.0
@@ -241,6 +259,7 @@ services:
       - ../../configurations/supervisor/supervisord.conf:/etc/supervisord.conf
       - ../../configurations/supervisor/players.ini:/etc/supervisor.d/players.ini
       - necrolab-db-tmp:/run
+      - redis-player-stats-tmp:/tmp/redis/player_stats
     networks:
       - necrolab-network
     depends_on:

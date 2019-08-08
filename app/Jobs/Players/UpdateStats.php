@@ -2,20 +2,28 @@
 
 namespace App\Jobs\Players;
 
+use DateTime;
 use Illuminate\Bus\Queueable;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Redis;
 use App\Jobs\Traits\WorksWithinDatabaseTransaction;
 use App\Components\PostgresCursor;
+use App\Components\Redis\DatabaseSelector;
+use App\Components\Redis\Transaction\Pipeline as PipelineTransaction;
+use App\Components\RecordQueue;
+use App\Components\CallbackHandler;
+use App\Components\CacheNames\Players as CacheNames;
 use App\LeaderboardSources;
 use App\LeaderboardEntries;
 use App\Dates;
 use App\PlayerPbs;
 use App\PlayerStats;
 use App\LeaderboardDetailsColumns;
+use App\RankPoints;
 
 class UpdateStats implements ShouldQueue {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels, WorksWithinDatabaseTransaction;
@@ -49,6 +57,27 @@ class UpdateStats implements ShouldQueue {
     protected $date;
 
     /**
+     * The instance of the redis facade for this job.
+     *
+     * @var \Illuminate\Support\Facades\Redis
+     */
+    protected $redis;
+
+    /**
+     * All details columns available in the application.
+     *
+     * @var array
+     */
+    protected $details_columns = [];
+
+    /**
+     * All release ids that were processed in this process.
+     *
+     * @var array
+     */
+    protected $release_ids_processed = [];
+
+    /**
      * Create a new job instance.
      *
      * @param \App\LeaderboardSources $leaderboard_source The leaderboard source context for this process.
@@ -61,76 +90,304 @@ class UpdateStats implements ShouldQueue {
     }
 
     /**
+     * Retrieves the number of first place ranks by player and release.
+     *
+     * @return array
+     */
+    protected function getFirstPlaceRanksByPlayer(): array {
+        $ungrouped_rows = LeaderboardEntries::getFirstPlaceRanksByPlayerQuery($this->leaderboard_source, $this->date)->get();
+
+        $grouped_ranks = [];
+
+        foreach($ungrouped_rows as $row) {
+            $grouped_ranks[$row->player_id][$row->release_id] = $row->first_place_ranks;
+        }
+
+        return $grouped_ranks;
+    }
+
+    /**
+     * Loads all PBs into redis for the players being processed in this instance.
+     *
+     * @return void
+     */
+    protected function loadPbStats(): void {
+        $first_place_ranks_by_player = $this->getFirstPlaceRanksByPlayer();
+
+        DB::beginTransaction();
+
+        $cursor = new PostgresCursor(
+            "{$this->leaderboard_source->name}_pb_player_stats",
+            PlayerPbs::getPlayerStatsQuery($this->leaderboard_source, $this->date),
+            10000
+        );
+
+        $redis_transaction = new PipelineTransaction($this->redis, 1000);
+
+        foreach($cursor->getRecord() as $player_pb) {
+            $this->release_ids_processed[$player_pb->release_id] = $player_pb->release_id;
+
+            $player_ids_key = CacheNames::getStatsIndex();
+
+            $redis_transaction->sAdd($player_ids_key, $player_pb->player_id);
+
+            $first_place_ranks = $first_place_ranks_by_player[$player_pb->player_id][$player_pb->release_id] ?? 0;
+
+            $release_key = CacheNames::getPlayerStats($player_pb->player_id, $player_pb->release_id);
+
+            $release_record = [
+                'player_id' => $player_pb->player_id,
+                'release_id' => $player_pb->release_id,
+                'pbs' => $player_pb->pbs,
+                'leaderboards' => $player_pb->leaderboards,
+                'first_place_ranks' => $first_place_ranks,
+                'dailies' => $player_pb->dailies,
+                'unseeded_pbs' => $player_pb->unseeded_pbs,
+                'seeded_pbs' => $player_pb->seeded_pbs,
+                'leaderboard_types' => $player_pb->leaderboard_types,
+                'characters' => $player_pb->characters,
+                'modes' => $player_pb->modes,
+                'seeded_types' => $player_pb->seeded_types,
+                'multiplayer_types' => $player_pb->multiplayer_types,
+                'soundtracks' => $player_pb->soundtracks
+            ];
+
+            $overall_key = CacheNames::getPlayerStats($player_pb->player_id, 'overall');
+
+            foreach($this->details_columns as $details_column) {
+                $details_column_name = "details_{$details_column->name}";
+
+                if(isset($player_pb->$details_column_name)) {
+                    $release_record[$details_column_name] = $player_pb->$details_column_name;
+
+
+                    if(is_float($player_pb->$details_column_name + 0)) {
+                        $redis_transaction->hIncrByFloat($overall_key, $details_column_name, $player_pb->$details_column_name);
+                    }
+                    else {
+                        $redis_transaction->hIncrBy($overall_key, $details_column_name, $player_pb->$details_column_name);
+                    }
+                }
+            }
+
+            $redis_transaction->hMSet($release_key, $release_record);
+
+            $redis_transaction->hSetNx($overall_key, 'player_id', $player_pb->player_id);
+            $redis_transaction->hIncrBy($overall_key, 'pbs', $player_pb->pbs);
+            $redis_transaction->hIncrBy($overall_key, 'leaderboards', $player_pb->leaderboards);
+            $redis_transaction->hIncrBy($overall_key, 'first_place_ranks', $first_place_ranks);
+            $redis_transaction->hIncrBy($overall_key, 'dailies', $player_pb->dailies);
+            $redis_transaction->hIncrBy($overall_key, 'unseeded_pbs', $player_pb->unseeded_pbs);
+            $redis_transaction->hIncrBy($overall_key, 'seeded_pbs', $player_pb->seeded_pbs);
+        }
+
+        $redis_transaction->commit();
+
+        DB::commit();
+    }
+
+    /**
+     * Aggregates rank points of all leaderboard entries into redis for the players being processed in this instance.
+     *
+     * @return void
+     */
+    protected function aggregateLeaderboardRankPoints(): void {
+        DB::beginTransaction();
+
+        $cursor = new PostgresCursor(
+            "{$this->leaderboard_source->name}_leaderboard_entry_player_stats",
+            LeaderboardEntries::getPlayerStatsQuery($this->leaderboard_source, $this->date),
+            10000
+        );
+
+        $redis_transaction = new PipelineTransaction($this->redis, 1000);
+
+        foreach($cursor->getRecord() as $leaderboard_entry) {
+            $rank_points = RankPoints::calculateFromRank($leaderboard_entry->rank);
+
+            $release_key = CacheNames::getPlayerStats($leaderboard_entry->player_id, $leaderboard_entry->release_id);
+
+            $redis_transaction->hIncrByFloat($release_key, "leaderboard-type_{$leaderboard_entry->leaderboard_type_id}_points", $rank_points);
+            $redis_transaction->hIncrByFloat($release_key, "character_{$leaderboard_entry->character_id}_points", $rank_points);
+            $redis_transaction->hIncrByFloat($release_key, "mode_{$leaderboard_entry->mode_id}_points", $rank_points);
+            $redis_transaction->hIncrByFloat($release_key, "seeded-type_{$leaderboard_entry->seeded_type_id}_points", $rank_points);
+            $redis_transaction->hIncrByFloat($release_key, "multiplayer-type_{$leaderboard_entry->multiplayer_type_id}_points", $rank_points);
+            $redis_transaction->hIncrByFloat($release_key, "soundtrack_{$leaderboard_entry->soundtrack_id}_points", $rank_points);
+
+            $overall_key = CacheNames::getPlayerStats($leaderboard_entry->player_id, 'overall');
+
+            $redis_transaction->hIncrByFloat($overall_key, "leaderboard-type_{$leaderboard_entry->leaderboard_type_id}_points", $rank_points);
+            $redis_transaction->hIncrByFloat($overall_key, "character_{$leaderboard_entry->character_id}_points", $rank_points);
+            $redis_transaction->hIncrByFloat($overall_key, "release_{$leaderboard_entry->release_id}_points", $rank_points);
+            $redis_transaction->hIncrByFloat($overall_key, "mode_{$leaderboard_entry->mode_id}_points", $rank_points);
+            $redis_transaction->hIncrByFloat($overall_key, "seeded-type_{$leaderboard_entry->seeded_type_id}_points", $rank_points);
+            $redis_transaction->hIncrByFloat($overall_key, "multiplayer-type_{$leaderboard_entry->multiplayer_type_id}_points", $rank_points);
+            $redis_transaction->hIncrByFloat($overall_key, "soundtrack_{$leaderboard_entry->soundtrack_id}_points", $rank_points);
+        }
+
+        $redis_transaction->commit();
+
+        DB::commit();
+    }
+
+    /**
+     * Retrieves the best ID for each supported leaderboard attribute.
+     *
+     * @param array $record The aggregated record from redis.
+     * @return array
+     */
+    protected function getBestAttributeIds(array $record): array {
+        $best_ids = [];
+
+        foreach($record as $field_name => $field_value) {
+            if(strpos($field_name, '_points') !== false) {
+                $field_name_split = explode('_', $field_name);
+
+                $id_name = $field_name_split[0];
+                $id = $field_name_split[1];
+
+                if(!isset($best_ids[$id_name]) || $best_ids[$id_name]['points'] < $field_value) {
+                    $best_ids[$id_name] = [
+                        'id' => $id,
+                        'points' => $field_value
+                    ];
+                }
+            }
+        }
+
+        return $best_ids;
+    }
+
+    /**
+     * Stages aggregated stats to a temporary table in the database.
+     *
+     * @param array $entries The chunk
+     * @param RecordQueue $insert_queue The insert queue used to add records to the database.
+     * @return void
+     */
+    public function saveChunkToDatabase($entries, RecordQueue $insert_queue): void {
+        if(!empty($entries)) {
+            foreach($entries as $entry) {
+                if(!empty($entry)) {
+                    $best_ids = $this->getBestAttributeIds($entry);
+
+                    $details = [];
+
+                    foreach($this->details_columns as $details_column) {
+                        $details_field_name = "details_{$details_column->name}";
+
+                        if(isset($entry[$details_field_name])) {
+                            $details[$details_column->name] = $entry[$details_field_name];
+                        }
+                    }
+
+                    $record = [
+                        'player_id' => $entry['player_id'],
+                        'release_id' => $entry['release_id'] ?? NULL,
+                        'pbs' => $entry['pbs'],
+                        'leaderboards' => $entry['leaderboards'],
+                        'first_place_ranks' => $entry['first_place_ranks'],
+                        'dailies' => $entry['dailies'],
+                        'seeded_pbs' => $entry['seeded_pbs'],
+                        'unseeded_pbs' => $entry['unseeded_pbs'],
+                        'best_leaderboard_type_id' => $best_ids['leaderboard-type']['id'] ?? NULL,
+                        'best_character_id' => $best_ids['character']['id'] ?? NULL,
+                        'best_release_id' => $best_ids['release']['id'] ?? NULL,
+                        'best_mode_id' => $best_ids['mode']['id'] ?? NULL,
+                        'best_seeded_type_id' => $best_ids['seeded-type']['id'] ?? NULL,
+                        'best_multiplayer_type_id' => $best_ids['multiplayer-type']['id'] ?? NULL,
+                        'best_soundtrack_id' => $best_ids['soundtrack']['id'] ?? NULL,
+                        'leaderboard_types' => $entry['leaderboard_types'] ?? NULL,
+                        'characters' => $entry['characters'] ?? NULL,
+                        'modes' => $entry['modes'] ?? NULL,
+                        'seeded_types' => $entry['seeded_types'] ?? NULL,
+                        'multiplayer_types' => $entry['multiplayer_types'] ?? NULL,
+                        'soundtracks' => $entry['soundtracks'] ?? NULL,
+                        'details' => json_encode($details)
+                    ];
+
+                    $hash = substr(md5(json_encode($record)), 0, 8);
+
+                    /*
+                        Date is added after hashing to help detect if the stats record
+                        is the same on any other date for the same release
+                    */
+                    $record['date_id'] = $this->date->id;
+                    $record['hash'] = $hash;
+
+                    $insert_queue->addRecord($record);
+                }
+            }
+        }
+    }
+
+    /**
      * Execute the job.
      *
      * @return void
      */
     protected function handleDatabaseTransaction(): void {
-        $first_place_ranks_by_player = LeaderboardEntries::getFirstPlaceRanksByPlayer($this->leaderboard_source, $this->date);
-        $details_columns = LeaderboardDetailsColumns::all();
+        $this->details_columns = LeaderboardDetailsColumns::all();
 
-        DB::beginTransaction();
+        $this->redis = Redis::connection('player_stats');
 
-        PlayerStats::createTemporaryTable($this->leaderboard_source);
+        $database_selector = new DatabaseSelector($this->redis, new DateTime($this->date->name));
 
-        $stats_insert_queue = PlayerStats::getTempInsertQueue($this->leaderboard_source, 3000);
+        $database_selector->run();
 
-        $cursor = new PostgresCursor(
-            "{$this->leaderboard_source->name}_players_stats_update",
-            PlayerPbs::getPlayerStatsQuery($this->leaderboard_source, $this->date),
-            3000
-        );
+        $this->loadPbStats();
 
-        foreach($cursor->getRecord() as $player_stats) {
-            $player_stats->date_id = $this->date->id;
-            $player_stats->first_place_ranks = $first_place_ranks_by_player[$player_stats->player_id] ?? 0;
+        $this->aggregateLeaderboardRankPoints();
 
-            $details = [];
+        $player_ids_key = CacheNames::getStatsIndex();
 
-            foreach($details_columns as $details_column) {
-                $details_field_name = "details_{$details_column->name}";
+        $player_ids = $this->redis->sMembers($player_ids_key);
 
-                if(isset($player_stats->$details_field_name)) {
-                    $details[$details_column->name] = $player_stats->$details_field_name;
+        if(!empty($player_ids)) {
+            DB::beginTransaction();
+
+            PlayerStats::createTemporaryTable($this->leaderboard_source);
+
+            $insert_queue = PlayerStats::getTempInsertQueue($this->leaderboard_source, 2000);
+
+            $redis_transaction = new PipelineTransaction($this->redis, 1000);
+
+            $callback = new CallbackHandler();
+
+            $callback->setCallback([
+                $this,
+                'saveChunkToDatabase'
+            ]);
+
+            $callback->setArguments([
+                $insert_queue
+            ]);
+
+            $redis_transaction->addCommitCallback($callback);
+
+            foreach($player_ids as $player_id) {
+                foreach($this->release_ids_processed as $release_id) {
+                    $release_key = CacheNames::getPlayerStats($player_id, $release_id);
+
+                    $redis_transaction->hGetAll($release_key);
                 }
+
+                $overall_key = CacheNames::getPlayerStats($player_id, 'overall');
+
+                $redis_transaction->hGetAll($overall_key);
             }
 
-            $record = [
-                'player_id' => $player_stats->player_id,
-                'release_id' => $player_stats->release_id,
-                'pbs' => $player_stats->pbs,
-                'leaderboards' => $player_stats->leaderboards,
-                'first_place_ranks' => $player_stats->first_place_ranks,
-                'dailies' => $player_stats->dailies,
-                'leaderboard_types' => $player_stats->leaderboard_types,
-                'characters' => $player_stats->characters,
-                'modes' => $player_stats->modes,
-                'seeded_types' => $player_stats->seeded_types,
-                'multiplayer_types' => $player_stats->multiplayer_types,
-                'soundtracks' => $player_stats->soundtracks,
-                'details' => json_encode($details)
-            ];
+            $redis_transaction->commit();
 
-            $hash = substr(md5(serialize($record)), 0, 8);
+            $insert_queue->commit();
 
-            /*
-                Date is added after hashing to help detect if the stats record
-                is the same on any other date for the same release
-            */
-            $record['date_id'] = $player_stats->date_id;
-            $record['hash'] = $hash;
+            PlayerStats::clear($this->leaderboard_source, $this->date);
 
-            $stats_insert_queue->addRecord($record);
+            PlayerStats::saveNewTemp($this->leaderboard_source);
+
+            DB::commit();
         }
 
-        $stats_insert_queue->commit();
-
-        PlayerStats::addOverallToTemp($this->leaderboard_source);
-
-        PlayerStats::clear($this->leaderboard_source, $this->date);
-
-        PlayerStats::saveNewTemp($this->leaderboard_source);
-
-        DB::commit();
+        $this->redis->flushDb();
     }
 }

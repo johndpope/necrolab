@@ -10,6 +10,7 @@ use App\Http\Resources\PlayerStatsByReleaseResource;
 use App\Http\Resources\PlayerStatsResource;
 use App\Components\RequestModels;
 use App\PlayerStats;
+use App\LeaderboardEntries;
 
 class PlayerStatsController extends Controller {
     /**
@@ -29,7 +30,7 @@ class PlayerStatsController extends Controller {
      * Display all stats for a player.
      *
      * @param  \App\Http\Requests\Api\ReadPlayerStats $request
-     * @return \App\Http\Resources\PlayerStatsResource
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function index(ReadPlayerStats $request) {
         $request_models = new RequestModels($request, [
@@ -43,10 +44,31 @@ class PlayerStatsController extends Controller {
                 "players:stats:total:{$request->player_id}:" . (string)$cache_prefix_name,
                 5,
                 function() use($request, $request_models) {
-                    return PlayerStats::getPlayerApiReadQuery(
+                    $stats_history = PlayerStats::getPlayerApiReadQuery(
                         $request->player_id,
                         $request_models->leaderboard_source
                     )->get();
+
+                    if(!$stats_history->isEmpty()) {
+                        $latest_history_record = $stats_history->first();
+                        $latest_record = clone $latest_history_record;
+
+                        $latest_stats = PlayerStats::getPlayerLatest($request_models->leaderboard_source, $request->player_id);
+
+                        $latest_record->date = $latest_stats['date'];
+
+                        foreach($latest_stats as $field_name => $field_value) {
+                            $latest_record->$field_name = $field_value;
+                        }
+
+                        if(
+                            $latest_record->date != $latest_history_record->date
+                        ) {
+                            $stats_history->prepend($latest_record);
+                        }
+                    }
+
+                    return $stats_history;
                 }
             )
         );
@@ -70,10 +92,18 @@ class PlayerStatsController extends Controller {
                 "players:stats:latest:{$request->player_id}:" . (string)$cache_prefix_name,
                 5,
                 function() use($request, $request_models) {
-                    return PlayerStats::getPlayerLatestApiReadQuery(
+                    $stats_record = PlayerStats::getPlayerLatestApiReadQuery(
                         $request->player_id,
                         $request_models->leaderboard_source
                     )->first();
+
+                    $latest_stats = PlayerStats::getPlayerLatest($request_models->leaderboard_source, $request->player_id);
+
+                    foreach($latest_stats as $field_name => $field_value) {
+                        $stats_record->$field_name = $field_value;
+                    }
+
+                    return $stats_record;
                 }
             )
         );
@@ -83,7 +113,7 @@ class PlayerStatsController extends Controller {
      * Display all stats for a player by the release specified in the request.
      *
      * @param  \App\Http\Requests\Api\ReadPlayerStatsByRelease $request
-     * @return \App\Http\Resources\PlayerStatsByReleaseResource
+     * @return \Illuminate\Http\Resources\Json\AnonymousResourceCollection
      */
     public function byRelease(ReadPlayerStatsByRelease $request) {
         $request_models = new RequestModels($request, [
@@ -98,11 +128,36 @@ class PlayerStatsController extends Controller {
                 "players:stats:by_release:{$request->player_id}:" . (string)$cache_prefix_name,
                 5,
                 function() use($request, $request_models) {
-                    return PlayerStats::getPlayerByReleaseApiReadQuery(
+                    $stats_history = PlayerStats::getPlayerByReleaseApiReadQuery(
                         $request->player_id,
                         $request_models->leaderboard_source,
                         $request_models->release
                     )->get();
+
+                    if(!$stats_history->isEmpty()) {
+                        $latest_history_record = $stats_history->first();
+                        $latest_record = clone $latest_history_record;
+
+                        $latest_stats = PlayerStats::getPlayerLatest(
+                            $request_models->leaderboard_source,
+                            $request->player_id,
+                            $request_models->release
+                        );
+
+                        $latest_record->date = $latest_stats['date'];
+
+                        foreach($latest_stats as $field_name => $field_value) {
+                            $latest_record->$field_name = $field_value;
+                        }
+
+                        if(
+                            $latest_record->date != $latest_history_record->date
+                        ) {
+                            $stats_history->prepend($latest_record);
+                        }
+                    }
+
+                    return $stats_history;
                 }
             )
         );

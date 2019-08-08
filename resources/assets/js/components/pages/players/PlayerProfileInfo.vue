@@ -1,9 +1,11 @@
 <template>
     <with-nav-body
+        v-if="loaded"
         :loaded="loaded"
         :show_breadcrumbs="false"
     >
-        <player-linked-sites :player="player"></player-linked-sites>
+        <player-linked-sites :player="player">
+        </player-linked-sites>
         <div v-if="dataset.data" class="container-fluid pr-0 pl-0">
             <div class="row">
                 <div class="col-md-6 pt-md-4 table-responsive">
@@ -41,6 +43,22 @@
                                 </div>
                             </td>
                         </tr>
+                        <tr>
+                            <th>Seeded PBs</th>
+                            <td>
+                                <div class="text-sm-right text-lg-left">
+                                    {{ dataset.data.seeded_pbs }}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>Unseeded PBs</th>
+                            <td>
+                                <div class="text-sm-right text-lg-left">
+                                    {{ dataset.data.unseeded_pbs }}
+                                </div>
+                            </td>
+                        </tr>
                     </table>
                 </div>
                 <div class="col-md-6 pt-md-4 table-responsive">
@@ -57,6 +75,81 @@
                                         :details_value="dataset.data.details[details_column.name] != null ? dataset.data.details[details_column.name] : ''"
                                     >
                                     </details-column>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="col-md-6 pt-md-4 table-responsive">
+                    <h4>Bests</h4>
+                    <table class="table">
+                        <tr>
+                            <th>
+                                Category
+                            </th>
+                            <td>
+                                <div class="text-sm-right text-lg-left">
+                                    {{ $store.getters['leaderboard_types/getByName'](dataset.data.bests.leaderboard_type).display_name }}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                Character
+                            </th>
+                            <td>
+                                <div class="text-sm-right text-lg-left">
+                                    {{ $store.getters['characters/getByName'](dataset.data.bests.character).display_name }}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                Release
+                            </th>
+                            <td>
+                                <div class="text-sm-right text-lg-left">
+                                    {{ $store.getters['releases/getByName'](dataset.data.bests.release).display_name }}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                Mode
+                            </th>
+                            <td>
+                                <div class="text-sm-right text-lg-left">
+                                    {{ $store.getters['modes/getByName'](dataset.data.bests.mode).display_name }}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                Seeded Type
+                            </th>
+                            <td>
+                                <div class="text-sm-right text-lg-left">
+                                    {{ $store.getters['seeded_types/getByName'](dataset.data.bests.seeded_type).display_name }}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                Multiplayer Type
+                            </th>
+                            <td>
+                                <div class="text-sm-right text-lg-left">
+                                    {{ $store.getters['multiplayer_types/getByName'](dataset.data.bests.multiplayer_type).display_name }}
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                Soundtrack
+                            </th>
+                            <td>
+                                <div class="text-sm-right text-lg-left">
+                                    {{ $store.getters['soundtracks/getByName'](dataset.data.bests.soundtrack).display_name }}
                                 </div>
                             </td>
                         </tr>
