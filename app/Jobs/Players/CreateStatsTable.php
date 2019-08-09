@@ -67,7 +67,7 @@ class CreateStatsTable implements ShouldQueue {
             $table->smallInteger('dailies');
             $table->smallInteger('seeded_pbs');
             $table->smallInteger('unseeded_pbs');
-            $table->jsonb('bests')->nullable();
+            $table->jsonb('bests');
             $table->jsonb('leaderboard_types')->nullable();
             $table->jsonb('characters')->nullable();
             $table->jsonb('modes')->nullable();

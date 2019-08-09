@@ -258,6 +258,7 @@ class LeaderboardEntries extends Model {
         return DB::table(LeaderboardSnapshots::getSchemaTableName($leaderboard_source) . ' AS ls')
             ->select([
                 'ppb.player_id',
+                'l.release_id',
                 'le.rank',
                 'lt.name AS leaderboard_type',
                 'c.name AS character',

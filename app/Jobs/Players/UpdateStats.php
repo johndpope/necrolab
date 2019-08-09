@@ -205,7 +205,7 @@ class UpdateStats implements ShouldQueue {
         foreach($cursor->getRecord() as $leaderboard_entry) {
             $rank_points = RankPoints::calculateFromRank($leaderboard_entry->rank);
 
-            $release_key = CacheNames::getPlayerStats($leaderboard_entry->player_id, $leaderboard_entry->release);
+            $release_key = CacheNames::getPlayerStats($leaderboard_entry->player_id, $leaderboard_entry->release_id);
 
             $leaderboard_type_points_name = "leaderboard-type_{$leaderboard_entry->leaderboard_type}_points";
             $character_points_name = "character_{$leaderboard_entry->character}_points";
