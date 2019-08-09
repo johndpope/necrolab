@@ -140,6 +140,7 @@ services:
       - necrolab-db
       - necrolab-power-rankings-redis
       - necrolab-daily-rankings-redis
+      - necrolab-player-stats-redis
 
   # Cron Service
   necrolab-cron:
@@ -264,6 +265,7 @@ services:
       - necrolab-network
     depends_on:
       - necrolab-db
+      - necrolab-player-stats-redis
 
   # Dates Queue Worker
   necrolab-dates-queue-worker:
