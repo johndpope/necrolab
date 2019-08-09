@@ -364,7 +364,7 @@ class SaveToDatabase implements ShouldQueue {
             DailyRankingsGenerateJob::dispatch($this->leaderboard_source, $this->date)->onQueue(QueueNames::DAILY_RANKINGS);
             UpdateStatsJob::dispatch($this->leaderboard_source, $this->date)->onQueue(QueueNames::LEADERBOARDS);
             PlayersCacheJob::dispatch($this->leaderboard_source)->onQueue(QueueNames::PLAYERS);
-            //UpdatePlayerStatsJob::dispatch($this->leaderboard_source, $this->date)->onQueue(QueueNames::PLAYERS);
+            UpdatePlayerStatsJob::dispatch($this->leaderboard_source, $this->date)->onQueue(QueueNames::PLAYERS);
             CacheNonDailyLeadeboardEntriesJob::dispatch($this->leaderboard_source, $this->date)->onQueue(QueueNames::LEADERBOARDS);
             CacheDailyLeadeboardEntriesJob::dispatch($this->leaderboard_source, $this->date)->onQueue(QueueNames::LEADERBOARDS);
 
