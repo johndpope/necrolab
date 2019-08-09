@@ -49,13 +49,7 @@ class PlayerStats extends Model {
                 dailies smallint,
                 seeded_pbs smallint,
                 unseeded_pbs smallint,
-                best_leaderboard_type_id smallint,
-                best_character_id smallint,
-                best_release_id smallint,
-                best_mode_id smallint,
-                best_seeded_type_id smallint,
-                best_multiplayer_type_id smallint,
-                best_soundtrack_id smallint,
+                bests jsonb,
                 leaderboard_types jsonb,
                 characters jsonb,
                 modes jsonb,
@@ -87,13 +81,7 @@ class PlayerStats extends Model {
                 dailies,
                 seeded_pbs,
                 unseeded_pbs,
-                best_leaderboard_type_id,
-                best_character_id,
-                best_release_id,
-                best_mode_id,
-                best_seeded_type_id,
-                best_multiplayer_type_id,
-                best_soundtrack_id,
+                bests,
                 leaderboard_types,
                 characters,
                 modes,
@@ -113,13 +101,7 @@ class PlayerStats extends Model {
                 dailies,
                 seeded_pbs,
                 unseeded_pbs,
-                best_leaderboard_type_id,
-                best_character_id,
-                best_release_id,
-                best_mode_id,
-                best_seeded_type_id,
-                best_multiplayer_type_id,
-                best_soundtrack_id,
+                bests,
                 leaderboard_types,
                 characters,
                 modes,
@@ -207,14 +189,16 @@ class PlayerStats extends Model {
             'first_place_ranks' => $first_place_ranks
         ];
 
+        $bests = [];
+
         foreach($attribute_points as $attribute_name => $points) {
             arsort($points);
             reset($points);
 
-            $best_name = "best_{$attribute_name}";
-
-            $latest_stats[$best_name] = key($points);
+            $bests[$attribute_name] = key($points);
         }
+
+        $latest_stats['bests'] = json_encode($bests);
 
         return $latest_stats;
     }
@@ -229,13 +213,7 @@ class PlayerStats extends Model {
                 'ps.dailies',
                 'ps.seeded_pbs',
                 'ps.unseeded_pbs',
-                'lt.name AS best_leaderboard_type',
-                'c.name AS best_character',
-                'r.name AS best_release',
-                'm.name AS best_mode',
-                'st.name AS best_seeded_type',
-                'mt.name AS best_multiplayer_type',
-                's.name AS best_soundtrack',
+                'ps.bests',
                 'ps.leaderboard_types',
                 'ps.characters',
                 'ps.modes',
@@ -246,13 +224,6 @@ class PlayerStats extends Model {
             ])
             ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', 'ps.player_id')
             ->join('dates AS d', 'd.id', '=', 'ps.date_id')
-            ->leftJoin('leaderboard_types AS lt', 'lt.id', '=', 'ps.best_leaderboard_type_id')
-            ->leftJoin('characters AS c', 'c.id', '=', 'ps.best_character_id')
-            ->leftJoin('releases AS r', 'r.id', '=', 'ps.best_release_id')
-            ->leftJoin('modes AS m', 'm.id', '=', 'ps.best_mode_id')
-            ->leftJoin('seeded_types AS st', 'st.id', '=', 'ps.best_seeded_type_id')
-            ->leftJoin('multiplayer_types AS mt', 'mt.id', '=', 'ps.best_multiplayer_type_id')
-            ->leftJoin('soundtracks AS s', 's.id', '=', 'ps.best_soundtrack_id')
             ->where('p.external_id', $player_id)
             ->whereNull('ps.release_id')
             ->orderBy('d.name', 'desc');
@@ -275,12 +246,7 @@ class PlayerStats extends Model {
                 'ps.dailies',
                 'ps.seeded_pbs',
                 'ps.unseeded_pbs',
-                'lt.name AS best_leaderboard_type',
-                'c.name AS best_character',
-                'm.name AS best_mode',
-                'st.name AS best_seeded_type',
-                'mt.name AS best_multiplayer_type',
-                's.name AS best_soundtrack',
+                'ps.bests',
                 'ps.leaderboard_types',
                 'ps.characters',
                 'ps.modes',
@@ -291,12 +257,6 @@ class PlayerStats extends Model {
             ])
             ->join(Players::getSchemaTableName($leaderboard_source) . ' AS p', 'p.id', 'ps.player_id')
             ->join('dates AS d', 'd.id', '=', 'ps.date_id')
-            ->leftJoin('leaderboard_types AS lt', 'lt.id', '=', 'ps.best_leaderboard_type_id')
-            ->leftJoin('characters AS c', 'c.id', '=', 'ps.best_character_id')
-            ->leftJoin('modes AS m', 'm.id', '=', 'ps.best_mode_id')
-            ->leftJoin('seeded_types AS st', 'st.id', '=', 'ps.best_seeded_type_id')
-            ->leftJoin('multiplayer_types AS mt', 'mt.id', '=', 'ps.best_multiplayer_type_id')
-            ->leftJoin('soundtracks AS s', 's.id', '=', 'ps.best_soundtrack_id')
             ->where('p.external_id', $player_id)
             ->where('ps.release_id', $release->id)
             ->orderBy('d.name', 'desc');

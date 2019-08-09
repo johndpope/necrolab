@@ -12,15 +12,13 @@ class PlayerStatsResource extends JsonResource {
      * @return array
      */
     public function toArray($request) {
-        $bests = [
-            'leaderboard_type' => $this->best_leaderboard_type,
-            'character' => $this->best_character,
-            'release' => $this->best_release,
-            'mode' => $this->best_mode,
-            'seeded_type' => $this->best_seeded_type,
-            'multiplayer_type' => $this->best_multiplayer_type,
-            'soundtrack' => $this->best_soundtrack,
-        ];
+        $bests_decoded = json_decode($this->bests, true);
+
+        $bests = [];
+
+        if(!empty($bests_decoded)) {
+            $bests = $bests_decoded;
+        }
 
         $details_decoded = json_decode($this->details, true);
         $details = [];

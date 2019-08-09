@@ -259,16 +259,22 @@ class LeaderboardEntries extends Model {
             ->select([
                 'ppb.player_id',
                 'le.rank',
-                'l.leaderboard_type_id',
-                'l.character_id',
-                'l.release_id',
-                'l.mode_id',
-                'l.seeded_type_id',
-                'l.multiplayer_type_id',
-                'l.soundtrack_id'
+                'lt.name AS leaderboard_type',
+                'c.name AS character',
+                'r.name AS release',
+                'm.name AS mode',
+                'st.name AS seeded_type',
+                'mt.name AS multiplayer_type',
+                's.name AS soundtrack'
             ])
             ->join(Leaderboards::getSchemaTableName($leaderboard_source) . ' AS l', 'l.id', '=', 'ls.leaderboard_id')
             ->join('leaderboard_types AS lt', 'lt.id', '=', 'l.leaderboard_type_id')
+            ->join('characters AS c', 'c.id', '=', 'l.character_id')
+            ->join('releases AS r', 'r.id', '=', 'l.release_id')
+            ->join('modes AS m', 'm.id', '=', 'l.mode_id')
+            ->join('seeded_types AS st', 'st.id', '=', 'l.seeded_type_id')
+            ->join('multiplayer_types AS mt', 'mt.id', '=', 'l.multiplayer_type_id')
+            ->join('soundtracks AS s', 's.id', '=', 'l.soundtrack_id')
             ->join(static::getTableName($leaderboard_source, new DateTime($date->name)) . " AS le", 'le.leaderboard_snapshot_id', '=', 'ls.id')
             ->join(PlayerPbs::getSchemaTableName($leaderboard_source) . " AS ppb", 'ppb.id', '=', 'le.player_pb_id')
             ->joinSub($player_ids_for_date_query, 'player_ids', 'player_ids.player_id', '=', 'ppb.player_id')

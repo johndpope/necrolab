@@ -89,7 +89,7 @@
                             </th>
                             <td>
                                 <div class="text-sm-right text-lg-left">
-                                    {{ $store.getters['leaderboard_types/getByName'](dataset.data.bests.leaderboard_type).display_name }}
+                                    {{ $store.getters['leaderboard_types/getByName'](getBest('leaderboard_type')).display_name }}
                                 </div>
                             </td>
                         </tr>
@@ -99,7 +99,7 @@
                             </th>
                             <td>
                                 <div class="text-sm-right text-lg-left">
-                                    {{ $store.getters['characters/getByName'](dataset.data.bests.character).display_name }}
+                                    {{ $store.getters['characters/getByName'](getBest('character')).display_name }}
                                 </div>
                             </td>
                         </tr>
@@ -109,7 +109,7 @@
                             </th>
                             <td>
                                 <div class="text-sm-right text-lg-left">
-                                    {{ $store.getters['releases/getByName'](dataset.data.bests.release).display_name }}
+                                    {{ $store.getters['releases/getByName'](getBest('release')).display_name }}
                                 </div>
                             </td>
                         </tr>
@@ -119,7 +119,7 @@
                             </th>
                             <td>
                                 <div class="text-sm-right text-lg-left">
-                                    {{ $store.getters['modes/getByName'](dataset.data.bests.mode).display_name }}
+                                    {{ $store.getters['modes/getByName'](getBest('mode')).display_name }}
                                 </div>
                             </td>
                         </tr>
@@ -129,7 +129,7 @@
                             </th>
                             <td>
                                 <div class="text-sm-right text-lg-left">
-                                    {{ $store.getters['seeded_types/getByName'](dataset.data.bests.seeded_type).display_name }}
+                                    {{ $store.getters['seeded_types/getByName'](getBest('seeded_type')).display_name }}
                                 </div>
                             </td>
                         </tr>
@@ -139,7 +139,7 @@
                             </th>
                             <td>
                                 <div class="text-sm-right text-lg-left">
-                                    {{ $store.getters['multiplayer_types/getByName'](dataset.data.bests.multiplayer_type).display_name }}
+                                    {{ $store.getters['multiplayer_types/getByName'](getBest('multiplayer_type')).display_name }}
                                 </div>
                             </td>
                         </tr>
@@ -149,7 +149,7 @@
                             </th>
                             <td>
                                 <div class="text-sm-right text-lg-left">
-                                    {{ $store.getters['soundtracks/getByName'](dataset.data.bests.soundtrack).display_name }}
+                                    {{ $store.getters['soundtracks/getByName'](getBest('soundtrack')).display_name }}
                                 </div>
                             </td>
                         </tr>
@@ -207,6 +207,15 @@ const PlayerProfileInfo = {
         }
     },
     methods: {
+        getBest(best_name) {
+            let value = '';
+
+            if(this.dataset.data.bests[best_name] != null) {
+                value = this.dataset.data.bests[best_name];
+            }
+
+            return value;
+        },
         loadState(route_params) {
             this.player_id = route_params.player_id;
             this.leaderboard_source = this.$store.getters['leaderboard_sources/getSelected'];

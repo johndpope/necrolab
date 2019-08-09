@@ -205,24 +205,32 @@ class UpdateStats implements ShouldQueue {
         foreach($cursor->getRecord() as $leaderboard_entry) {
             $rank_points = RankPoints::calculateFromRank($leaderboard_entry->rank);
 
-            $release_key = CacheNames::getPlayerStats($leaderboard_entry->player_id, $leaderboard_entry->release_id);
+            $release_key = CacheNames::getPlayerStats($leaderboard_entry->player_id, $leaderboard_entry->release);
 
-            $redis_transaction->hIncrByFloat($release_key, "leaderboard-type_{$leaderboard_entry->leaderboard_type_id}_points", $rank_points);
-            $redis_transaction->hIncrByFloat($release_key, "character_{$leaderboard_entry->character_id}_points", $rank_points);
-            $redis_transaction->hIncrByFloat($release_key, "mode_{$leaderboard_entry->mode_id}_points", $rank_points);
-            $redis_transaction->hIncrByFloat($release_key, "seeded-type_{$leaderboard_entry->seeded_type_id}_points", $rank_points);
-            $redis_transaction->hIncrByFloat($release_key, "multiplayer-type_{$leaderboard_entry->multiplayer_type_id}_points", $rank_points);
-            $redis_transaction->hIncrByFloat($release_key, "soundtrack_{$leaderboard_entry->soundtrack_id}_points", $rank_points);
+            $leaderboard_type_points_name = "leaderboard-type_{$leaderboard_entry->leaderboard_type}_points";
+            $character_points_name = "character_{$leaderboard_entry->character}_points";
+            $release_points_name = "release_{$leaderboard_entry->release}_points";
+            $mode_points_name = "mode_{$leaderboard_entry->mode}_points";
+            $seeded_type_points_name = "seeded-type_{$leaderboard_entry->seeded_type}_points";
+            $multiplayer_type_points_name = "multiplayer-type_{$leaderboard_entry->multiplayer_type}_points";
+            $soundtrack_points_name = "soundtrack_{$leaderboard_entry->soundtrack}_points";
+
+            $redis_transaction->hIncrByFloat($release_key, $leaderboard_type_points_name, $rank_points);
+            $redis_transaction->hIncrByFloat($release_key, $character_points_name, $rank_points);
+            $redis_transaction->hIncrByFloat($release_key, $mode_points_name, $rank_points);
+            $redis_transaction->hIncrByFloat($release_key, $seeded_type_points_name, $rank_points);
+            $redis_transaction->hIncrByFloat($release_key, $multiplayer_type_points_name, $rank_points);
+            $redis_transaction->hIncrByFloat($release_key, $soundtrack_points_name, $rank_points);
 
             $overall_key = CacheNames::getPlayerStats($leaderboard_entry->player_id, 'overall');
 
-            $redis_transaction->hIncrByFloat($overall_key, "leaderboard-type_{$leaderboard_entry->leaderboard_type_id}_points", $rank_points);
-            $redis_transaction->hIncrByFloat($overall_key, "character_{$leaderboard_entry->character_id}_points", $rank_points);
-            $redis_transaction->hIncrByFloat($overall_key, "release_{$leaderboard_entry->release_id}_points", $rank_points);
-            $redis_transaction->hIncrByFloat($overall_key, "mode_{$leaderboard_entry->mode_id}_points", $rank_points);
-            $redis_transaction->hIncrByFloat($overall_key, "seeded-type_{$leaderboard_entry->seeded_type_id}_points", $rank_points);
-            $redis_transaction->hIncrByFloat($overall_key, "multiplayer-type_{$leaderboard_entry->multiplayer_type_id}_points", $rank_points);
-            $redis_transaction->hIncrByFloat($overall_key, "soundtrack_{$leaderboard_entry->soundtrack_id}_points", $rank_points);
+            $redis_transaction->hIncrByFloat($overall_key, $leaderboard_type_points_name, $rank_points);
+            $redis_transaction->hIncrByFloat($overall_key, $character_points_name, $rank_points);
+            $redis_transaction->hIncrByFloat($overall_key, $release_points_name, $rank_points);
+            $redis_transaction->hIncrByFloat($overall_key, $mode_points_name, $rank_points);
+            $redis_transaction->hIncrByFloat($overall_key, $seeded_type_points_name, $rank_points);
+            $redis_transaction->hIncrByFloat($overall_key, $multiplayer_type_points_name, $rank_points);
+            $redis_transaction->hIncrByFloat($overall_key, $soundtrack_points_name, $rank_points);
         }
 
         $redis_transaction->commit();
@@ -236,19 +244,19 @@ class UpdateStats implements ShouldQueue {
      * @param array $record The aggregated record from redis.
      * @return array
      */
-    protected function getBestAttributeIds(array $record): array {
+    protected function getBestAttributes(array $record): array {
         $best_ids = [];
 
         foreach($record as $field_name => $field_value) {
             if(strpos($field_name, '_points') !== false) {
                 $field_name_split = explode('_', $field_name);
 
-                $id_name = $field_name_split[0];
-                $id = $field_name_split[1];
+                $attribute_name = $field_name_split[0];
+                $attribute_value = $field_name_split[1];
 
-                if(!isset($best_ids[$id_name]) || $best_ids[$id_name]['points'] < $field_value) {
-                    $best_ids[$id_name] = [
-                        'id' => $id,
+                if(!isset($best_ids[$attribute_name]) || $best_ids[$attribute_name]['points'] < $field_value) {
+                    $best_ids[$attribute_name] = [
+                        'name' => $attribute_value,
                         'points' => $field_value
                     ];
                 }
@@ -269,7 +277,15 @@ class UpdateStats implements ShouldQueue {
         if(!empty($entries)) {
             foreach($entries as $entry) {
                 if(!empty($entry)) {
-                    $best_ids = $this->getBestAttributeIds($entry);
+                    $best_ids = $this->getBestAttributes($entry);
+
+                    $bests = [];
+
+                    foreach($best_ids as $best_name => $best_details) {
+                        $best_name = str_replace('-', '_', $best_name);
+
+                        $bests[$best_name] = $best_details['name'];
+                    }
 
                     $details = [];
 
@@ -290,13 +306,7 @@ class UpdateStats implements ShouldQueue {
                         'dailies' => $entry['dailies'],
                         'seeded_pbs' => $entry['seeded_pbs'],
                         'unseeded_pbs' => $entry['unseeded_pbs'],
-                        'best_leaderboard_type_id' => $best_ids['leaderboard-type']['id'] ?? NULL,
-                        'best_character_id' => $best_ids['character']['id'] ?? NULL,
-                        'best_release_id' => $best_ids['release']['id'] ?? NULL,
-                        'best_mode_id' => $best_ids['mode']['id'] ?? NULL,
-                        'best_seeded_type_id' => $best_ids['seeded-type']['id'] ?? NULL,
-                        'best_multiplayer_type_id' => $best_ids['multiplayer-type']['id'] ?? NULL,
-                        'best_soundtrack_id' => $best_ids['soundtrack']['id'] ?? NULL,
+                        'bests' => json_encode($bests),
                         'leaderboard_types' => $entry['leaderboard_types'] ?? NULL,
                         'characters' => $entry['characters'] ?? NULL,
                         'modes' => $entry['modes'] ?? NULL,
