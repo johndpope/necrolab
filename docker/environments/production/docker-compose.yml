@@ -298,6 +298,8 @@ volumes:
     driver: local
   redis-daily-rankings-tmp:
     driver: local
+  redis-player-stats-tmp:
+    driver: local
   necrolab-app-tmp:
     driver: local
   necrolab-db-tmp:
