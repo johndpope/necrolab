@@ -15,6 +15,6 @@
 Route::get('/', 'Page\HomeController@index')->name('home');
 
 // Login page
-Route::get('/login/steam', 'Page\LoginController@loginSteam')->name('login_steam');
-Route::get('/login/steam/success', 'Page\LoginController@loginSteamSuccess')->name('login_steam_success');
+/*Route::get('/login/steam', 'Page\LoginController@loginSteam')->name('login_steam');
+Route::get('/login/steam/success', 'Page\LoginController@loginSteamSuccess')->name('login_steam_success');*/
 Route::get('/logout', 'Page\LoginController@logout')->name('logout');
