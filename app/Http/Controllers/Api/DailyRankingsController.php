@@ -41,14 +41,15 @@ class DailyRankingsController extends Controller {
             'soundtrack',
             'number_of_days'
         ]);
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
-        
+
         $cache_name = "rankings:daily:" . (string)$cache_prefix_name;
-        
+
         return DailyRankingsResource::collection(
             Cache::store('opcache')->remember(
-                $cache_name, 5, 
+                $cache_name,
+                300,
                 function() use($request_models) {
                     $records = DailyRankings::getApiReadQuery(
                         $request_models->leaderboard_source,
@@ -59,11 +60,11 @@ class DailyRankingsController extends Controller {
                         $request_models->soundtrack,
                         $request_models->number_of_days
                     )->get();
-                    
+
                     Encoder::jsonDecodeProperties($records, [
                         'details'
                     ]);
-                    
+
                     return $records;
                 }
             )

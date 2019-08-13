@@ -42,7 +42,7 @@ class PlayerStatsController extends Controller {
         return PlayerStatsResource::collection(
             Cache::store('opcache')->remember(
                 "players:stats:total:{$request->player_id}:" . (string)$cache_prefix_name,
-                5,
+                300,
                 function() use($request, $request_models) {
                     $stats_history = PlayerStats::getPlayerApiReadQuery(
                         $request->player_id,
@@ -90,7 +90,7 @@ class PlayerStatsController extends Controller {
         return new PlayerStatsResource(
             Cache::store('opcache')->remember(
                 "players:stats:latest:{$request->player_id}:" . (string)$cache_prefix_name,
-                5,
+                300,
                 function() use($request, $request_models) {
                     $stats_record = PlayerStats::getPlayerLatestApiReadQuery(
                         $request->player_id,
@@ -126,7 +126,7 @@ class PlayerStatsController extends Controller {
         return PlayerStatsByReleaseResource::collection(
             Cache::store('opcache')->remember(
                 "players:stats:by_release:{$request->player_id}:" . (string)$cache_prefix_name,
-                5,
+                300,
                 function() use($request, $request_models) {
                     $stats_history = PlayerStats::getPlayerByReleaseApiReadQuery(
                         $request->player_id,

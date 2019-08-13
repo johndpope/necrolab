@@ -199,18 +199,22 @@ class Players extends Model {
     public static function getIdsBySearchTerm(LeaderboardSources $leaderboard_source, string $search_term): object {
         $term_hash_name = sha1($search_term);
 
-        return Cache::store('opcache')->remember("{$leaderboard_source->name}:players:search:{$term_hash_name}", 5, function() use(
-            $leaderboard_source,
-            $search_term
-        ) {
-            return DB::table(static::getSchemaTableName($leaderboard_source))->select([
-                'id'
-            ])
-            ->whereRaw('username_search_index @@ to_tsquery(?)', [
+        return Cache::store('opcache')->remember(
+            "{$leaderboard_source->name}:players:search:{$term_hash_name}",
+            300,
+            function() use(
+                $leaderboard_source,
                 $search_term
-            ])
-            ->pluck('id', 'id');
-        });
+            ) {
+                return DB::table(static::getSchemaTableName($leaderboard_source))->select([
+                    'id'
+                ])
+                ->whereRaw('username_search_index @@ to_tsquery(?)', [
+                    $search_term
+                ])
+                ->pluck('id', 'id');
+            }
+        );
     }
 
     public static function getCacheQuery(LeaderboardSources $leaderboard_source): Builder {

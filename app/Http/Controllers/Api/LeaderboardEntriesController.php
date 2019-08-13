@@ -53,42 +53,42 @@ class LeaderboardEntriesController extends Controller {
             'leaderboard_source',
             'date'
         ]);
-    
+
         $index_name = CacheNames::getIndex($request->leaderboard_id, []);
-        
+
         /* ---------- Data Provider ---------- */
-        
+
         $data_provider = new SqlDataProvider(LeaderboardEntries::getNonDailyApiReadQuery(
             $request_models->leaderboard_source,
-            $request->leaderboard_id, 
+            $request->leaderboard_id,
             $request_models->date
         ));
-        
-        
+
+
         /* ---------- Index ---------- */
-        
+
         $index = new SqlIndex($request_models->leaderboard_source, $index_name);
-        
-        
+
+
         /* ---------- Dataset ---------- */
-        
+
         $dataset = new Dataset($request_models->leaderboard_source, $index_name, $data_provider);
-        
+
         $dataset->setIndex($index, 'le.player_id');
-        
+
         $dataset->setIndexSubName($request_models->date->name);
-        
+
         $dataset->setFromRequest($request);
-        
+
         $dataset->setSortCallback(function($entry, $key) {
             return $entry->rank;
         });
-        
+
         $dataset->process();
-        
+
         return LeaderboardEntriesResource::collection($dataset->getPaginator());
     }
-    
+
     /**
      * Display a listing of daily leaderboard entries.
      *
@@ -105,20 +105,20 @@ class LeaderboardEntriesController extends Controller {
             'soundtrack',
             'date'
         ]);
-        
-        
+
+
         /* ---------- Cache Name ---------- */
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
-        
+
         unset($cache_prefix_name->leaderboard_source);
         unset($cache_prefix_name->date);
-        
+
         $index_name = CacheNames::getDailyEntries($cache_prefix_name);
-        
-        
+
+
         /* ---------- Data Provider ---------- */
-        
+
         $data_provider = new SqlDataProvider(LeaderboardEntries::getDailyApiReadQuery(
             $request_models->leaderboard_source,
             $request_models->character,
@@ -128,32 +128,32 @@ class LeaderboardEntriesController extends Controller {
             $request_models->soundtrack,
             $request_models->date
         ));
-        
-        
+
+
         /* ---------- Index ---------- */
-        
+
         $index = new SqlIndex($request_models->leaderboard_source, $index_name);
-        
-        
+
+
         /* ---------- Dataset ---------- */
-        
+
         $dataset = new Dataset($request_models->leaderboard_source, $index_name, $data_provider);
-        
+
         $dataset->setIndex($index, 'le.player_id');
-        
+
         $dataset->setIndexSubName($request_models->date->name);
-        
+
         $dataset->setFromRequest($request);
-        
+
         $dataset->setSortCallback(function($entry, $key) {
             return $entry->rank;
         });
-        
+
         $dataset->process();
-        
+
         return LeaderboardEntriesResource::collection($dataset->getPaginator());
     }
-    
+
     /**
      * Display a listing of all non daily leaderboard entries for a specific player.
      *
@@ -170,15 +170,15 @@ class LeaderboardEntriesController extends Controller {
             'soundtrack',
             'date'
         ]);
-        
+
         $player_id = $request->player_id;
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
-        
+
         $cache_key = "players:{$player_id}:leaderboards:" . (string)$cache_prefix_name . ":entries";
 
         return LeaderboardEntriesResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use(
+            Cache::store('opcache')->remember($cache_key, 300, function() use(
                 $player_id,
                 $request_models
             ) {
@@ -195,7 +195,7 @@ class LeaderboardEntriesController extends Controller {
             })
         );
     }
-    
+
     /**
      * Display a listing of all leaderboard entries of a particular category for a specific player.
      *
@@ -213,15 +213,15 @@ class LeaderboardEntriesController extends Controller {
             'soundtrack',
             'date'
         ]);
-        
+
         $player_id = $request->player_id;
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
-        
+
         $cache_key = "players:{$player_id}:leaderboards:" . (string)$cache_prefix_name . ":entries";
 
         return LeaderboardEntriesResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use(
+            Cache::store('opcache')->remember($cache_key, 300, function() use(
                 $player_id,
                 $request_models
             ) {
@@ -239,7 +239,7 @@ class LeaderboardEntriesController extends Controller {
             })
         );
     }
-    
+
     /**
      * Display a listing of all daily leaderboard entries for a specific player.
      *
@@ -255,42 +255,42 @@ class LeaderboardEntriesController extends Controller {
             'multiplayer_type',
             'soundtrack'
         ]);
-        
+
         $player_id = $request->player_id;
-        
-        
+
+
         /* ---------- Cache Name ---------- */
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
-        
+
         unset($cache_prefix_name->leaderboard_source);
-        
+
         $index_name = CacheNames::getDailyEntries($cache_prefix_name);
-        
-        
+
+
         /* ---------- Data Provider ---------- */
-        
+
         $data_provider = new SqlDataProvider(LeaderboardEntries::getPlayerDailyApiReadQuery(
-            $player_id, 
+            $player_id,
             $request_models->leaderboard_source,
             $request_models->character,
-            $request_models->release, 
+            $request_models->release,
             $request_models->mode,
             $request_models->multiplayer_type,
             $request_models->soundtrack
         ));
-        
-        
+
+
         /* ---------- Dataset ---------- */
-        
+
         $cache_key = "players:{$player_id}:leaderboards:daily:" . (string)$cache_prefix_name . ":entries";
-        
+
         $dataset = new Dataset($request_models->leaderboard_source, $cache_key, $data_provider);
-        
+
         $dataset->setFromRequest($request);
-        
+
         $dataset->process();
-        
+
         return LeaderboardEntriesResource::collection($dataset->getPaginator());
     }
 }

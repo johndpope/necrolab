@@ -38,15 +38,15 @@ class PowerRankingsController extends Controller {
             'multiplayer_type',
             'soundtrack'
         ]);
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
-        
+
         $cache_name = "rankings:power:" . (string)$cache_prefix_name;
-        
+
         return PowerRankingsResource::collection(
             Cache::store('opcache')->remember(
-                $cache_name, 
-                5, 
+                $cache_name,
+                300,
                 function() use($request_models) {
                     $records = PowerRankings::getApiReadQuery(
                         $request_models->leaderboard_source,
@@ -56,12 +56,12 @@ class PowerRankingsController extends Controller {
                         $request_models->multiplayer_type,
                         $request_models->soundtrack
                     )->get();
-                    
+
                     Encoder::jsonDecodeProperties($records, [
                         'categories',
                         'characters'
                     ]);
-                    
+
                     return $records;
                 })
         );

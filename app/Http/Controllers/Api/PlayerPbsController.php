@@ -31,7 +31,7 @@ class PlayerPbsController extends Controller {
             'playerIndex'
         ]);
     }
-    
+
     /**
      * Shared method for player pb endpoints in this controller.
      *
@@ -49,18 +49,18 @@ class PlayerPbsController extends Controller {
             'multiplayer_type',
             'soundtrack'
         ]);
-        
+
         $player_id = $request->player_id;
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
-        
+
         $cache_key = "players:{$player_id}:pbs:" . (string)$cache_prefix_name;
-        
+
         return PlayerPbsResource::collection(
             Cache::store('opcache')->remember(
-                $cache_key, 
-                5, 
-                function() use($player_id, $request_models) {            
+                $cache_key,
+                300,
+                function() use($player_id, $request_models) {
                     return PlayerPbs::getPlayerApiReadQuery(
                         $player_id,
                         $request_models->leaderboard_source,

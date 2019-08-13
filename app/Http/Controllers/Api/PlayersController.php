@@ -38,30 +38,30 @@ class PlayersController extends Controller {
         $request_models = new RequestModels($request, [
             'leaderboard_source'
         ]);
-        
+
         $index_name = CacheNames::getUsersIndex();
-        
-        
+
+
         /* ---------- Data Provider ---------- */
-        
+
         $data_provider = new SqlDataProvider(Players::getApiReadQuery($request_models->leaderboard_source));
-        
-        
+
+
         /* ---------- Index ---------- */
-        
+
         $index = new SqlIndex($request_models->leaderboard_source, $index_name);
-        
-        
+
+
         /* ---------- Dataset ---------- */
-        
+
         $dataset = new Dataset($request_models->leaderboard_source, $index_name, $data_provider);
-        
+
         $dataset->setIndex($index, 'p.id');
-        
+
         $dataset->setFromRequest($request);
-        
+
         $dataset->process();
-        
+
         return PlayersResource::collection($dataset->getPaginator());
     }
 
@@ -75,11 +75,11 @@ class PlayersController extends Controller {
         $request_models = new RequestModels($request, [
             'leaderboard_source'
         ]);
-        
+
         $cache_key = "{$request_models->leaderboard_source}:players:{$request->player_id}";
-    
+
         return new PlayersResource(
-            Cache::store('opcache')->remember($cache_key, 5, function() use($request, $request_models) {
+            Cache::store('opcache')->remember($cache_key, 300, function() use($request, $request_models) {
                 return Players::getApiReadQuery($request_models->leaderboard_source)
                     ->where('p.external_id', $request->player_id)
                     ->first();

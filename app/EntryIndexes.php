@@ -84,7 +84,7 @@ class EntryIndexes extends Model {
     public static function getDecodedRecord(LeaderboardSources $leaderboard_source, string $name, string $sub_name = '') {
         $cache_key_name = "{$leaderboard_source->name}:{$name}:{$sub_name}";
 
-        return Cache::store('opcache')->remember($cache_key_name, 5, function() use($leaderboard_source, $name, $sub_name) {
+        return Cache::store('opcache')->remember($cache_key_name, 300, function() use($leaderboard_source, $name, $sub_name) {
             $encoded_data = DB::table(static::getSchemaTableName($leaderboard_source))->where('name', $name)
                 ->where('sub_name', $sub_name)
                 ->first();

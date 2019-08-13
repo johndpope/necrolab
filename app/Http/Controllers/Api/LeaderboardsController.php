@@ -62,13 +62,13 @@ class LeaderboardsController extends Controller {
             'release',
             'mode'
         ]);
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
-        
+
         return LeaderboardsResource::collection(
             Cache::store('opcache')->remember(
-                "leaderboards:" . (string)$cache_prefix_name, 
-                5, 
+                "leaderboards:" . (string)$cache_prefix_name,
+                300,
                 function() use($request_models) {
                     return Leaderboards::getNonDailyApiReadQuery(
                         $request_models->leaderboard_source,
@@ -80,7 +80,7 @@ class LeaderboardsController extends Controller {
             )
         );
     }
-    
+
     /**
      * Display a listing of all score leaderboards.
      *
@@ -95,13 +95,13 @@ class LeaderboardsController extends Controller {
             'release',
             'mode'
         ]);
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
-        
+
         return LeaderboardsResource::collection(
             Cache::store('opcache')->remember(
-                "leaderboards:category:" . (string)$cache_prefix_name, 
-                5, 
+                "leaderboards:category:" . (string)$cache_prefix_name,
+                300,
                 function() use($request_models) {
                     return Leaderboards::getCategoryApiReadQuery(
                         $request_models->leaderboard_source,
@@ -114,7 +114,7 @@ class LeaderboardsController extends Controller {
             )
         );
     }
-    
+
     /**
      * Display a listing of all character leaderboards for the specified criteria.
      *
@@ -131,13 +131,13 @@ class LeaderboardsController extends Controller {
             'multiplayer_type',
             'soundtrack'
         ]);
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
 
         return LeaderboardsResource::collection(
             Cache::store('opcache')->remember(
-                "leaderboards:characters:" . (string)$cache_prefix_name, 
-                5, 
+                "leaderboards:characters:" . (string)$cache_prefix_name,
+                300,
                 function() use($request_models) {
                     return Leaderboards::getCharactersApiReadQuery(
                         $request_models->leaderboard_source,
@@ -152,7 +152,7 @@ class LeaderboardsController extends Controller {
             )
         );
     }
-    
+
     /**
      * Display a leaderboard based on its attributes.
      *
@@ -170,15 +170,15 @@ class LeaderboardsController extends Controller {
             'multiplayer_type',
             'soundtrack'
         ]);
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
-        
+
         $cache_key = "leaderboards:by_attributes:" . (string)$cache_prefix_name;
-    
+
         return new LeaderboardsResource(
             Cache::store('opcache')->remember(
-                $cache_key, 
-                5, 
+                $cache_key,
+                300,
                 function() use($request_models) {
                     return Leaderboards::getApiByAttributesQuery(
                         $request_models->leaderboard_source,
@@ -205,22 +205,22 @@ class LeaderboardsController extends Controller {
         $request_models = new RequestModels($request, [
             'leaderboard_source'
         ]);
-        
+
         $leaderboard_id = $request->leaderboard_id;
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
-    
+
         return new LeaderboardsResource(
             Cache::store('opcache')->remember(
-                "leaderboards:show:" . (string)$cache_prefix_name . ":{$leaderboard_id}", 
-                5, 
+                "leaderboards:show:" . (string)$cache_prefix_name . ":{$leaderboard_id}",
+                300,
                 function() use($request_models, $leaderboard_id) {
                     return Leaderboards::getApiShowQuery($request_models->leaderboard_source, $leaderboard_id)->first();
                 }
             )
         );
     }
-    
+
     /**
      * Display a listing of all daily leaderboards.
      *
@@ -236,31 +236,31 @@ class LeaderboardsController extends Controller {
             'multiplayer_type',
             'soundtrack'
         ]);
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
-        
+
         $cache_key = "leaderboards:daily:" . (string)$cache_prefix_name;
-        
+
         return DailyLeaderboardsResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use($request_models) {
+            Cache::store('opcache')->remember($cache_key, 300, function() use($request_models) {
                 $records = Leaderboards::getDailyApiReadQuery(
                     $request_models->leaderboard_source,
                     $request_models->character,
-                    $request_models->release, 
+                    $request_models->release,
                     $request_models->mode,
                     $request_models->multiplayer_type,
                     $request_models->soundtrack
                 )->get();
-                
+
                 Encoder::jsonDecodeProperties($records, [
                     'details'
                 ]);
-                
+
                 return $records;
             })
         );
     }
-    
+
     /**
      * Display a listing of the leaderboards a player has an entry in.
      *
@@ -274,15 +274,15 @@ class LeaderboardsController extends Controller {
             'release',
             'mode'
         ]);
-        
+
         $player_id = $request->player_id;
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
-        
+
         $cache_key = "player:{$player_id}:leaderboards:" . (string)$cache_prefix_name;
-        
+
         return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use($player_id, $request_models) {
+            Cache::store('opcache')->remember($cache_key, 300, function() use($player_id, $request_models) {
                 return Leaderboards::getPlayerNonDailyApiReadQuery(
                     $request_models->leaderboard_source,
                     $player_id,
@@ -293,7 +293,7 @@ class LeaderboardsController extends Controller {
             })
         );
     }
-    
+
     /**
      * Display a listing of the score leaderboards a player has an entry in.
      *
@@ -308,16 +308,16 @@ class LeaderboardsController extends Controller {
             'release',
             'mode'
         ]);
-        
+
         $player_id = $request->player_id;
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
-        
+
         $cache_key = "player:{$player_id}:leaderboards:category:" . (string)$cache_prefix_name;
-        
+
         return LeaderboardsResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use(
-                $player_id, 
+            Cache::store('opcache')->remember($cache_key, 300, function() use(
+                $player_id,
                 $request_models
             ) {
                 return Leaderboards::getPlayerCategoryApiReadQuery(
@@ -331,7 +331,7 @@ class LeaderboardsController extends Controller {
             })
         );
     }
-    
+
     /**
      * Display a listing of all daily leaderboards that a player has an entry in.
      *
@@ -347,29 +347,29 @@ class LeaderboardsController extends Controller {
             'multiplayer_type',
             'soundtrack'
         ]);
-        
+
         $player_id = $request->player_id;
-        
+
         $cache_prefix_name = $request_models->getCacheNamePrefix();
-        
+
         $cache_key = "player:{$player_id}:leaderboards:daily:" . (string)$cache_prefix_name;
-    
+
         return DailyLeaderboardsResource::collection(
-            Cache::store('opcache')->remember($cache_key, 5, function() use($player_id, $request_models) {
+            Cache::store('opcache')->remember($cache_key, 300, function() use($player_id, $request_models) {
                 $records = Leaderboards::getPlayerDailyApiReadQuery(
                     $request_models->leaderboard_source,
                     $player_id,
                     $request_models->character,
-                    $request_models->release, 
+                    $request_models->release,
                     $request_models->mode,
                     $request_models->multiplayer_type,
                     $request_models->soundtrack
                 )->get();
-                
+
                 Encoder::jsonDecodeProperties($records, [
                     'details'
                 ]);
-                
+
                 return $records;
             })
         );
