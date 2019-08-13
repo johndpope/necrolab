@@ -4,20 +4,21 @@ namespace App;
 
 use Laravel\Passport\HasApiTokens;
 use Illuminate\Notifications\Notifiable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Spatie\Permission\Traits\HasRoles;
 
-class Users extends Authenticatable
+class Users extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, Notifiable, HasRoles;
-    
+
     /**
      * The table associated with the model.
      *
      * @var string
      */
     protected $table = 'users';
-    
+
     /**
      * The primary key associated with the model.
      *
@@ -31,8 +32,8 @@ class Users extends Authenticatable
      * @var array
      */
     protected $fillable = [
-        'name', 
-        'email', 
+        'name',
+        'email',
         'password'
     ];
 
@@ -42,7 +43,7 @@ class Users extends Authenticatable
      * @var array
      */
     protected $hidden = [
-        'password', 
+        'password',
         'remember_token',
     ];
 }
