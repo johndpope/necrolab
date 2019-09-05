@@ -12,9 +12,10 @@ let mix = require('laravel-mix');
  */
 
 mix.js('resources/assets/js/app.js', 'public/js')
-   .sass('resources/assets/sass/app.light.scss', 'public/css')
-   //.sass('resources/assets/sass/app.dark.scss', 'public/css')
-   .copyDirectory('resources/images', 'public/images');
+    .js('resources/assets/js/auth.js', 'public/js')
+    .sass('resources/assets/sass/app.light.scss', 'public/css')
+    //.sass('resources/assets/sass/app.dark.scss', 'public/css')
+    .copyDirectory('resources/images', 'public/images');
 
 if (mix.inProduction()) {
     mix.version();

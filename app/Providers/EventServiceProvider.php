@@ -24,6 +24,9 @@ class EventServiceProvider extends ServiceProvider
             'SocialiteProviders\\Twitch\\TwitchExtendSocialite@handle',
             'SocialiteProviders\\Twitter\\TwitterExtendSocialite@handle',
             'SocialiteProviders\\YouTube\\YouTubeExtendSocialite@handle'
+        ],
+        'Illuminate\Auth\Events\Registered' => [
+            'Illuminate\Auth\Listeners\SendEmailVerificationNotification'
         ]
     ];
 

@@ -20,6 +20,13 @@ use Illuminate\Http\Request;
 Route::fallback('Api\HomeController@notFound');
 
 
+/* --------- Authentication endpoints --------- */
+
+Route::post('/1/users/username_exists', 'Api\AuthenticationController@usernameExists');
+Route::post('/1/users/email_exists', 'Api\AuthenticationController@emailExists');
+Route::post('/1/user/password_valid', 'Api\AuthenticationController@passwordValid');
+
+
 /* --------- Supplemental data endpoints --------- */
 
 // Releases

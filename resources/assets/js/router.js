@@ -11,8 +11,6 @@ import WithNavLayout from './components/layouts/WithNavLayout.vue';
 
 import HomePage from './components/pages/HomePage.vue';
 
-import LoginPage from  './components/pages/LoginPage.vue';
-
 import PowerRankingsPage from './components/pages/rankings/PowerRankingsPage.vue';
 import CategoryRankingsPage from './components/pages/rankings/CategoryRankingsPage.vue';
 import CharacterRankingsPage from './components/pages/rankings/CharacterRankingsPage.vue';
@@ -34,8 +32,6 @@ import DailyLeaderboardEntriesPage from './components/pages/leaderboards/DailyLe
 import LeaderboardSourcePlayersPage from './components/pages/players/LeaderboardSourcePlayersPage.vue';
 import LeaderboardSourcePlayerProfilePage from './components/pages/players/LeaderboardSourcePlayerProfilePage.vue';
 import PlayerProfileInfo from './components/pages/players/PlayerProfileInfo.vue';
-//import PlayerProfileConnections from './components/pages/players/PlayerProfileConnections.vue';
-//import PlayerProfileSupport from './components/pages/players/PlayerProfileSupport.vue';
 import PlayerProfileStats from './components/pages/players/PlayerProfileStats.vue';
 import PlayerProfileStatsByRelease from './components/pages/players/PlayerProfileStatsByRelease.vue';
 import PlayerProfilePbs from './components/pages/players/PlayerProfilePbs.vue';
@@ -49,10 +45,6 @@ import PlayerProfileCategoryRankings from './components/pages/players/PlayerProf
 /* --------- Define routes ---------- */
 
 const routes = [
-    {
-        path: '/login',
-        component: LoginPage
-    },
     {
         path: '/',
         component: WithNavLayout,
@@ -125,14 +117,6 @@ const routes = [
                         path: '/',
                         component: PlayerProfileInfo
                     },
-                    /*{
-                        path: 'connections',
-                        component: PlayerProfileConnections
-                    },
-                    {
-                        path: 'support',
-                        component: PlayerProfileSupport
-                    },*/
                     {
                         path: 'stats/overall',
                         component: PlayerProfileStats

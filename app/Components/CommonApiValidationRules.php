@@ -2,6 +2,13 @@
 namespace App\Components;
 
 use Exception;
+use App\Rules\UsernameExists;
+use App\Rules\EmailExists;
+use App\Rules\Password\Pwned as PasswordPwned;
+use App\Rules\Password\LowerCaseCharacters as PasswordLowerCaseCharacters;
+use App\Rules\Password\UpperCaseCharacters as PasswordUpperCaseCharacters;
+use App\Rules\Password\Numbers as PasswordNumbers;
+use App\Rules\Password\SpecialCharacters as PasswordSpecialCharacters;
 use App\Rules\NameExists;
 use App\Dates;
 use App\Releases;
@@ -27,13 +34,13 @@ class CommonApiValidationRules {
         'leaderboard_id' => 'required|string'
     ];
 
-    public static function getRules(array $rule_names) {    
+    public static function getRules(array $rule_names): array {
         $rules = [];
-    
+
         if(!empty($rule_names)) {
-            foreach($rule_names as $rule_name) { 
+            foreach($rule_names as $rule_name) {
                 $rule = NULL;
-            
+
                 if(isset(static::$plain_rules[$rule_name])) {
                     $rule = static::$plain_rules[$rule_name];
                 }
@@ -72,17 +79,50 @@ class CommonApiValidationRules {
                         case 'site':
                             $rule = ['sometimes', 'required', 'string', new NameExists(ExternalSites::class)];
                             break;
+                        case 'username':
+                            $rule = [
+                                'bail',
+                                'required',
+                                'string',
+                                'between:4,25',
+                                new UsernameExists()
+                            ];
+                            break;
+                        case 'email':
+                            $rule = [
+                                'bail',
+                                'required',
+                                'email',
+                                'max:255',
+                                new EmailExists()
+                            ];
+                            break;
+                        case 'password':
+                            $rule = [
+                                'bail',
+                                'required',
+                                'string',
+                                'min:10',
+                                'max:255',
+                                new PasswordLowerCaseCharacters(),
+                                new PasswordUpperCaseCharacters(),
+                                new PasswordNumbers(),
+                                new PasswordSpecialCharacters(),
+                                new PasswordPwned(1),
+                                'confirmed'
+                            ];
+                            break;
                         default:
                             throw new Exception("Specified validation rule '{$rule_name}' is not valid.");
                             break;
-                        
+
                     }
                 }
-                
+
                 $rules[$rule_name] = $rule;
             }
         }
-        
+
         return $rules;
     }
 }
