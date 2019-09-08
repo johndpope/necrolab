@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Str;
+
 return [
 
     /*
@@ -72,7 +74,7 @@ return [
             'driver' => 'redis',
             'connection' => 'default',
         ],
-        
+
         'opcache' => [
             'driver' => 'opcache',
         ],
@@ -91,7 +93,6 @@ return [
 
     'prefix' => env(
         'CACHE_PREFIX',
-        str_slug(env('APP_NAME', 'laravel'), '_').'_cache'
+        Str::slug(env('APP_NAME', 'laravel'), '_').'_cache'
     ),
-
 ];
