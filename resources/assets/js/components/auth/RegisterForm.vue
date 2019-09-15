@@ -118,6 +118,8 @@ export default {
                         this.submitting = false;
                     }
                     else {
+                        this.submitting = false;
+
                         this.form_error = 'There was a problem communicating with the server. Please try again.';
                     }
                 });

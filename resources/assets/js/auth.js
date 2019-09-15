@@ -12,12 +12,14 @@ window.Vue = require('vue');
 /* ---------- Register Components ---------- */
 
 import RegisterForm from './components/auth/RegisterForm.vue';
+import VerifyForm from './components/auth/VerifyForm.vue';
 
 /* ---------- Initialize Vue ---------- */
 
 const app = new Vue({
     el: '#app',
     components: {
-        'register-form': RegisterForm
+        'register-form': RegisterForm,
+        'verify-form': VerifyForm
     }
 });

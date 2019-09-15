@@ -15,5 +15,5 @@ class QueueNames {
 
     public const DATES = 'dates';
 
-    public const USERS = 'users';
+    public const EMAILS = 'emails';
 }

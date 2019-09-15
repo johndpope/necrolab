@@ -87,6 +87,6 @@ class Users extends Authenticatable implements MustVerifyEmail
      * @return void
      */
     public function sendEmailVerificationNotification() {
-        $this->notify((new VerifyEmailQueued())->onQueue(QueueNames::USERS));
+        $this->notify((new VerifyEmailQueued())->onQueue(QueueNames::EMAILS));
     }
 }
