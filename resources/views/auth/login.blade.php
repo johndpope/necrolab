@@ -1,6 +1,6 @@
 @extends('layouts.app')
 
-@section('title', 'Register')
+@section('title', 'Login')
 
 @push('js')
     <script type="text/javascript" src="{{ mix('/js/auth.js') }}"></script>
@@ -14,7 +14,7 @@
                 <div class="card-header">
                     <div class="d-flex flex-row pt-0">
                         <div class="mr-auto pt-0">
-                            <h3>{{ __('Register') }}</h3>
+                            <h3>{{ __('Login') }}</h3>
                         </div>
                         <div class="pt-0">
                             <a href="/">
@@ -23,32 +23,14 @@
                         </div>
                     </div>
                 </div>
-
                 <div class="card-body">
-                    <form method="POST" action="{{ route('register') }}">
-                        @csrf
-                        <noscript>
-                            <div class="form-group">
-                                <div>
-                                    <label for="username" class="col-form-label">{{ __('Username') }}</label>
-                                </div>
-
-                                <div class="input-group">
-                                    <input id="username" type="text" class="form-control @error('username') is-invalid @enderror" name="username" value="{{ old('username') }}" required autocomplete="off" maxlength="25" autofocus>
-
-                                    @error('username')
-                                        <span class="invalid-feedback" role="alert">
-                                            <strong>{{ $message }}</strong>
-                                        </span>
-                                    @enderror
-                                </div>
-                            </div>
-
+                    <noscript>
+                        <form method="POST" action="{{ route('login') }}">
+                            @csrf
                             <div class="form-group">
                                 <div>
                                     <label for="email" class="col-form-label">{{ __('E-Mail Address') }}</label>
                                 </div>
-
                                 <div class="input-group">
                                     <input id="email" type="email" class="form-control @error('email') is-invalid @enderror" name="email" value="{{ old('email') }}" required autocomplete="off" maxlength="255">
 
@@ -59,12 +41,10 @@
                                     @enderror
                                 </div>
                             </div>
-
                             <div class="form-group">
                                 <div>
                                     <label for="password" class="col-form-label">{{ __('Password') }}</label>
                                 </div>
-
                                 <div class="input-group">
                                     <input id="password" type="password" class="form-control @error('password') is-invalid @enderror" name="password" required autocomplete="off" maxlength="255">
 
@@ -75,27 +55,32 @@
                                     @enderror
                                 </div>
                             </div>
-
                             <div class="form-group">
-                                <div>
-                                    <label for="password-confirm" class="col-form-label">{{ __('Confirm Password') }}</label>
-                                </div>
-
-                                <div class="input-group">
-                                    <input id="password-confirm" type="password" class="form-control" name="password_confirmation" required autocomplete="off">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" name="remember" id="remember" {{ old('remember') ? 'checked' : '' }}>
+                                    <label for="password" class="form-check-label">{{ __('Remember Me') }}</label>
                                 </div>
                             </div>
-
                             <div class="form-group">
                                 <button type="submit" class="btn btn-lg btn-primary btn-block">
-                                    {{ __('Register') }}
+                                    {{ __('Login') }}
                                 </button>
                             </div>
-                        </noscript>
-                        <div id="app">
-                            <register-form></register-form>
-                        </div>
-                    </form>
+                            <div class="form-group">
+                                <a href="/register" class="btn btn-lg btn-secondary btn-block" role="button">
+                                    Register
+                                </a>
+                            </div>
+                            <div class="form-group mb-0 text-right">
+                                <a class="btn btn-small btn-link" href="{{ route('password.request') }}">
+                                    {{ __('Forgot Your Password?') }}
+                                </a>
+                            </div>
+                        </form>
+                    </noscript>
+                    <div id="app">
+                        <login-form></login-form>
+                    </div>
                 </div>
             </div>
         </div>

@@ -13,6 +13,7 @@ window.Vue = require('vue');
 
 import RegisterForm from './components/auth/RegisterForm.vue';
 import VerifyForm from './components/auth/VerifyForm.vue';
+import LoginForm from './components/auth/LoginForm.vue';
 
 /* ---------- Initialize Vue ---------- */
 
@@ -20,6 +21,7 @@ const app = new Vue({
     el: '#app',
     components: {
         'register-form': RegisterForm,
-        'verify-form': VerifyForm
+        'verify-form': VerifyForm,
+        'login-form': LoginForm
     }
 });

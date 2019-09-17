@@ -9,6 +9,9 @@
         <div v-if="resent" class="alert alert-success" role="alert">
             A fresh verification link has been sent to your email address.
         </div>
+        <div v-if="form_error.length > 0" class="alert alert-danger" role="alert">
+            {{ form_error }}
+        </div>
         <p>
             Before proceeding, please check your email for a verification link.
         </p>
